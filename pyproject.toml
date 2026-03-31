@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "geo-content-opportunity-engine"
+version = "0.1.0"
+description = "A GEO-first content opportunity engine built on Dageno evidence, prompt fanout, citation analysis, and content-pack generation."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+dependencies = ["requests>=2.31.0"]
+
+[project.scripts]
+geo-content-engine = "geo_content_opportunity_engine.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]

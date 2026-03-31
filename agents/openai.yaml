@@ -1,0 +1,3 @@
+display_name: GEO Content Opportunity Engine
+short_description: Turn Dageno GEO opportunities into reusable content packs.
+default_prompt: Use this skill to classify Dageno opportunities into High, Medium, and Low tiers, analyze one selected prompt with response and citation evidence, run fanout and SEO enrichment, and output a reusable GEO-first content pack.

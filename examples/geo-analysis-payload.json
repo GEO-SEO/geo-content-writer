@@ -1,0 +1,19 @@
+{
+  "target": {
+    "entity": "topic",
+    "metrics": [
+      "visibility",
+      "citation"
+    ],
+    "filters": {
+      "dateRange": {
+        "startAt": "2026-03-01T00:00:00.000Z",
+        "endAt": "2026-03-30T00:00:00.000Z"
+      }
+    }
+  },
+  "analysis": {
+    "type": "trend"
+  }
+}
+

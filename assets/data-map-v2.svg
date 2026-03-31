@@ -1,0 +1,66 @@
+<svg width="1600" height="960" viewBox="0 0 1600 960" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1600" height="960" fill="#F7F2EA"/>
+  <text x="72" y="92" fill="#171717" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="54" font-weight="800">Dageno MCP / Open API Data Map</text>
+  <text x="72" y="138" fill="#5C5C5C" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="28" font-weight="500">From exported project data to usable GEO outputs.</text>
+
+  <text x="96" y="224" fill="#171717" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="36" font-weight="800">Export</text>
+  <text x="632" y="224" fill="#171717" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="36" font-weight="800">Analyze</text>
+  <text x="1098" y="224" fill="#171717" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="36" font-weight="800">Build</text>
+
+  <rect x="72" y="270" width="390" height="104" rx="24" fill="#171717"/>
+  <text x="108" y="334" fill="#FFFFFF" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="38" font-weight="800">Brand + Project Data</text>
+
+  <rect x="72" y="408" width="390" height="104" rx="24" fill="#FFF8F3" stroke="#171717" stroke-width="2"/>
+  <text x="108" y="472" fill="#171717" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="38" font-weight="800">Topics + Metrics</text>
+
+  <rect x="72" y="546" width="390" height="104" rx="24" fill="#FFF8F3" stroke="#171717" stroke-width="2"/>
+  <text x="108" y="610" fill="#171717" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="38" font-weight="800">Prompts + Responses</text>
+
+  <rect x="72" y="684" width="390" height="104" rx="24" fill="#FFF8F3" stroke="#171717" stroke-width="2"/>
+  <text x="108" y="748" fill="#171717" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="38" font-weight="800">Citations + Sources</text>
+
+  <rect x="72" y="822" width="390" height="104" rx="24" fill="#FFF8F3" stroke="#171717" stroke-width="2"/>
+  <text x="108" y="886" fill="#171717" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="38" font-weight="800">Opportunity Queues</text>
+
+  <path d="M462 322H544" stroke="#FF6C2F" stroke-width="8" stroke-linecap="round"/>
+  <path d="M462 460H544" stroke="#FF6C2F" stroke-width="8" stroke-linecap="round"/>
+  <path d="M462 598H544" stroke="#FF6C2F" stroke-width="8" stroke-linecap="round"/>
+  <path d="M462 736H544" stroke="#FF6C2F" stroke-width="8" stroke-linecap="round"/>
+  <path d="M462 874H544" stroke="#FF6C2F" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="560" cy="322" r="14" fill="#FF6C2F"/>
+  <circle cx="560" cy="460" r="14" fill="#FF6C2F"/>
+  <circle cx="560" cy="598" r="14" fill="#FF6C2F"/>
+  <circle cx="560" cy="736" r="14" fill="#FF6C2F"/>
+  <circle cx="560" cy="874" r="14" fill="#FF6C2F"/>
+
+  <rect x="590" y="322" width="360" height="108" rx="24" fill="#FFF0E6" stroke="#FF6C2F" stroke-width="3"/>
+  <text x="626" y="388" fill="#171717" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="38" font-weight="800">GEO Analysis</text>
+
+  <rect x="590" y="476" width="360" height="108" rx="24" fill="#FFF0E6" stroke="#FF6C2F" stroke-width="3"/>
+  <text x="626" y="542" fill="#171717" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="38" font-weight="800">Prompt Review</text>
+
+  <rect x="590" y="630" width="360" height="108" rx="24" fill="#FFF0E6" stroke="#FF6C2F" stroke-width="3"/>
+  <text x="626" y="696" fill="#171717" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="38" font-weight="800">Citation Analysis</text>
+
+  <path d="M950 376H1040" stroke="#FF6C2F" stroke-width="8" stroke-linecap="round"/>
+  <path d="M950 530H1040" stroke="#FF6C2F" stroke-width="8" stroke-linecap="round"/>
+  <path d="M950 684H1040" stroke="#FF6C2F" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="1056" cy="376" r="14" fill="#FF6C2F"/>
+  <circle cx="1056" cy="530" r="14" fill="#FF6C2F"/>
+  <circle cx="1056" cy="684" r="14" fill="#FF6C2F"/>
+
+  <rect x="1088" y="282" width="430" height="104" rx="24" fill="#171717"/>
+  <text x="1124" y="346" fill="#FFFFFF" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="38" font-weight="800">Brand Snapshot</text>
+
+  <rect x="1088" y="420" width="430" height="104" rx="24" fill="#FFF8F3" stroke="#171717" stroke-width="2"/>
+  <text x="1124" y="484" fill="#171717" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="38" font-weight="800">Content Brief Queue</text>
+
+  <rect x="1088" y="558" width="430" height="104" rx="24" fill="#FFF8F3" stroke="#171717" stroke-width="2"/>
+  <text x="1124" y="622" fill="#171717" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="38" font-weight="800">Backlink Queue</text>
+
+  <rect x="1088" y="696" width="430" height="104" rx="24" fill="#FFF8F3" stroke="#171717" stroke-width="2"/>
+  <text x="1124" y="760" fill="#171717" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="38" font-weight="800">Community Queue</text>
+
+  <rect x="1088" y="834" width="430" height="104" rx="24" fill="#FF6C2F"/>
+  <text x="1124" y="898" fill="#FFF8F3" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="38" font-weight="800">Weekly GEO Brief</text>
+</svg>

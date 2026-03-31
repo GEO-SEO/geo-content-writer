@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "dageno": {
+      "type": "sse",
+      "url": "https://api.dageno.ai/mcp",
+      "headers": {
+        "x-api-key": "your-token"
+      }
+    }
+  }
+}
+

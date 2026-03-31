@@ -1,0 +1,70 @@
+<svg width="1600" height="900" viewBox="0 0 1600 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1600" height="900" fill="#F6F1E9"/>
+  <rect x="40" y="40" width="1520" height="820" rx="30" fill="url(#bg)" stroke="#181818" stroke-width="2"/>
+
+  <rect x="86" y="86" width="590" height="214" rx="28" fill="#171717"/>
+  <text x="126" y="150" fill="#FFD9C3" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="28" font-weight="700">Dageno Open API + MCP</text>
+  <text x="126" y="220" fill="#FFFFFF" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="74" font-weight="800">Growth Playbook</text>
+  <text x="126" y="270" fill="#FFD9C3" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="34" font-weight="600">Turn GEO data into readable workflows</text>
+
+  <text x="86" y="352" fill="#171717" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="36" font-weight="800">What Dageno can export</text>
+
+  <rect x="86" y="390" width="250" height="120" rx="22" fill="#FFF8F3" stroke="#191919" stroke-width="2"/>
+  <text x="118" y="442" fill="#171717" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="34" font-weight="800">Brand</text>
+  <text x="118" y="482" fill="#5B5B5B" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="26" font-weight="500">identity + competitors</text>
+
+  <rect x="356" y="390" width="250" height="120" rx="22" fill="#FFF8F3" stroke="#191919" stroke-width="2"/>
+  <text x="388" y="442" fill="#171717" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="34" font-weight="800">Topics</text>
+  <text x="388" y="482" fill="#5B5B5B" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="26" font-weight="500">visibility + sentiment</text>
+
+  <rect x="86" y="536" width="250" height="120" rx="22" fill="#FFF8F3" stroke="#191919" stroke-width="2"/>
+  <text x="118" y="588" fill="#171717" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="34" font-weight="800">Prompts</text>
+  <text x="118" y="628" fill="#5B5B5B" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="26" font-weight="500">intent + funnel</text>
+
+  <rect x="356" y="536" width="250" height="120" rx="22" fill="#FFF8F3" stroke="#191919" stroke-width="2"/>
+  <text x="388" y="588" fill="#171717" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="34" font-weight="800">Citations</text>
+  <text x="388" y="628" fill="#5B5B5B" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="26" font-weight="500">domains + URLs</text>
+
+  <rect x="86" y="682" width="520" height="120" rx="22" fill="#171717"/>
+  <text x="118" y="734" fill="#FFFFFF" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="34" font-weight="800">Opportunities</text>
+  <text x="118" y="774" fill="#FFD9C3" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="26" font-weight="600">content + backlink + community + GEO analysis</text>
+
+  <path d="M654 450H770" stroke="#FF6C2F" stroke-width="8" stroke-linecap="round"/>
+  <path d="M654 596H770" stroke="#FF6C2F" stroke-width="8" stroke-linecap="round"/>
+  <path d="M654 742H770" stroke="#FF6C2F" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="788" cy="450" r="16" fill="#FF6C2F"/>
+  <circle cx="788" cy="596" r="16" fill="#FF6C2F"/>
+  <circle cx="788" cy="742" r="16" fill="#FF6C2F"/>
+  <text x="700" y="328" fill="#FF6C2F" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="28" font-weight="700">turn exports into</text>
+
+  <rect x="850" y="112" width="664" height="676" rx="30" fill="#FFFFFF" stroke="#1A1A1A" stroke-width="2"/>
+  <text x="894" y="178" fill="#171717" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="48" font-weight="800">What teams build</text>
+  <text x="894" y="220" fill="#636363" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="28" font-weight="500">Readable outputs that make the docs immediately useful.</text>
+
+  <rect x="894" y="270" width="270" height="132" rx="22" fill="#FFF3EC" stroke="#FF6C2F" stroke-width="2"/>
+  <text x="926" y="324" fill="#171717" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="34" font-weight="800">Brand Snapshot</text>
+  <text x="926" y="364" fill="#555555" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="26" font-weight="500">onboarding + context</text>
+
+  <rect x="1200" y="270" width="270" height="132" rx="22" fill="#FFF3EC" stroke="#FF6C2F" stroke-width="2"/>
+  <text x="1232" y="324" fill="#171717" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="34" font-weight="800">Prompt Gap Audit</text>
+  <text x="1232" y="364" fill="#555555" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="26" font-weight="500">coverage + priority</text>
+
+  <rect x="894" y="434" width="270" height="132" rx="22" fill="#FFF3EC" stroke="#FF6C2F" stroke-width="2"/>
+  <text x="926" y="488" fill="#171717" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="34" font-weight="800">Citation Audit</text>
+  <text x="926" y="528" fill="#555555" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="26" font-weight="500">domains + source graph</text>
+
+  <rect x="1200" y="434" width="270" height="132" rx="22" fill="#FFF3EC" stroke="#FF6C2F" stroke-width="2"/>
+  <text x="1232" y="488" fill="#171717" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="34" font-weight="800">Growth Queue</text>
+  <text x="1232" y="528" fill="#555555" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="26" font-weight="500">content + outreach</text>
+
+  <rect x="894" y="608" width="576" height="126" rx="22" fill="#171717"/>
+  <text x="928" y="662" fill="#FFFFFF" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="38" font-weight="800">Weekly GEO Brief</text>
+  <text x="928" y="704" fill="#FFD9C3" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="28" font-weight="600">brand + topics + prompts + sources + opportunities</text>
+
+  <defs>
+    <linearGradient id="bg" x1="90" y1="80" x2="1510" y2="820" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFF8F3"/>
+      <stop offset="1" stop-color="#FFE7D8"/>
+    </linearGradient>
+  </defs>
+</svg>

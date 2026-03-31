@@ -1,0 +1,63 @@
+{
+  "name": "geo-content-opportunity-engine",
+  "version": "0.4.0",
+  "display_name": "GEO Content Opportunity Engine",
+  "description": "Turn Dageno GEO opportunity data into content packs by combining response evidence, citation evidence, prompt fanout, keyword demand, and structured asset decisions.",
+  "author": {
+    "name": "GEO-SEO",
+    "website": "https://github.com/GEO-SEO/geo-content-opportunity-engine"
+  },
+  "tags": [
+    "dageno",
+    "seo",
+    "geo",
+    "content-opportunity",
+    "content-strategy",
+    "response-gap",
+    "prompt-fanout",
+    "content-pack",
+    "citation-intelligence",
+    "keyword-research",
+    "prompt-research",
+    "content-briefs"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GEO-SEO/geo-content-opportunity-engine"
+  },
+  "integrations": {
+    "dageno_api": {
+      "required_env_vars": [
+        "DAGENO_API_KEY"
+      ],
+      "recommended_access": "project-scoped API key"
+    },
+    "seo_metrics_api": {
+      "optional_env_vars": [
+        "SEO_METRICS_API_URL",
+        "SEO_METRICS_API_KEY"
+      ],
+      "recommended_provider": "any approved search volume and keyword difficulty API"
+    },
+    "citation_page_fetch": {
+      "optional_env_vars": [
+        "JINA_API_KEY",
+        "FIRECRAWL_API_KEY"
+      ],
+      "recommended_provider": "Jina or Firecrawl"
+    },
+    "serp_retrieval": {
+      "optional_env_vars": [
+        "SERPAPI_API_KEY"
+      ],
+      "recommended_provider": "approved SERP API or user-provided export"
+    }
+  },
+  "metadata": {
+    "skill_type": "content-workflow",
+    "network_access": "optional",
+    "minimum_permissions": "Dageno API access required; SEO metrics, page fetch, and SERP enrichment are optional connectors.",
+    "data_access_policy": "This skill is optimized for opportunity-driven content packs from Dageno opportunities. Do not assume hidden access to private search APIs, page crawlers, or Google scraping. Keep prompt fanout, SEO enrichment, and future landing-page branches visible even when their connectors are not yet supplied."
+  }
+}

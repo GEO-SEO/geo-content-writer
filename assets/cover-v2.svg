@@ -1,0 +1,58 @@
+<svg width="1600" height="900" viewBox="0 0 1600 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1600" height="900" fill="#F7F2EA"/>
+  <rect x="48" y="48" width="1504" height="804" rx="30" fill="url(#bg)" stroke="#171717" stroke-width="2"/>
+
+  <rect x="96" y="96" width="620" height="220" rx="28" fill="#171717"/>
+  <text x="136" y="152" fill="#FFD8C4" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="28" font-weight="700">Dageno Open API + MCP</text>
+  <text x="136" y="228" fill="#FFFFFF" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="80" font-weight="800">Growth Playbook</text>
+  <text x="136" y="284" fill="#FFD8C4" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="34" font-weight="600">Readable GEO workflows for real teams</text>
+
+  <text x="96" y="380" fill="#171717" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="38" font-weight="800">Export</text>
+
+  <rect x="96" y="420" width="280" height="112" rx="22" fill="#FFF8F3" stroke="#171717" stroke-width="2"/>
+  <text x="132" y="487" fill="#171717" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="38" font-weight="800">Brand</text>
+
+  <rect x="410" y="420" width="280" height="112" rx="22" fill="#FFF8F3" stroke="#171717" stroke-width="2"/>
+  <text x="446" y="487" fill="#171717" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="38" font-weight="800">Topics</text>
+
+  <rect x="96" y="566" width="280" height="112" rx="22" fill="#FFF8F3" stroke="#171717" stroke-width="2"/>
+  <text x="132" y="633" fill="#171717" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="38" font-weight="800">Prompts</text>
+
+  <rect x="410" y="566" width="280" height="112" rx="22" fill="#FFF8F3" stroke="#171717" stroke-width="2"/>
+  <text x="446" y="633" fill="#171717" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="38" font-weight="800">Citations</text>
+
+  <rect x="96" y="712" width="594" height="112" rx="22" fill="#171717"/>
+  <text x="132" y="779" fill="#FFFFFF" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="38" font-weight="800">Content + Backlink + Community Opportunities</text>
+
+  <path d="M738 476H836" stroke="#FF6C2F" stroke-width="8" stroke-linecap="round"/>
+  <path d="M738 622H836" stroke="#FF6C2F" stroke-width="8" stroke-linecap="round"/>
+  <path d="M738 768H836" stroke="#FF6C2F" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="854" cy="476" r="16" fill="#FF6C2F"/>
+  <circle cx="854" cy="622" r="16" fill="#FF6C2F"/>
+  <circle cx="854" cy="768" r="16" fill="#FF6C2F"/>
+
+  <text x="900" y="380" fill="#171717" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="38" font-weight="800">Build</text>
+
+  <rect x="900" y="420" width="260" height="112" rx="22" fill="#FFF3EC" stroke="#FF6C2F" stroke-width="2"/>
+  <text x="934" y="487" fill="#171717" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="36" font-weight="800">Brand Snapshot</text>
+
+  <rect x="1194" y="420" width="260" height="112" rx="22" fill="#FFF3EC" stroke="#FF6C2F" stroke-width="2"/>
+  <text x="1228" y="487" fill="#171717" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="36" font-weight="800">Prompt Audit</text>
+
+  <rect x="900" y="566" width="260" height="112" rx="22" fill="#FFF3EC" stroke="#FF6C2F" stroke-width="2"/>
+  <text x="934" y="633" fill="#171717" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="36" font-weight="800">Citation Brief</text>
+
+  <rect x="1194" y="566" width="260" height="112" rx="22" fill="#FFF3EC" stroke="#FF6C2F" stroke-width="2"/>
+  <text x="1228" y="633" fill="#171717" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="36" font-weight="800">Growth Queue</text>
+
+  <rect x="900" y="712" width="554" height="112" rx="22" fill="#171717"/>
+  <text x="936" y="779" fill="#FFFFFF" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="40" font-weight="800">Weekly GEO Brief</text>
+
+  <defs>
+    <linearGradient id="bg" x1="110" y1="90" x2="1490" y2="840" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFF9F5"/>
+      <stop offset="1" stop-color="#FFE6D8"/>
+    </linearGradient>
+  </defs>
+</svg>
+
