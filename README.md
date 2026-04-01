@@ -8,200 +8,184 @@
 
 > A GEO-first content writer that turns Dageno opportunity data into structured content packs for ongoing article generation, future landing pages, and agent-driven execution.
 
-## Positioning
+## What This Project Does
 
-This project is intentionally different from a traditional SEO content engine.
+This project helps a team answer one simple question:
 
-The companion project, `seo-geo-content-engine`, starts from keyword-side demand and content production.
+> "If AI tools are already talking about our category, what should we publish next so our brand gets included?"
 
-This project starts from **GEO evidence**:
+Instead of starting from a plain keyword list, this writer starts from **GEO evidence**:
 
-- AI answer gaps
-- source gaps
+- which prompts AI is already answering
+- where the brand is missing
+- which third-party pages AI is citing
+- which adjacent prompt ideas exist around the same topic
+- which SEO terms map to that opportunity
+
+The result is not just one article title.
+
+The result is a **content pack**: a small, prioritized set of writing opportunities that a team or agent can execute.
+
+## Why This Matters
+
+Most content tools tell teams what people search.
+
+This project tells teams something more useful for GEO:
+
+- where AI is already shaping the market narrative
+- where competitors or third-party sources are winning that narrative
+- where the brand is absent from high-value AI answers
+
+One of the most important insights here is:
+
+**a high-value GEO opportunity does not always have high prompt volume**
+
+That is exactly why Dageno data is useful.
+
+## About Dageno
+
+[Dageno](https://dageno.ai) is a GEO and AI visibility platform for brands that want to understand how AI systems such as ChatGPT, Gemini, Perplexity, Copilot, and Google AI products talk about their business.
+
+It helps teams monitor:
+
+- prompt-level brand visibility
+- prompt-level brand gaps and source gaps
 - response detail
-- citation URLs
-- prompt fanout
+- citation patterns
+- content opportunities
 
-Then it translates that GEO evidence into content production decisions.
+Open API docs:
 
-That is why the correct positioning for this repo is:
+- [Dageno Open API](https://open-api-docs.dageno.ai/2055134m0)
 
-**GEO Content Writer**
+This project uses Dageno as the data foundation for automated content writing decisions.
 
-This naming is intentionally aligned with the platform-side writing agent:
+## Who This Is For
 
-- platform agent: `content writer`
-- open project: `GEO Content Writer`
+This project is built for:
 
-## What Makes This Valuable
-
-The core Dageno value is not just "finding prompts."
-
-It is helping teams discover:
-
-- prompts where AI is repeatedly answering a high-value question
-- prompts where competitors or adjacent entities appear but your brand does not
-- prompts where source ecosystems are already formed without you
-- prompts where raw prompt volume may still look low, but the business value is high
-
-This matters because:
-
-**high-value content opportunities do not always have high prompt volume**
-
-That is one of the strongest GEO-specific signals this project can surface.
+- teams that want to automate GEO-driven article generation
+- agencies that want a repeatable GEO writing workflow for clients
+- marketers who need a simple answer to "what should we publish next?"
+- operators who want a content pack before they start writing
 
 ## Inputs
 
-This engine depends on a mix of Dageno-native data and extensible enrichment layers.
+At a simple level, the engine needs three kinds of inputs.
 
-### Required GEO inputs
+### 1. GEO opportunity data from Dageno
 
 - `List content opportunities`
 - `List prompts`
 - `List responses by prompt`
 - `Get response detail by prompt`
 - `List citation URLs by prompt`
-
-### GEO enrichment
-
 - `List query fanout by prompt`
 
-### SEO enrichment
+### 2. SEO enrichment
 
-- `Get keyword volume`
 - keyword extraction
 - keyword expansion
-- keyword intent normalization
-- future KD connector
+- `Get keyword volume` from the API
+
+In customer-facing language, this is **search volume**.
+
+### 3. Product positioning context
+
+The writer also needs a basic understanding of:
+
+- what the brand does
+- which category it wants to win
+- which commercial angle matters most
 
 ## Outputs
 
-The main output is not one article.
+The output is a **content pack**.
 
-The main output is a **content pack** that contains:
+A content pack usually includes:
 
-- opportunity tiers
-- selected prompt
-- prompt profile
-- evidence layer
-- fanout layer
-- SEO layer
-- recommended asset list
-- creation order
+- one selected prompt opportunity
+- a short explanation of why it matters
+- a fanout set of nearby prompt ideas
+- a search-volume view of related SEO phrases
+- a recommended asset list
+- a suggested writing order
 
-Then the user or an agent can choose:
+From there, a team can decide whether to generate:
 
-- article generation
-- future landing page generation
-- future supporting asset generation
+- a blog article
+- a landing page
+- a comparison page
+- a docs page
+- a community-style post
 
-## Why GEO Data Changes The Workflow
+## A Simple Customer Flow
 
-A normal SEO workflow often asks:
+Imagine a customer wants GEO-based article ideas.
 
-- what keyword has search demand
-- what page should be written
-
-This GEO-first workflow asks:
-
-- what high-value prompt is AI already answering
-- where is our brand missing
-- which sources are shaping the answer
-- what adjacent prompt demand exists
-- what content pack should be created to enter that answer space
-
-That is a much stronger story for Dageno than generic keyword research.
-
-## Flow Overview
+The workflow should feel this simple:
 
 ```mermaid
 flowchart TD
-    A["Inputs<br/>content opportunities, prompts, responses, response detail, citation URLs"] --> B["Opportunity Tiering<br/>High / Medium / Low"]
-    B --> C["Selected Prompt<br/>default to High first, user can override"]
-    C --> D["Prompt Profile<br/>topic, funnel, intentions, observed prompt volume"]
-    C --> E["Evidence Layer<br/>response count, mention gap, recurring entities, citation types"]
-    C --> F["Prompt Fanout<br/>adjacent prompt opportunities"]
-    C --> G["SEO Translation<br/>primary keyword, keyword cluster, volume, KD, intent"]
-    D --> H["Unified Decision Object"]
-    E --> H
-    F --> H
-    G --> H
-    H --> I["Recommended Asset List<br/>article, landing page, docs, comparison, community"]
-    I --> J["Creation Order<br/>what to publish first, second, third"]
-    J --> K["Execution Layer<br/>agent writes article or future landing page"]
+    A["Dageno finds a high-value prompt opportunity"] --> B["The writer checks how AI currently answers it"]
+    B --> C["The writer checks which pages AI is citing"]
+    C --> D["The writer expands the prompt into nearby questions"]
+    D --> E["The writer maps those questions to SEO search volume"]
+    E --> F["The writer outputs a content pack"]
+    F --> G["The team or agent writes the first article"]
 ```
 
-## End-to-End Content Flow
+## Example Input And Output
 
-### 1. Opportunity Tiering
+Here is a simple example of how the data moves.
 
-All prompts should first be classified into:
+### Input
 
-- `High Opportunity`
-- `Medium Opportunity`
-- `Low Opportunity`
+A customer wants article ideas around this prompt:
 
-The engine should default to `High` first.
+- `Enterprise AEO solutions for brand authority`
 
-### 2. Prompt Profile
+Dageno shows:
 
-For the selected prompt, capture:
+- high brand gap
+- high source gap
+- many AI responses
+- many cited third-party URLs
 
-- prompt id
-- prompt text
-- topic
-- funnel
-- intentions
-- observed prompt volume
+The writer then pulls:
 
-### 3. Evidence Layer
-
-Use:
-
-- response list
 - response detail
 - citation URLs
+- fanout queries
+- related SEO phrases and search volume
 
-To answer:
+### Output
 
-- is the gap real
-- is it stable
-- how is AI framing the topic
-- what entities are filling the space
-- what page types dominate the citation layer
+The engine returns a content pack such as:
 
-### 4. Fanout Layer
+1. `What Is an Enterprise AEO Solution?`
+2. `How to Evaluate Enterprise AEO Platforms`
+3. `Best Enterprise AEO Solutions for Brand Authority`
+4. `How to Measure Brand Authority in AI Answers`
+5. `Enterprise AEO Platform for Brand Authority`
 
-Use:
+This means the customer does not need to manually decide:
 
-- `List query fanout by prompt`
+- which angle to write
+- which query to expand
+- which article should come first
 
-To expand one prompt into adjacent prompt opportunities.
+The writer turns one GEO opportunity into a usable publishing queue.
 
-This is the bridge between:
+## End-to-End Content Logic
 
-- one opportunity
-- and a reusable content pack
+For customers, the whole flow can be understood in 5 steps:
 
-### 5. SEO Layer
-
-Use:
-
-- primary keyword extraction
-- keyword cluster expansion
-- `Get keyword volume`
-- future KD connector
-- intention mapping
-
-To turn GEO-side evidence into SEO-side decisions.
-
-### 6. Content Pack
-
-Combine the GEO layer and SEO layer into:
-
-- one reusable content pack
-- one recommended asset list
-- one creation order
+1. Dageno finds a strong GEO opportunity.
+2. The writer checks how AI is answering that topic now.
+3. The writer checks which sources AI trusts.
+4. The writer expands the topic into adjacent prompt and SEO opportunities.
+5. The writer outputs a prioritized content pack.
 
 ## Recommended Asset List Schema
 
