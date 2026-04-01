@@ -5,6 +5,16 @@ This file holds the detailed schema and rules for the content writer workflow.
 Use it as the technical reference.
 Do not duplicate this level of detail in the README or Skill unless needed.
 
+## Default Time Window
+
+The default operating mode should use **today's content opportunities**.
+
+Users should still be able to override the time window when needed, for example:
+
+- 7 days
+- 30 days
+- other custom windows supported by the execution layer
+
 ## Main Flow
 
 1. collect content opportunities

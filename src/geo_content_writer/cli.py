@@ -23,7 +23,7 @@ def build_parser() -> argparse.ArgumentParser:
     common = argparse.ArgumentParser(add_help=False)
     common.add_argument("--api-key", default=None, help="Override DAGENO_API_KEY")
     common.add_argument("--base-url", default="https://api.dageno.ai/business/api")
-    common.add_argument("--days", type=int, default=30, help="Time window for date-based workflows")
+    common.add_argument("--days", type=int, default=1, help="Time window for date-based workflows; defaults to today")
     common.add_argument("--limit", type=int, default=5, help="How many rows to show")
 
     subparsers = parser.add_subparsers(dest="command", required=True)

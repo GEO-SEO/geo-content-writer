@@ -52,6 +52,14 @@ Use this skill when a team wants to answer:
 This skill is not for generic article generation from scratch.
 It is for opportunity-driven writing based on Dageno evidence.
 
+By default, this workflow should start from **today's content opportunities**.
+
+If needed, the user can explicitly choose a different time window, such as:
+
+- last 7 days
+- last 30 days
+- another custom range supported by the execution layer
+
 ## Core Principle
 
 Keep this principle central:

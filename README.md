@@ -49,6 +49,9 @@ The output is a **content plan** that tells a team:
 - where to publish it
 - what should be written first
 
+By default, the writer should work from **today's content opportunities**.
+If needed, the time window can be expanded, for example to the last 7 or 30 days.
+
 ## Why This Matters
 
 Most SEO writing tools answer:
@@ -235,19 +238,25 @@ python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 export DAGENO_API_KEY="your-token"
-PYTHONPATH=src python -m geo_content_writer.cli content-opportunities --days 7
+PYTHONPATH=src python -m geo_content_writer.cli content-opportunities
 ```
 
 ### Full content pack
 
 ```bash
-PYTHONPATH=src python -m geo_content_writer.cli content-pack --days 7
+PYTHONPATH=src python -m geo_content_writer.cli content-pack
 ```
 
 ### Target one prompt
 
 ```bash
-PYTHONPATH=src python -m geo_content_writer.cli content-pack --days 7 --prompt-text "Enterprise AEO solutions for brand authority"
+PYTHONPATH=src python -m geo_content_writer.cli content-pack --prompt-text "Enterprise AEO solutions for brand authority"
+```
+
+### Change the time window when needed
+
+```bash
+PYTHONPATH=src python -m geo_content_writer.cli content-pack --days 7
 ```
 
 ## Project Structure
