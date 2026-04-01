@@ -3,13 +3,21 @@
 [![Docs](https://img.shields.io/badge/docs-Dageno%20Open%20API-informational)](https://open-api-docs.dageno.ai/2055134m0)
 [![Examples](https://img.shields.io/badge/examples-Live%20Outputs-lightgrey)](examples/live-30-day-example.md)
 
-# GEO Content Writer
+<div align="center">
+  <img src="assets/profile-avatar.svg" alt="Profile avatar" width="140" />
+  <h1>GEO Content Writer</h1>
+  <p><strong>Turn GEO opportunities into a repeatable publishing system.</strong></p>
+  <p>GEO Content Writer is a <strong>Content Writer Skill backed by a CLI runtime</strong>. It uses Dageno data to find high-value AI-search opportunities, explain why they matter, and turn them into a ready-to-use content plan.</p>
+  <p>
+    <a href="https://open-api-docs.dageno.ai/2055134m0">Open API Docs</a> •
+    <a href="skills/content-writer.md">Skill Instructions</a> •
+    <a href="references/pipeline-spec.md">Workflow Reference</a> •
+    <a href="examples/live-30-day-example.md">Live Example</a> •
+    <a href="https://dageno.ai">Book a Demo</a>
+  </p>
+</div>
 
 ![GEO Content Writer Cover](assets/cover-v3.png)
-
-> Turn GEO opportunities into a repeatable publishing system.
->
-> GEO Content Writer is a **Content Writer Skill backed by a CLI runtime**. It uses Dageno data to find high-value AI-search opportunities, explain why they matter, and turn them into a ready-to-use content plan.
 
 ## Quick Links
 
