@@ -1,6 +1,5 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![Skill](https://img.shields.io/badge/skill-GEO%20Content%20Writer-blue)](skills/content-writer.md)
-[![Workflow](https://img.shields.io/badge/workflow-Inputs%20%E2%86%92%20Evidence%20%E2%86%92%20Fanout%20%E2%86%92%20Content%20Pack-orange)](references/pipeline-spec.md)
+[![Skill](https://img.shields.io/badge/skill-Content%20Writer-blue)](skills/content-writer.md)
 [![Docs](https://img.shields.io/badge/docs-Dageno%20Open%20API-informational)](https://open-api-docs.dageno.ai/2055134m0)
 [![Examples](https://img.shields.io/badge/examples-Live%20Outputs-lightgrey)](examples/live-30-day-example.md)
 
@@ -8,15 +7,13 @@
 
 ![GEO Content Writer Cover](assets/cover-v3.png)
 
-> A GEO-first content writer that turns Dageno opportunity data into structured content packs for ongoing article generation, future landing pages, and agent-driven execution.
+> Turn GEO opportunities into a repeatable publishing system.
 >
-> It is designed for teams that want to turn GEO opportunities into a repeatable publishing system, not just generate one-off articles.
->
-> In practice, this is a **Content Writer Skill backed by a CLI runtime**: the skill defines the workflow, and the CLI executes real Dageno/Open API steps.
+> GEO Content Writer is a **Content Writer Skill backed by a CLI runtime**. It uses Dageno data to find high-value AI-search opportunities, explain why they matter, and turn them into a ready-to-use content plan.
 
 ## Quick Links
 
-- [Open API Docs](https://open-api-docs.dageno.ai/2055134m0)
+- [Dageno Open API](https://open-api-docs.dageno.ai/2055134m0)
 - [Skill Instructions](skills/content-writer.md)
 - [Workflow Reference](references/pipeline-spec.md)
 - [Live Example Output](examples/live-30-day-example.md)
@@ -25,65 +22,72 @@
 
 ## What This Project Does
 
-This project helps a team answer one simple question:
+This project helps teams answer a simple question:
 
-> "If AI tools are already talking about our category, what should we publish next so our brand gets included?"
+> If AI is already talking about a topic that matters to the business, what should be published next so the brand gets included?
 
-Instead of starting from a plain keyword list, this writer starts from **GEO evidence**:
+Instead of starting from a plain keyword list, GEO Content Writer starts from:
 
-- which prompts AI is already answering
-- where the brand is missing
-- which third-party pages AI is citing
-- which adjacent prompt ideas exist around the same topic
-- which SEO terms map to that opportunity
+- prompt-level brand gaps
+- prompt-level source gaps
+- real AI responses
+- cited URLs
+- fanout prompts
+- related search demand
 
-The result is not just one article title.
+The output is not just one article title.
 
-The result is a **content pack**: a small, prioritized set of writing opportunities that a team or agent can execute.
+The output is a **content plan** that tells a team:
+
+- what to write
+- why it matters
+- where to publish it
+- what should be written first
 
 ## Why This Matters
 
-Most content tools tell teams what people search.
+Most SEO writing tools answer:
 
-This project tells teams something more useful for GEO:
+- what keyword should be targeted
+
+This project answers harder and more valuable questions:
 
 - where AI is already shaping the market narrative
-- where competitors or third-party sources are winning that narrative
-- where the brand is absent from high-value AI answers
+- where the brand is missing from high-value AI answers
+- which third-party sources are winning that narrative
+- which nearby topics deserve new content
+- how to turn one GEO opportunity into a full publishing queue
 
-One of the most important insights here is:
+One important insight behind this workflow is:
 
 **a high-value GEO opportunity does not always have high prompt volume**
 
-That is exactly why Dageno data is useful.
+That is one of the clearest examples of why Dageno data is valuable.
 
 ## About Dageno
 
-[Dageno](https://dageno.ai) is a GEO and AI visibility platform for brands that want to understand how AI systems such as ChatGPT, Gemini, Perplexity, Copilot, and Google AI products talk about their business.
+[Dageno](https://dageno.ai) is a GEO and AI visibility platform for brands that want to understand how AI systems like ChatGPT, Gemini, Perplexity, Copilot, and Google AI products talk about their business.
 
-It helps teams monitor:
+Dageno helps teams monitor:
 
 - prompt-level brand visibility
-- prompt-level brand gaps and source gaps
+- brand gaps and source gaps
 - response detail
 - citation patterns
 - content opportunities
-
-Open API docs:
-
-- [Dageno Open API](https://open-api-docs.dageno.ai/2055134m0)
+- fanout prompt opportunities
 
 This project uses Dageno as the data foundation for automated content writing decisions.
 
 ## Contact
 
-For teams evaluating Dageno or this workflow, the public contact paths currently shown on the Dageno website footer are:
+Public contact paths currently shown on the Dageno website footer:
 
 - [Schedule a demo](https://dageno.ai)
 - [Slack Community](https://join.slack.com)
 - [About Dageno](https://dageno.ai)
 
-The footer also states that support is available across:
+The footer also indicates support availability across:
 
 - Email
 - Chat
@@ -94,43 +98,12 @@ The footer also states that support is available across:
 
 This project is built for:
 
-- teams that want to automate GEO-driven article generation
+- marketing teams that want GEO-based article ideas
 - agencies that want a repeatable GEO writing workflow for clients
-- marketers who need a simple answer to "what should we publish next?"
-- operators who want a content pack before they start writing
-
-## Inputs
-
-At a simple level, the engine needs three kinds of inputs.
-
-### 1. GEO opportunity data from Dageno
-
-- `List content opportunities`
-- `List prompts`
-- `List responses by prompt`
-- `Get response detail by prompt`
-- `List citation URLs by prompt`
-- `List query fanout by prompt`
-
-### 2. SEO enrichment
-
-- keyword extraction
-- keyword expansion
-- `Get keyword volume` from the API
-
-In customer-facing language, this is **search volume**.
-
-### 3. Product positioning context
-
-The writer also needs a basic understanding of:
-
-- what the brand does
-- which category it wants to win
-- which commercial angle matters most
+- operators who need a content plan before they start writing
+- teams that want to automate content generation without losing strategic context
 
 ## 10-Second View
-
-For a non-technical customer, the workflow can be reduced to this:
 
 | Input | Output |
 |---|---|
@@ -141,28 +114,7 @@ For a non-technical customer, the workflow can be reduced to this:
 | search volume | the SEO demand around those opportunities |
 | one approved topic | the first article to write |
 
-## Outputs
-
-The output is a **content pack**.
-
-A content pack usually includes:
-
-- one selected prompt opportunity
-- a short explanation of why it matters
-- a fanout set of nearby prompt ideas
-- a search-volume view of related SEO phrases
-- a recommended asset list
-- a suggested writing order
-
-From there, a team can decide whether to generate:
-
-- a blog article
-- a landing page
-- a comparison page
-- a docs page
-- a community-style post
-
-## A Simple Customer Flow
+## Simple Customer Flow
 
 Imagine a customer wants GEO-based article ideas.
 
@@ -172,19 +124,17 @@ The workflow should feel this simple:
 flowchart TD
     A["Dageno finds a high-value prompt opportunity"] --> B["The writer checks how AI currently answers it"]
     B --> C["The writer checks which pages AI is citing"]
-    C --> D["The writer expands the prompt into nearby questions"]
-    D --> E["The writer maps those questions to SEO search volume"]
-    E --> F["The writer outputs a content pack"]
+    C --> D["The writer expands the topic into nearby content ideas"]
+    D --> E["The writer maps those ideas to search volume"]
+    E --> F["The writer outputs a content plan"]
     F --> G["The team or agent writes the first article"]
 ```
 
 ## Example Input And Output
 
-Here is a simple example of how the data moves.
-
 ### Input
 
-A customer wants article ideas around this prompt:
+A customer wants GEO-driven article ideas around:
 
 - `Enterprise AEO solutions for brand authority`
 
@@ -204,7 +154,7 @@ The writer then pulls:
 
 ### Output
 
-The engine returns a content pack such as:
+The engine returns a content plan such as:
 
 1. `What Is an Enterprise AEO Solution?`
 2. `How to Evaluate Enterprise AEO Platforms`
@@ -271,28 +221,61 @@ This makes the workflow easy to operationalize:
 3. approve the top item
 4. generate the first article
 
-## End-to-End Content Logic
+## Inputs
 
-For customers, the whole flow can be understood in 5 steps:
+At a simple level, the engine needs three kinds of inputs.
 
-1. Dageno finds a strong GEO opportunity.
-2. The writer checks how AI is answering that topic now.
-3. The writer checks which sources AI trusts.
-4. The writer expands the topic into adjacent prompt and SEO opportunities.
-5. The writer outputs a prioritized content pack.
+### 1. GEO opportunity data from Dageno
+
+- `List content opportunities`
+- `List prompts`
+- `List responses by prompt`
+- `Get response detail by prompt`
+- `List citation URLs by prompt`
+- `List query fanout by prompt`
+
+### 2. SEO enrichment
+
+- keyword extraction
+- keyword expansion
+- `Get keyword volume`
+
+In customer-facing language, this is **search volume**.
+
+### 3. Product positioning context
+
+The writer also needs a basic understanding of:
+
+- what the brand does
+- which category it wants to win
+- which commercial angle matters most
+
+## Outputs
+
+The primary output is a **content plan**.
+
+A content plan usually includes:
+
+- one selected prompt opportunity
+- a short explanation of why it matters
+- a fanout set of nearby prompt ideas
+- a search-volume view of related SEO phrases
+- a recommended asset list
+- a suggested writing order
+
+From there, a team can decide whether to generate:
+
+- a blog article
+- a landing page
+- a comparison page
+- a docs page
+- a community-style post
 
 ## What The Customer Actually Gets
 
 The most useful output is a **content plan table**.
 
 This is the working queue that a marketing team or writing agent can use directly.
-
-Instead of only giving a keyword or a topic, the system gives:
-
-- what to write
-- why it matters
-- where it should be published
-- which item should be written first
 
 ### Example Content Plan
 
@@ -325,9 +308,9 @@ If a team wants the detailed version, the content plan table can include:
 | `status` | planned / queued / writing / published |
 | `notes` | optional notes |
 
-## GEO Data Value, Explicitly
+## GEO Data Value
 
-This project should make Dageno's GEO value obvious.
+This project makes Dageno's GEO value explicit.
 
 The platform is useful because it helps answer questions such as:
 
@@ -341,7 +324,7 @@ That is more valuable than a plain keyword list.
 
 ## GEO Writing Standard
 
-When an asset row is turned into actual content, follow these rules:
+When a row from the content plan is turned into actual content, follow these rules:
 
 1. Start with a direct definition or answer.
 2. Make each H2 understandable without the rest of the page.
@@ -352,7 +335,7 @@ When an asset row is turned into actual content, follow these rules:
 7. Use FAQ as an extraction layer.
 8. Write in a way that can be quoted by AI systems as a standalone answer.
 
-## Live Commands
+## Quick Start
 
 ### Basic opportunity view
 
@@ -377,7 +360,7 @@ PYTHONPATH=src python -m geo_content_writer.cli content-pack --days 7
 PYTHONPATH=src python -m geo_content_writer.cli content-pack --days 7 --prompt-text "Enterprise AEO solutions for brand authority"
 ```
 
-## Repo Structure
+## Project Structure
 
 ```text
 geo-content-writer/
@@ -394,6 +377,18 @@ geo-content-writer/
 ├── examples/
 └── src/
 ```
+
+## Technical Notes
+
+This project is best understood as:
+
+- a **Content Writer Skill** for agent workflows
+- backed by a **CLI runtime** for real API execution
+
+That means:
+
+- the skill defines the workflow and writing rules
+- the CLI executes the Dageno and SEO data steps
 
 ## License
 
