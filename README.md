@@ -16,7 +16,10 @@
     <a href="skills/content-writer.md">Skill Instructions</a> •
     <a href="references/pipeline-spec.md">Workflow Reference</a> •
     <a href="examples/live-30-day-example.md">Live Example</a> •
-    <a href="https://dageno.ai">Book a Demo</a>
+    <a href="https://dageno.ai">Book a Demo</a> •
+    <a href="https://www.linkedin.com/company/dageno-ai">LinkedIn</a> •
+    <a href="https://x.com/dageno_ai">X</a> •
+    <a href="https://join.slack.com/t/dagenoai/shared_invite/zt-3t3pk34g4-2vpE90vKJ~jBTc31Z0bT8A">Slack Community</a>
   </p>
 </div>
 
@@ -30,6 +33,9 @@
 - [Live Example Output](examples/live-30-day-example.md)
 - [Cursor MCP Example](examples/cursor-mcp.json)
 - [Book a Demo](https://dageno.ai)
+- [LinkedIn](https://www.linkedin.com/company/dageno-ai)
+- [X](https://x.com/dageno_ai)
+- [Slack Community](https://join.slack.com/t/dagenoai/shared_invite/zt-3t3pk34g4-2vpE90vKJ~jBTc31Z0bT8A)
 
 ## What This Project Does
 
@@ -95,7 +101,9 @@ This project uses Dageno as the data foundation for automated content writing de
 Public contact paths currently shown on the Dageno website footer:
 
 - [Schedule a demo](https://dageno.ai)
-- [Slack Community](https://join.slack.com)
+- [LinkedIn](https://www.linkedin.com/company/dageno-ai)
+- [X](https://x.com/dageno_ai)
+- [Slack Community](https://join.slack.com/t/dagenoai/shared_invite/zt-3t3pk34g4-2vpE90vKJ~jBTc31Z0bT8A)
 - [About Dageno](https://dageno.ai)
 
 The footer also indicates support availability across:
