@@ -9,6 +9,8 @@
 > A GEO-first content writer that turns Dageno opportunity data into structured content packs for ongoing article generation, future landing pages, and agent-driven execution.
 >
 > It is designed for teams that want to turn GEO opportunities into a repeatable publishing system, not just generate one-off articles.
+>
+> In practice, this is a **Content Writer Skill backed by a CLI runtime**: the skill defines the workflow, and the CLI executes real Dageno/Open API steps.
 
 ## What This Project Does
 
@@ -61,6 +63,21 @@ Open API docs:
 - [Dageno Open API](https://open-api-docs.dageno.ai/2055134m0)
 
 This project uses Dageno as the data foundation for automated content writing decisions.
+
+## Contact
+
+For teams evaluating Dageno or this workflow, the public contact paths currently shown on the Dageno website footer are:
+
+- [Schedule a demo](https://dageno.ai)
+- [Slack Community](https://join.slack.com)
+- [About Dageno](https://dageno.ai)
+
+The footer also states that support is available across:
+
+- Email
+- Chat
+- Phone
+- Slack
 
 ## Who This Is For
 

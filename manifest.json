@@ -2,7 +2,7 @@
   "name": "geo-content-writer",
   "version": "0.4.0",
   "display_name": "GEO Content Writer",
-  "description": "Turn Dageno GEO opportunity data into content packs and writing-ready assets by combining response evidence, citation evidence, prompt fanout, keyword demand, and structured asset decisions.",
+  "description": "A Content Writer Skill backed by a CLI runtime. Turn Dageno GEO opportunity data into content packs and writing-ready assets by combining response evidence, citation evidence, prompt fanout, keyword demand, and structured asset decisions.",
   "author": {
     "name": "GEO-SEO",
     "website": "https://github.com/GEO-SEO/geo-content-writer"
