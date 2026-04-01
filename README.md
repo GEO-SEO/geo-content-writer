@@ -187,24 +187,47 @@ For customers, the whole flow can be understood in 5 steps:
 4. The writer expands the topic into adjacent prompt and SEO opportunities.
 5. The writer outputs a prioritized content pack.
 
-## Recommended Asset List Schema
+## What The Customer Actually Gets
 
-This table is the operational core of the system.
+The most useful output is a **content plan table**.
+
+This is the working queue that a marketing team or writing agent can use directly.
+
+Instead of only giving a keyword or a topic, the system gives:
+
+- what to write
+- why it matters
+- where it should be published
+- which item should be written first
+
+### Example Content Plan
+
+| Title | Type | Publish Surface | Why This Matters | Priority |
+|---|---|---|---|---|
+| What Is an Enterprise AEO Solution? | Article | Website blog | AI keeps answering this question, but the brand is still missing | High |
+| How to Evaluate Enterprise AEO Platforms | Article | Website blog | This is a strong buyer-intent angle close to solution selection | High |
+| Best Enterprise AEO Solutions for Brand Authority | Article | Website blog or third-party article | AI already cites roundup-style content in this topic area | High |
+| How to Measure Brand Authority in AI Answers | Article | Website blog | This helps turn abstract authority into measurable outcomes | Medium |
+| Enterprise AEO Platform for Brand Authority | Landing page | Landing page | This can become the commercial conversion page later | Medium |
+
+### Full Table Structure
+
+If a team wants the detailed version, the content plan table can include:
 
 | Column | Meaning |
 |---|---|
-| `asset_id` | unique row id |
-| `source_prompt` | source seed prompt |
+| `asset_id` | internal row id |
+| `source_prompt` | the GEO prompt that created this plan |
 | `opportunity_tier` | High / Medium / Low |
-| `asset_title` | recommended title |
-| `asset_type` | article / landing_page / docs / comparison / community |
-| `recommended_publish_surface` | where to publish |
-| `target_intent` | Transactional / Commercial / Informational / Navigational |
-| `primary_angle` | main angle |
-| `why_exists` | why this asset exists |
-| `derived_from` | normalized source signals |
-| `writing_inputs` | required writing inputs |
-| `priority` | high / medium / low |
+| `asset_title` | suggested title |
+| `asset_type` | article / landing page / docs / comparison / community |
+| `recommended_publish_surface` | where the content should be published |
+| `target_intent` | the search or buying intent behind it |
+| `primary_angle` | the main angle of the piece |
+| `why_exists` | the reason this item is in the plan |
+| `derived_from` | the key signals that created the idea |
+| `writing_inputs` | the data the writer should use |
+| `priority` | what should be written first |
 | `status` | planned / queued / writing / published |
 | `notes` | optional notes |
 
