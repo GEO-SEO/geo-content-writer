@@ -53,7 +53,7 @@ Do not duplicate this level of detail in the README or Skill unless needed.
 
 - primary keyword
 - keyword cluster
-- search volume
+- search volume from Dageno Open API (`Get keyword volume`)
 - future KD
 - intention mapping
 

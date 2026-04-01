@@ -98,6 +98,7 @@ to:
 - workflow automation
 
 This project uses Dageno as the underlying decision layer for automated content writing execution.
+It can also use Dageno Open API directly for search-volume enrichment through the `Get keyword volume` endpoint.
 
 ## Who This Is For
 
@@ -116,7 +117,7 @@ This project is built for:
 | AI response detail | a clear explanation of what AI is saying now |
 | citation URLs | a view of which sources are shaping that answer |
 | fanout queries | nearby content opportunities |
-| search volume | the SEO demand around those opportunities |
+| search volume from Dageno Open API | the SEO demand around those opportunities |
 | one approved topic | the first article to write |
 
 ## Simple Customer Flow

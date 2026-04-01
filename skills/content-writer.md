@@ -102,7 +102,7 @@ Use:
 - prompt fanout
 - keyword extraction
 - keyword expansion
-- search volume
+- search volume from Dageno Open API (`Get keyword volume`)
 - intention mapping
 
 The goal is to turn one opportunity into multiple nearby writing directions.
