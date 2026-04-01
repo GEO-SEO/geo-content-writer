@@ -135,46 +135,6 @@ flowchart TD
     F --> G["The team or agent writes the first article"]
 ```
 
-## Example Input And Output
-
-### Input
-
-A customer wants GEO-driven article ideas around:
-
-- `Enterprise AEO solutions for brand authority`
-
-Dageno shows:
-
-- high brand gap
-- high source gap
-- many AI responses
-- many cited third-party URLs
-
-The writer then pulls:
-
-- response detail
-- citation URLs
-- fanout queries
-- related SEO phrases and search volume
-
-### Output
-
-The engine returns a content plan such as:
-
-1. `What Is an Enterprise AEO Solution?`
-2. `How to Evaluate Enterprise AEO Platforms`
-3. `Best Enterprise AEO Solutions for Brand Authority`
-4. `How to Measure Brand Authority in AI Answers`
-5. `Enterprise AEO Platform for Brand Authority`
-
-This means the customer does not need to manually decide:
-
-- which angle to write
-- which query to expand
-- which article should come first
-
-The writer turns one GEO opportunity into a usable publishing queue.
-
 ## Real Example
 
 Here is a real-style example of how a team could use this workflow.
@@ -226,92 +186,8 @@ This makes the workflow easy to operationalize:
 3. approve the top item
 4. generate the first article
 
-## Inputs
-
-At a simple level, the engine needs three kinds of inputs.
-
-### 1. GEO opportunity data from Dageno
-
-- `List content opportunities`
-- `List prompts`
-- `List responses by prompt`
-- `Get response detail by prompt`
-- `List citation URLs by prompt`
-- `List query fanout by prompt`
-
-### 2. SEO enrichment
-
-- keyword extraction
-- keyword expansion
-- `Get keyword volume`
-
-In customer-facing language, this is **search volume**.
-
-### 3. Product positioning context
-
-The writer also needs a basic understanding of:
-
-- what the brand does
-- which category it wants to win
-- which commercial angle matters most
-
-## Outputs
-
-The primary output is a **content plan**.
-
-A content plan usually includes:
-
-- one selected prompt opportunity
-- a short explanation of why it matters
-- a fanout set of nearby prompt ideas
-- a search-volume view of related SEO phrases
-- a recommended asset list
-- a suggested writing order
-
-From there, a team can decide whether to generate:
-
-- a blog article
-- a landing page
-- a comparison page
-- a docs page
-- a community-style post
-
-## What The Customer Actually Gets
-
-The most useful output is a **content plan table**.
-
-This is the working queue that a marketing team or writing agent can use directly.
-
-### Example Content Plan
-
-| Title | Type | Publish Surface | Why This Matters | Priority |
-|---|---|---|---|---|
-| What Is an Enterprise AEO Solution? | Article | Website blog | AI keeps answering this question, but the brand is still missing | High |
-| How to Evaluate Enterprise AEO Platforms | Article | Website blog | This is a strong buyer-intent angle close to solution selection | High |
-| Best Enterprise AEO Solutions for Brand Authority | Article | Website blog or third-party article | AI already cites roundup-style content in this topic area | High |
-| How to Measure Brand Authority in AI Answers | Article | Website blog | This helps turn abstract authority into measurable outcomes | Medium |
-| Enterprise AEO Platform for Brand Authority | Landing page | Landing page | This can become the commercial conversion page later | Medium |
-
-### Full Table Structure
-
-If a team wants the detailed version, the content plan table can include:
-
-| Column | Meaning |
-|---|---|
-| `asset_id` | internal row id |
-| `source_prompt` | the GEO prompt that created this plan |
-| `opportunity_tier` | High / Medium / Low |
-| `asset_title` | suggested title |
-| `asset_type` | article / landing page / docs / comparison / community |
-| `recommended_publish_surface` | where the content should be published |
-| `target_intent` | the search or buying intent behind it |
-| `primary_angle` | the main angle of the piece |
-| `why_exists` | the reason this item is in the plan |
-| `derived_from` | the key signals that created the idea |
-| `writing_inputs` | the data the writer should use |
-| `priority` | what should be written first |
-| `status` | planned / queued / writing / published |
-| `notes` | optional notes |
+This content plan is the main customer-facing output of the system.
+It gives the team a prioritized publishing queue rather than a single article idea.
 
 ## GEO Data Value
 
@@ -326,19 +202,6 @@ The platform is useful because it helps answer questions such as:
 - which content assets should exist before writing begins
 
 That is more valuable than a plain keyword list.
-
-## GEO Writing Standard
-
-When a row from the content plan is turned into actual content, follow these rules:
-
-1. Start with a direct definition or answer.
-2. Make each H2 understandable without the rest of the page.
-3. Put the answer before the explanation.
-4. Keep one core idea per paragraph.
-5. Prefer lists, tables, steps, and comparisons when useful.
-6. Name entities and capabilities explicitly.
-7. Use FAQ as an extraction layer.
-8. Write in a way that can be quoted by AI systems as a standalone answer.
 
 ## Quick Start
 
@@ -385,15 +248,13 @@ geo-content-writer/
 
 ## Technical Notes
 
-This project is best understood as:
-
-- a **Content Writer Skill** for agent workflows
-- backed by a **CLI runtime** for real API execution
+This project is best understood as a **Content Writer Skill** backed by a **CLI runtime**.
 
 That means:
 
 - the skill defines the workflow and writing rules
 - the CLI executes the Dageno and SEO data steps
+- the detailed schema and rules live in [references/pipeline-spec.md](references/pipeline-spec.md)
 
 ## License
 
