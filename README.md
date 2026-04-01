@@ -7,6 +7,8 @@
 ![GEO Content Writer Cover](assets/cover-v3.png)
 
 > A GEO-first content writer that turns Dageno opportunity data into structured content packs for ongoing article generation, future landing pages, and agent-driven execution.
+>
+> It is designed for teams that want to turn GEO opportunities into a repeatable publishing system, not just generate one-off articles.
 
 ## What This Project Does
 
