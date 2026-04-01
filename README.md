@@ -5,27 +5,20 @@
 
 # GEO Content Writer
 
-<table>
-  <tr>
-    <td width="220" valign="top">
-      <img src="assets/profile-photo.png" alt="Profile photo" width="180" />
-    </td>
-    <td valign="top">
-      <h3>content writer</h3>
-      <p><strong>Turn GEO opportunities into a repeatable publishing system.</strong></p>
-      <p>GEO Content Writer is a <strong>Content Writer Skill backed by a CLI runtime</strong>. It uses Dageno data to find high-value AI-search opportunities, explain why they matter, and turn them into a ready-to-use content plan.</p>
-      <p><strong>Best for:</strong> GEO teams, agencies, AI visibility operators, and brands that want to automate article planning from real AI-search gaps.</p>
-      <p><strong>Core output:</strong> one GEO opportunity in, one ready-to-use content plan out.</p>
-      <p>
-        <a href="https://open-api-docs.dageno.ai/2055134m0">Open API Docs</a> •
-        <a href="skills/content-writer.md">Skill Instructions</a> •
-        <a href="references/pipeline-spec.md">Workflow Reference</a> •
-        <a href="examples/live-30-day-example.md">Live Example</a> •
-        <a href="https://dageno.ai">Book a Demo</a>
-      </p>
-    </td>
-  </tr>
-</table>
+<div align="center">
+  <h2>content writer</h2>
+  <p><strong>Turn GEO opportunities into a repeatable publishing system.</strong></p>
+  <p>GEO Content Writer is a <strong>Content Writer Skill backed by a CLI runtime</strong>. It uses Dageno data to find high-value AI-search opportunities, explain why they matter, and turn them into a ready-to-use content plan.</p>
+  <p><strong>Best for:</strong> GEO teams, agencies, AI visibility operators, and brands that want to automate article planning from real AI-search gaps.</p>
+  <p><strong>Core output:</strong> one GEO opportunity in, one ready-to-use content plan out.</p>
+  <p>
+    <a href="https://open-api-docs.dageno.ai/2055134m0">Open API Docs</a> •
+    <a href="skills/content-writer.md">Skill Instructions</a> •
+    <a href="references/pipeline-spec.md">Workflow Reference</a> •
+    <a href="examples/live-30-day-example.md">Live Example</a> •
+    <a href="https://dageno.ai">Book a Demo</a>
+  </p>
+</div>
 
 ![GEO Content Writer Cover](assets/cover-v3.png)
 
