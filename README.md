@@ -1,6 +1,8 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Skill](https://img.shields.io/badge/skill-GEO%20Content%20Writer-blue)](skills/content-writer.md)
 [![Workflow](https://img.shields.io/badge/workflow-Inputs%20%E2%86%92%20Evidence%20%E2%86%92%20Fanout%20%E2%86%92%20Content%20Pack-orange)](references/pipeline-spec.md)
+[![Docs](https://img.shields.io/badge/docs-Dageno%20Open%20API-informational)](https://open-api-docs.dageno.ai/2055134m0)
+[![Examples](https://img.shields.io/badge/examples-Live%20Outputs-lightgrey)](examples/live-30-day-example.md)
 
 # GEO Content Writer
 
@@ -11,6 +13,15 @@
 > It is designed for teams that want to turn GEO opportunities into a repeatable publishing system, not just generate one-off articles.
 >
 > In practice, this is a **Content Writer Skill backed by a CLI runtime**: the skill defines the workflow, and the CLI executes real Dageno/Open API steps.
+
+## Quick Links
+
+- [Open API Docs](https://open-api-docs.dageno.ai/2055134m0)
+- [Skill Instructions](skills/content-writer.md)
+- [Workflow Reference](references/pipeline-spec.md)
+- [Live Example Output](examples/live-30-day-example.md)
+- [Cursor MCP Example](examples/cursor-mcp.json)
+- [Book a Demo](https://dageno.ai)
 
 ## What This Project Does
 
