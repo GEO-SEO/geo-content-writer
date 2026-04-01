@@ -12,7 +12,7 @@
 
 This project is intentionally different from a traditional SEO content engine.
 
-Your other project, `seo-geo-content-engine`, starts from keyword-side demand and content production.
+The companion project, `seo-geo-content-engine`, starts from keyword-side demand and content production.
 
 This project starts from **GEO evidence**:
 
@@ -100,7 +100,7 @@ Then the user or an agent can choose:
 A normal SEO workflow often asks:
 
 - what keyword has search demand
-- what page should we write
+- what page should be written
 
 This GEO-first workflow asks:
 
