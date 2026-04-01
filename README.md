@@ -1,12 +1,12 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![Skill](https://img.shields.io/badge/skill-GEO%20Content%20Opportunity%20Engine-blue)](skills/geo-content-opportunity-engine.md)
+[![Skill](https://img.shields.io/badge/skill-GEO%20Content%20Writer-blue)](skills/content-writer.md)
 [![Workflow](https://img.shields.io/badge/workflow-Inputs%20%E2%86%92%20Evidence%20%E2%86%92%20Fanout%20%E2%86%92%20Content%20Pack-orange)](references/pipeline-spec.md)
 
-# GEO Content Opportunity Engine
+# GEO Content Writer
 
-![GEO Content Opportunity Engine Cover](assets/cover-v3.png)
+![GEO Content Writer Cover](assets/cover-v3.png)
 
-> A GEO-first content engine that turns Dageno opportunity data into structured content packs for ongoing article generation, future landing pages, and agent-driven execution.
+> A GEO-first content writer that turns Dageno opportunity data into structured content packs for ongoing article generation, future landing pages, and agent-driven execution.
 
 ## Positioning
 
@@ -26,7 +26,12 @@ Then it translates that GEO evidence into content production decisions.
 
 That is why the correct positioning for this repo is:
 
-**GEO Content Opportunity Engine**
+**GEO Content Writer**
+
+This naming is intentionally aligned with the platform-side writing agent:
+
+- platform agent: `content writer`
+- open project: `GEO Content Writer`
 
 ## What Makes This Valuable
 
@@ -251,37 +256,37 @@ When an asset row is turned into actual content, follow these rules:
 ### Basic opportunity view
 
 ```bash
-cd geo-content-opportunity-engine
+cd geo-content-writer
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 export DAGENO_API_KEY="your-token"
-PYTHONPATH=src python -m geo_content_opportunity_engine.cli content-opportunities --days 7
+PYTHONPATH=src python -m geo_content_writer.cli content-opportunities --days 7
 ```
 
 ### Full content pack
 
 ```bash
-PYTHONPATH=src python -m geo_content_opportunity_engine.cli content-pack --days 7
+PYTHONPATH=src python -m geo_content_writer.cli content-pack --days 7
 ```
 
 ### Target one prompt
 
 ```bash
-PYTHONPATH=src python -m geo_content_opportunity_engine.cli content-pack --days 7 --prompt-text "Enterprise AEO solutions for brand authority"
+PYTHONPATH=src python -m geo_content_writer.cli content-pack --days 7 --prompt-text "Enterprise AEO solutions for brand authority"
 ```
 
 ## Repo Structure
 
 ```text
-geo-content-opportunity-engine/
+geo-content-writer/
 ├── README.md
 ├── LICENSE
 ├── manifest.json
 ├── agents/
 │   └── openai.yaml
 ├── skills/
-│   └── geo-content-opportunity-engine.md
+│   └── content-writer.md
 ├── references/
 │   └── pipeline-spec.md
 ├── assets/

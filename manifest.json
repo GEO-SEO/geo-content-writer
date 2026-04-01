@@ -1,11 +1,11 @@
 {
-  "name": "geo-content-opportunity-engine",
+  "name": "geo-content-writer",
   "version": "0.4.0",
-  "display_name": "GEO Content Opportunity Engine",
-  "description": "Turn Dageno GEO opportunity data into content packs by combining response evidence, citation evidence, prompt fanout, keyword demand, and structured asset decisions.",
+  "display_name": "GEO Content Writer",
+  "description": "Turn Dageno GEO opportunity data into content packs and writing-ready assets by combining response evidence, citation evidence, prompt fanout, keyword demand, and structured asset decisions.",
   "author": {
     "name": "GEO-SEO",
-    "website": "https://github.com/GEO-SEO/geo-content-opportunity-engine"
+    "website": "https://github.com/GEO-SEO/geo-content-writer"
   },
   "tags": [
     "dageno",
@@ -24,7 +24,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/GEO-SEO/geo-content-opportunity-engine"
+    "url": "https://github.com/GEO-SEO/geo-content-writer"
   },
   "integrations": {
     "dageno_api": {
