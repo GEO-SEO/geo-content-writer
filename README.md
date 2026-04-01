@@ -98,6 +98,19 @@ The writer also needs a basic understanding of:
 - which category it wants to win
 - which commercial angle matters most
 
+## 10-Second View
+
+For a non-technical customer, the workflow can be reduced to this:
+
+| Input | Output |
+|---|---|
+| one high-value GEO prompt opportunity from Dageno | one ready-to-use content plan |
+| AI response detail | a clear explanation of what AI is saying now |
+| citation URLs | a view of which sources are shaping that answer |
+| fanout queries | nearby content opportunities |
+| search volume | the SEO demand around those opportunities |
+| one approved topic | the first article to write |
+
 ## Outputs
 
 The output is a **content pack**.
