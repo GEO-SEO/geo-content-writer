@@ -99,23 +99,6 @@ to:
 
 This project uses Dageno as the underlying decision layer for automated content writing execution.
 
-## Contact
-
-Public contact paths currently shown on the Dageno website footer:
-
-- [Schedule a demo](https://dageno.ai)
-- [LinkedIn](https://www.linkedin.com/company/dageno-ai)
-- [X](https://x.com/dageno_ai)
-- [Slack Community](https://join.slack.com/t/dagenoai/shared_invite/zt-3t3pk34g4-2vpE90vKJ~jBTc31Z0bT8A)
-- [About Dageno](https://dageno.ai)
-
-The footer also indicates support availability across:
-
-- Email
-- Chat
-- Phone
-- Slack
-
 ## Who This Is For
 
 This project is built for:
