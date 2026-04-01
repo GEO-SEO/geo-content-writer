@@ -127,13 +127,35 @@ The workflow should feel this simple:
 
 ```mermaid
 flowchart LR
-    A["1. Dageno finds a high-value GEO opportunity"] --> B["2. The writer reads AI response detail"]
-    B --> C["3. The writer checks cited pages and sources"]
-    C --> D["4. The writer expands nearby prompt ideas with fanout"]
-    D --> E["5. The writer maps those ideas to SEO search volume"]
-    E --> F["6. The writer builds a content plan"]
-    F --> G["7. The team or agent writes the first article"]
+    subgraph A["Input"]
+      A1["GEO opportunity"]
+      A2["Response detail"]
+      A3["Citation URLs"]
+    end
+
+    subgraph B["Process"]
+      B1["Analyze the gap"]
+      B2["Expand with fanout"]
+      B3["Map to search volume"]
+    end
+
+    subgraph C["Output"]
+      C1["Content plan"]
+      C2["First article"]
+      C3["Future landing page"]
+    end
+
+    A1 --> B1
+    A2 --> B1
+    A3 --> B1
+    B1 --> B2
+    B2 --> B3
+    B3 --> C1
+    C1 --> C2
+    C1 --> C3
 ```
+
+![Content writer flow](assets/content-writer-flow.svg)
 
 ## Real Example
 
