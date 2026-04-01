@@ -23,7 +23,7 @@
   </p>
 </div>
 
-![GEO Content Writer Cover](assets/cover-v3.png)
+![Content writer workflow](assets/content-writer-flow.svg)
 
 ## What This Project Does
 
@@ -155,7 +155,6 @@ flowchart LR
     C1 --> C3
 ```
 
-![Content writer flow](assets/content-writer-flow.svg)
 
 ## Real Example
 
