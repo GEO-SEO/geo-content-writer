@@ -126,13 +126,13 @@ Imagine a customer wants GEO-based article ideas.
 The workflow should feel this simple:
 
 ```mermaid
-flowchart TD
-    A["Dageno finds a high-value prompt opportunity"] --> B["The writer checks how AI currently answers it"]
-    B --> C["The writer checks which pages AI is citing"]
-    C --> D["The writer expands the topic into nearby content ideas"]
-    D --> E["The writer maps those ideas to search volume"]
-    E --> F["The writer outputs a content plan"]
-    F --> G["The team or agent writes the first article"]
+flowchart LR
+    A["1. Dageno finds a high-value GEO opportunity"] --> B["2. The writer reads AI response detail"]
+    B --> C["3. The writer checks cited pages and sources"]
+    C --> D["4. The writer expands nearby prompt ideas with fanout"]
+    D --> E["5. The writer maps those ideas to SEO search volume"]
+    E --> F["6. The writer builds a content plan"]
+    F --> G["7. The team or agent writes the first article"]
 ```
 
 ## Real Example
