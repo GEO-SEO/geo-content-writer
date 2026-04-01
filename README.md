@@ -25,18 +25,6 @@
 
 ![GEO Content Writer Cover](assets/cover-v3.png)
 
-## Quick Links
-
-- [Dageno Open API](https://open-api-docs.dageno.ai/2055134m0)
-- [Skill Instructions](skills/content-writer.md)
-- [Workflow Reference](references/pipeline-spec.md)
-- [Live Example Output](examples/live-30-day-example.md)
-- [Cursor MCP Example](examples/cursor-mcp.json)
-- [Book a Demo](https://dageno.ai)
-- [LinkedIn](https://www.linkedin.com/company/dageno-ai)
-- [X](https://x.com/dageno_ai)
-- [Slack Community](https://join.slack.com/t/dagenoai/shared_invite/zt-3t3pk34g4-2vpE90vKJ~jBTc31Z0bT8A)
-
 ## What This Project Does
 
 This project helps teams answer a simple question:
