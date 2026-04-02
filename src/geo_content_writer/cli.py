@@ -140,7 +140,7 @@ def build_parser() -> argparse.ArgumentParser:
     publish_ready_parser = subparsers.add_parser(
         "publish-ready-article",
         parents=[common],
-        help="Generate a publish-ready article from the top article asset using the fixed CORE-EEAT workflow",
+        help="Generate a publish-ready article from the top article asset using the project's fixed writing policy",
     )
     publish_ready_parser.add_argument("--prompt-id", default=None, help="Optional prompt ID to target")
     publish_ready_parser.add_argument("--prompt-text", default=None, help="Optional prompt text to target")

@@ -57,11 +57,9 @@ The main value is simple:
 
 ## Fixed Writing Policy
 
-Publish-ready articles in this project should follow the fixed rules from:
+Publish-ready articles in this project follow a fixed internal writing policy.
 
-- [CORE-EEAT Content Benchmark](https://github.com/aaron-he-zhu/core-eeat-content-benchmark)
-
-In practice, the publish-ready workflow now enforces a stable subset of those rules:
+In practice, the publish-ready workflow enforces these rules:
 
 - direct answer early
 - definition first

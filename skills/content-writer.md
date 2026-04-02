@@ -82,9 +82,7 @@ After the content pack is ready, the skill can draft the top asset.
 
 Before distribution, convert the internal draft into a publish-ready article.
 
-That article should follow the fixed CORE-EEAT writing policy from:
-
-- <https://github.com/aaron-he-zhu/core-eeat-content-benchmark>
+That article should follow the project's fixed writing policy.
 
 At minimum, enforce:
 
