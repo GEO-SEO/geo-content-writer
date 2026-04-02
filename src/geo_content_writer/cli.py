@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
+import re
 
 from jsonschema import ValidationError, validate
 
@@ -24,6 +25,7 @@ from .workflows import (
     topic_watchlist,
     weekly_exec_brief,
 )
+from .wordpress import WordPressClient, markdown_to_basic_html
 
 
 def _default_output_schema_path() -> Path:
@@ -32,6 +34,35 @@ def _default_output_schema_path() -> Path:
 
 def _default_brand_kb_schema_path() -> Path:
     return Path(__file__).resolve().parents[2] / "schemas" / "brand_knowledge_base_schema.json"
+
+
+def _parse_taxonomy_ids(raw: str | None) -> list[int]:
+    if not raw:
+        return []
+    values: list[int] = []
+    for item in raw.split(","):
+        item = item.strip()
+        if not item:
+            continue
+        values.append(int(item))
+    return values
+
+
+def _derive_title_and_slug(markdown_text: str) -> tuple[str, str]:
+    first_heading = ""
+    for line in markdown_text.splitlines():
+        stripped = line.strip()
+        if stripped.startswith("# "):
+            first_heading = stripped[2:].strip()
+            break
+    title = first_heading or "Untitled Draft"
+    slug = (
+        title.lower()
+        .replace("?", "")
+        .replace("'", "")
+    )
+    slug = "-".join(part for part in re.split(r"[^a-z0-9]+", slug) if part)
+    return title, slug or "untitled-draft"
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -137,6 +168,20 @@ def build_parser() -> argparse.ArgumentParser:
         default=str(_default_brand_kb_schema_path()),
         help="Optional schema file path; defaults to schemas/brand_knowledge_base_schema.json",
     )
+    wp_parser = subparsers.add_parser(
+        "publish-wordpress",
+        help="Publish a markdown draft to WordPress as a draft or published post",
+    )
+    wp_parser.add_argument("input_file", help="Markdown file to publish")
+    wp_parser.add_argument("--site-url", default=None, help="WordPress site URL")
+    wp_parser.add_argument("--username", default=None, help="WordPress username")
+    wp_parser.add_argument("--app-password", default=None, help="WordPress application password")
+    wp_parser.add_argument("--status", default="draft", choices=["draft", "publish", "private"], help="Post status")
+    wp_parser.add_argument("--title", default=None, help="Optional title override")
+    wp_parser.add_argument("--slug", default=None, help="Optional slug override")
+    wp_parser.add_argument("--excerpt", default=None, help="Optional excerpt")
+    wp_parser.add_argument("--categories", default=None, help="Optional comma-separated WordPress category IDs")
+    wp_parser.add_argument("--tags", default=None, help="Optional comma-separated WordPress tag IDs")
 
     return parser
 
@@ -174,6 +219,39 @@ def main() -> None:
         except ValidationError as exc:
             parser.exit(1, f"Brand knowledge base validation failed: {exc.message}\n")
         print(f"Brand knowledge base validation passed: {input_path}")
+        return
+
+    if args.command == "publish-wordpress":
+        input_path = Path(args.input_file).expanduser()
+        markdown_text = input_path.read_text(encoding="utf-8")
+        inferred_title, inferred_slug = _derive_title_and_slug(markdown_text)
+        client = WordPressClient(
+            site_url=args.site_url,
+            username=args.username,
+            app_password=args.app_password,
+        )
+        result = client.create_post(
+            title=args.title or inferred_title,
+            content=markdown_to_basic_html(markdown_text),
+            status=args.status,
+            slug=args.slug or inferred_slug,
+            excerpt=args.excerpt,
+            categories=_parse_taxonomy_ids(args.categories),
+            tags=_parse_taxonomy_ids(args.tags),
+        )
+        print(
+            json.dumps(
+                {
+                    "id": result.get("id"),
+                    "status": result.get("status"),
+                    "link": result.get("link"),
+                    "slug": result.get("slug"),
+                    "title": ((result.get("title") or {}).get("rendered") if isinstance(result.get("title"), dict) else result.get("title")),
+                },
+                ensure_ascii=False,
+                indent=2,
+            )
+        )
         return
 
     client = DagenoClient(api_key=args.api_key, base_url=args.base_url)

@@ -169,6 +169,17 @@ PYTHONPATH=src python -m geo_content_writer.cli validate-output examples/content
 PYTHONPATH=src python -m geo_content_writer.cli first-asset-draft --output-file examples/first-asset-draft.md
 ```
 
+### Publish a draft to WordPress
+
+Purpose: use WordPress as a simple distribution example for the content this project generates.
+
+```bash
+export WORDPRESS_SITE_URL="https://your-site.com"
+export WORDPRESS_USERNAME="your-username"
+export WORDPRESS_APP_PASSWORD="your-application-password"
+PYTHONPATH=src python -m geo_content_writer.cli publish-wordpress examples/first-asset-draft.md --status draft
+```
+
 ### Short aliases
 
 ```bash
@@ -243,6 +254,7 @@ This project is best understood as a **Content Writer Skill** backed by a **CLI 
 - the CLI executes the data and formatting steps
 - the standard brand knowledge base lives at `knowledge/brand/brand-knowledge-base.json`
 - external agents should warn if that file is missing before running the main workflow
+- WordPress distribution is intentionally lightweight and uses the official REST API plus Application Passwords
 
 ## License
 
