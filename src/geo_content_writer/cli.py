@@ -43,18 +43,19 @@ def build_parser() -> argparse.ArgumentParser:
 
     subparsers = parser.add_subparsers(dest="command", required=True)
 
-    subparsers.add_parser("brand-snapshot", parents=[common], help="Get brand context")
-    subparsers.add_parser("topic-watchlist", parents=[common], help="List top topics")
+    subparsers.add_parser("brand-snapshot", parents=[common], help="Show brand context from Dageno")
+    subparsers.add_parser("topic-watchlist", parents=[common], help="List top GEO topics")
     subparsers.add_parser("prompt-gap", parents=[common], help="List high-value prompts")
-    subparsers.add_parser("citation-brief", parents=[common], help="Summarize cited domains and URLs")
+    subparsers.add_parser("citation-brief", parents=[common], help="Summarize citation domains and URLs")
     subparsers.add_parser("content-opportunities", parents=[common], help="List top content opportunities")
     subparsers.add_parser("backlink-opportunities", parents=[common], help="List top backlink opportunities")
     subparsers.add_parser("community-opportunities", parents=[common], help="List top community opportunities")
     subparsers.add_parser("weekly-brief", parents=[common], help="Generate a combined executive brief")
     content_pack_parser = subparsers.add_parser(
         "content-pack",
+        aliases=["pack"],
         parents=[common],
-        help="Turn one Dageno opportunity into a reusable content pack",
+        help="Generate a content pack from one GEO opportunity",
     )
     content_pack_parser.add_argument("--prompt-id", default=None, help="Optional prompt ID to target")
     content_pack_parser.add_argument("--prompt-text", default=None, help="Optional prompt text to target")
@@ -69,14 +70,20 @@ def build_parser() -> argparse.ArgumentParser:
         help="Output machine-readable JSON matching schemas/output_schema.json",
     )
     content_pack_parser.add_argument(
+        "--compact",
+        action="store_true",
+        help="Use a shorter markdown format for lower token usage",
+    )
+    content_pack_parser.add_argument(
         "--output-file",
         default=None,
         help="Optional file path to write the content pack output",
     )
     first_asset_parser = subparsers.add_parser(
         "first-asset-draft",
+        aliases=["draft-first"],
         parents=[common],
-        help="Generate the first writing draft from the top content-pack asset",
+        help="Generate the first draft from the top content-pack asset",
     )
     first_asset_parser.add_argument("--prompt-id", default=None, help="Optional prompt ID to target")
     first_asset_parser.add_argument("--prompt-text", default=None, help="Optional prompt text to target")
@@ -104,6 +111,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     validate_parser = subparsers.add_parser(
         "validate-output",
+        aliases=["validate-pack"],
         help="Validate a JSON output file against the output schema",
     )
     validate_parser.add_argument("input_file", help="JSON file to validate")
@@ -114,6 +122,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     brand_kb_parser = subparsers.add_parser(
         "validate-brand-kb",
+        aliases=["validate-kb"],
         help="Validate a brand knowledge base JSON file against its schema",
     )
     brand_kb_parser.add_argument("input_file", help="Brand knowledge base JSON file to validate")
@@ -201,6 +210,7 @@ def main() -> None:
                     prompt_id=args.prompt_id,
                     prompt_text=args.prompt_text,
                     brand_kb_file=args.brand_kb_file,
+                    compact=args.compact,
                 )
             )
     elif args.command == "first-asset-draft":

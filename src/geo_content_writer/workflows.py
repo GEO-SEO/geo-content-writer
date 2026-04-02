@@ -1362,6 +1362,7 @@ def content_pack(
     prompt_id: str | None = None,
     prompt_text: str | None = None,
     brand_kb_file: str | None = None,
+    compact: bool = False,
 ) -> str:
     context = _build_content_pack_context(
         client,
@@ -1394,16 +1395,30 @@ def content_pack(
     lines = [
         f"# Content Pack ({days} days)",
         "",
-        "## Opportunity Tiers",
-        "",
-        f"- High Opportunity: `{len(tier_buckets['High'])}`",
-        f"- Medium Opportunity: `{len(tier_buckets['Medium'])}`",
-        f"- Low Opportunity: `{len(tier_buckets['Low'])}`",
-        "",
-        "### High Opportunity Preview",
-        "",
     ]
-    for item in tier_buckets["High"][: max(limit, 5)]:
+    if not compact:
+        lines.extend(
+            [
+                "## Opportunity Tiers",
+                "",
+                f"- High Opportunity: `{len(tier_buckets['High'])}`",
+                f"- Medium Opportunity: `{len(tier_buckets['Medium'])}`",
+                f"- Low Opportunity: `{len(tier_buckets['Low'])}`",
+                "",
+                "### High Opportunity Preview",
+                "",
+            ]
+        )
+    else:
+        lines.extend(
+            [
+                "## Opportunity Snapshot",
+                "",
+                f"- High: `{len(tier_buckets['High'])}` | Medium: `{len(tier_buckets['Medium'])}` | Low: `{len(tier_buckets['Low'])}`",
+                "",
+            ]
+        )
+    for item in tier_buckets["High"][: max(limit, 5)] if not compact else tier_buckets["High"][: min(limit, 3)]:
         lines.append(
             "- `{prompt}` | topic `{topic}` | brand gap `{brand_gap}` | source gap `{source_gap}` | responses `{responses}`".format(
                 prompt=item.get("prompt", "-"),
@@ -1444,21 +1459,21 @@ def content_pack(
         lines.extend(brand_lines)
         lines.extend([""])
 
+    lines.extend(["## Evidence Layer", ""])
     lines.extend(
         [
-            "## Evidence Layer",
-            "",
             f"- Response Count: `{len(responses)}`",
             f"- Mentioned Brand Count: `{sum(1 for item in responses if item.get('mentioned'))}`",
             f"- Unmentioned Brand Count: `{sum(1 for item in responses if not item.get('mentioned'))}`",
             f"- Citation URL Count: `{len(citations)}`",
             f"- Dominant Page Type: `{dominant_page_type}`",
-            f"- Recurring Entities In Sample: {', '.join(name for name, _ in mention_counter.most_common(8)) or '-'}",
-            "",
-            "## Fanout Layer",
-            "",
         ]
     )
+    if not compact:
+        lines.append(f"- Recurring Entities In Sample: {', '.join(name for name, _ in mention_counter.most_common(8)) or '-'}")
+    else:
+        lines.append(f"- Top Entities: {', '.join(name for name, _ in mention_counter.most_common(4)) or '-'}")
+    lines.extend(["", "## Fanout Layer", ""])
     for prompt in fanout_prompts[:8]:
         lines.append(f"- {prompt}")
     if len(fanout_prompts) > 8:
@@ -1488,18 +1503,32 @@ def content_pack(
     lines.extend(["", "## Unified Asset + Publishing Target Table", ""])
     lines.extend(_render_asset_table(asset_rows))
 
-    lines.extend(
-        [
-            "",
-            "## Creation Order",
-            "",
-            "- 1. Publish the category-defining article first.",
-            "- 2. Publish the evaluation article second.",
-            "- 3. Publish the roundup / landscape article third.",
-            "- 4. Publish the measurement article next.",
-            "- 5. Keep the landing page as a follow-up conversion asset.",
-        ]
-    )
+    if not compact:
+        lines.extend(
+            [
+                "",
+                "## Creation Order",
+                "",
+                "- 1. Publish the category-defining article first.",
+                "- 2. Publish the evaluation article second.",
+                "- 3. Publish the roundup / landscape article third.",
+                "- 4. Publish the measurement article next.",
+                "- 5. Keep the landing page as a follow-up conversion asset.",
+            ]
+        )
+    else:
+        lines.extend(
+            [
+                "",
+                "## Creation Order",
+                "",
+                "- 1. A1",
+                "- 2. A2",
+                "- 3. A3",
+                "- 4. A4",
+                "- 5. A5",
+            ]
+        )
     return "\n".join(lines)
 
 

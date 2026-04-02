@@ -117,6 +117,14 @@ PYTHONPATH=src python -m geo_content_writer.cli content-opportunities
 PYTHONPATH=src python -m geo_content_writer.cli content-pack
 ```
 
+### Compact content pack
+
+Use this when an external agent needs a shorter markdown summary first.
+
+```bash
+PYTHONPATH=src python -m geo_content_writer.cli content-pack --compact
+```
+
 ### Full content pack (JSON output)
 
 ```bash
@@ -151,6 +159,15 @@ PYTHONPATH=src python -m geo_content_writer.cli validate-output examples/content
 
 ```bash
 PYTHONPATH=src python -m geo_content_writer.cli first-asset-draft --output-file examples/first-asset-draft.md
+```
+
+### Short aliases
+
+```bash
+PYTHONPATH=src python -m geo_content_writer.cli pack --compact
+PYTHONPATH=src python -m geo_content_writer.cli draft-first
+PYTHONPATH=src python -m geo_content_writer.cli validate-pack examples/content-pack.json
+PYTHONPATH=src python -m geo_content_writer.cli validate-kb knowledge/brand/brand-knowledge-base.json
 ```
 
 ### Generate one specific asset draft
