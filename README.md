@@ -6,6 +6,25 @@
 
 > Turn Dageno prompt opportunities into a fanout backlog, then turn selected fanout items into publishable GEO articles.
 
+## What Works Today
+
+- discover high-value prompts from Dageno
+- extract real fanout into a reusable backlog
+- mark backlog rows as `write_now` or `needs_cleanup`
+- generate publish-ready article drafts from selected backlog items
+- publish drafts to WordPress and WordPress.com
+
+## Current Limitation
+
+The project does **not** yet perform full citation-page body crawling inside the main runtime.
+
+Current behavior:
+
+- it uses Dageno citation URLs and citation metadata
+- it does **not** yet fetch and analyze the full HTML/body text of the top citation pages in the main workflow
+
+So the project has already shifted to a fanout-backlog-first architecture, but the citation crawl step is still a missing implementation in the writing layer.
+
 ## What This Project Is
 
 This is no longer a prompt-to-article shortcut.
@@ -154,6 +173,7 @@ geo-content-writer/
 - the project keeps Dageno as the opportunity discovery layer
 - the backlog is the core production object
 - fanout is the main writing seed
+- citation crawl is planned in the workflow design but not yet fully wired into runtime article generation
 - WordPress publishing is a lightweight distribution example, not the center of the system
 
 ## License

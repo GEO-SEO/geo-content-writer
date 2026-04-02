@@ -100,10 +100,10 @@ Compare route and hotel coverage, pricing clarity, refund rules, support quality
 ## References
 
 - [pcmag.com](https://www.pcmag.com/picks/best-travel-apps) - Supports the conclusion that category-defining articles shape early buyer understanding.
-- [play.google.com](https://play.google.com/store/apps/details?hl=en_US&id=com.booking) - Supports the conclusion that comparison-style content influences evaluation behavior.
-- [goabroad.com](https://www.goabroad.com/articles/best-travel-booking-apps) - Supports the conclusion that teams need evidence, not only broad claims, when choosing solutions.
-- [suewherewhywhat.com](https://www.suewherewhywhat.com/trip-planning-websites/) - Supports the conclusion that market framing is often controlled by third-party sources.
-- [apple.com](https://apps.apple.com/us/app/booking-com-hotels-travel/id367003839) - Supports the conclusion that clear workflows and measurement criteria matter in real buying decisions.
+- [reddit.com](https://www.reddit.com/r/AussieFrugal/comments/18xd9ba/best_travel_and_booking_app/) - Supports the conclusion that comparison-style content influences evaluation behavior.
+- [reddit.com](https://www.reddit.com/r/travel/comments/1nhal3w/im_looking_for_an_app_i_can_use_to_plan_and_book/) - Supports the conclusion that teams need evidence, not only broad claims, when choosing solutions.
+- [play.google.com](https://play.google.com/store/apps/details?id=com.onlineticket.booking.travelapp&hl=en_IN) - Supports the conclusion that market framing is often controlled by third-party sources.
+- [play.google.com](https://play.google.com/store/apps/details?hl=en_US&id=com.booking) - Supports the conclusion that clear workflows and measurement criteria matter in real buying decisions.
 
 ## Conclusion
 
