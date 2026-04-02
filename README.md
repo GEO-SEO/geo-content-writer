@@ -15,6 +15,7 @@
     <a href="https://open-api-docs.dageno.ai/2055134m0">Open API Docs</a> •
     <a href="skills/content-writer.md">Skill Instructions</a> •
     <a href="references/pipeline-spec.md">Workflow Reference</a> •
+    <a href="schemas/output_schema.json">Output Schema</a> •
     <a href="examples/live-30-day-example.md">Live Example</a> •
     <a href="https://dageno.ai">Book a Demo</a> •
     <a href="https://www.linkedin.com/company/dageno-ai">LinkedIn</a> •
@@ -48,6 +49,18 @@ The output is a **content plan** that tells a team:
 - why it matters
 - where to publish it
 - what should be written first
+
+Before this workflow is used seriously, the team should set a brand knowledge base at:
+
+- `knowledge/brand/brand-knowledge-base.json`
+
+That file is the shared source of truth for:
+
+- brand positioning
+- differentiators
+- proof points
+- claims to avoid
+- CTA direction
 
 By default, the writer should work from **today's content opportunities**.
 If needed, the time window can be expanded, for example to the last 7 or 30 days.
@@ -122,6 +135,14 @@ This project is built for:
 | fanout queries | nearby content opportunities |
 | search volume from Dageno Open API | the SEO demand around those opportunities |
 | one approved topic | the first article to write |
+
+## Core Workflow
+
+1. set the brand knowledge base in `knowledge/brand/brand-knowledge-base.json`
+2. run `content-pack` to identify the right assets and publishing order
+3. review the unified asset table with brand context in mind
+4. generate the first asset draft
+5. edit and publish based on the chosen article type
 
 ## Simple Customer Flow
 
@@ -247,6 +268,63 @@ PYTHONPATH=src python -m geo_content_writer.cli content-opportunities
 PYTHONPATH=src python -m geo_content_writer.cli content-pack
 ```
 
+### Full content pack (JSON output)
+
+```bash
+PYTHONPATH=src python -m geo_content_writer.cli content-pack --output-json
+```
+
+### Standard brand knowledge base location
+
+```bash
+knowledge/brand/brand-knowledge-base.json
+```
+
+### Save the content pack to a file
+
+```bash
+PYTHONPATH=src python -m geo_content_writer.cli content-pack --output-file examples/content-pack.md
+```
+
+### Save JSON output to a file
+
+```bash
+PYTHONPATH=src python -m geo_content_writer.cli content-pack --output-json --output-file examples/content-pack.json
+```
+
+### Validate generated JSON output
+
+```bash
+PYTHONPATH=src python -m geo_content_writer.cli validate-output examples/content-pack.json
+```
+
+### Generate the first asset draft
+
+```bash
+PYTHONPATH=src python -m geo_content_writer.cli first-asset-draft --output-file examples/first-asset-draft.md
+```
+
+### Generate one specific asset draft
+
+```bash
+PYTHONPATH=src python -m geo_content_writer.cli first-asset-draft --asset-id A2 --output-file examples/asset-a2-draft.md
+```
+
+### Use a brand knowledge base for consistent messaging
+
+Purpose:
+keep product positioning, differentiators, proof points, and CTA language consistent across every future draft.
+
+```bash
+PYTHONPATH=src python -m geo_content_writer.cli first-asset-draft --brand-kb-file knowledge/brand/brand-knowledge-base.json --output-file examples/first-asset-draft.md
+```
+
+### Validate the brand knowledge base
+
+```bash
+PYTHONPATH=src python -m geo_content_writer.cli validate-brand-kb knowledge/brand/brand-knowledge-base.json
+```
+
 ### Target one prompt
 
 ```bash
@@ -270,6 +348,12 @@ geo-content-writer/
 │   └── openai.yaml
 ├── skills/
 │   └── content-writer.md
+├── knowledge/
+│   └── brand/
+│       └── brand-knowledge-base.json
+├── schemas/
+│   └── output_schema.json
+│   └── brand_knowledge_base_schema.json
 ├── references/
 │   └── pipeline-spec.md
 ├── assets/
@@ -286,6 +370,28 @@ That means:
 - the skill defines the workflow and writing rules
 - the CLI executes the Dageno and SEO data steps
 - the detailed schema and rules live in [references/pipeline-spec.md](references/pipeline-spec.md)
+
+## Why The Brand Knowledge Base Matters
+
+Without a brand knowledge base, the system can identify the right topics but still produce drafts that sound slightly different from article to article.
+
+With a brand knowledge base, the team can keep these things stable across all outputs:
+
+- what the brand is
+- how the category is framed
+- which differentiators should be repeated
+- which claims should be avoided
+- what CTA direction should be used
+
+The skill will look for the knowledge base in the standard project location:
+
+- `knowledge/brand/brand-knowledge-base.json`
+
+If an external agent such as OpenClaw uses this skill, that agent should be told:
+
+- this skill reads the brand knowledge base from the standard project location
+- if the file is missing, the agent should warn the user before running the main content workflow
+- if the team wants another location, the agent should pass `--brand-kb-file`
 
 ## License
 

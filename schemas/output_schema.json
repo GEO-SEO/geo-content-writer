@@ -1,0 +1,253 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/GEO-SEO/geo-content-writer/schemas/output_schema.json",
+  "title": "GEO Content Writer Output Schema",
+  "description": "Machine-readable output schema for the unified asset and publishing target table.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "generated_at",
+    "time_window_days",
+    "selected_prompt",
+    "brand_knowledge_base",
+    "assets"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0",
+      "description": "Schema version for backward-compatible evolution."
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "UTC timestamp for when this payload was produced."
+    },
+    "time_window_days": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Window used for opportunity collection."
+    },
+    "selected_prompt": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Prompt selected as the source of this pack."
+    },
+    "brand_knowledge_base": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "loaded", "message"],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "loaded": {
+          "type": "boolean"
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1
+        },
+        "brand_context_summary": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "brand_name": {
+              "type": "string"
+            },
+            "category": {
+              "type": "string"
+            },
+            "one_liner": {
+              "type": "string"
+            },
+            "differentiators": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "preferred_cta": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "assets": {
+      "type": "array",
+      "minItems": 0,
+      "description": "Unified asset and publishing target rows.",
+      "items": {
+        "$ref": "#/definitions/unified_asset_row"
+      }
+    }
+  },
+  "definitions": {
+    "asset_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z][A-Za-z0-9_-]*$",
+      "description": "Stable row id, for example A1."
+    },
+    "opportunity_tier": {
+      "type": "string",
+      "enum": ["High", "Medium", "Low"]
+    },
+    "asset_type": {
+      "type": "string",
+      "enum": ["article", "landing_page", "docs", "comparison", "community"]
+    },
+    "publish_target_type": {
+      "type": "string",
+      "enum": ["editorial", "commercial", "community", "programmatic"]
+    },
+    "recommended_publish_surface": {
+      "type": "string",
+      "enum": [
+        "website_blog",
+        "landing_page",
+        "docs_hub",
+        "third_party_article",
+        "community_post"
+      ]
+    },
+    "target_intent": {
+      "type": "string",
+      "enum": ["Transactional", "Commercial", "Informational", "Navigational"]
+    },
+    "priority": {
+      "type": "string",
+      "enum": ["high", "medium", "low"]
+    },
+    "status": {
+      "type": "string",
+      "enum": ["planned", "queued", "writing", "published"]
+    },
+    "normalized_nonempty_string": {
+      "type": "string",
+      "minLength": 1
+    },
+    "nonempty_string_array": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "query_cluster": {
+      "description": "One primary cluster as a string, or multiple cluster terms as an array.",
+      "oneOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      ]
+    },
+    "unified_asset_row": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "asset_id",
+        "source_prompt",
+        "opportunity_tier",
+        "asset_title",
+        "asset_type",
+        "publish_target_type",
+        "recommended_publish_surface",
+        "target_site_section",
+        "target_url_slug",
+        "target_intent",
+        "target_query_cluster",
+        "primary_angle",
+        "why_exists",
+        "derived_from",
+        "writing_inputs",
+        "required_content_blocks",
+        "schema_type",
+        "cta_goal",
+        "priority",
+        "status"
+      ],
+      "properties": {
+        "asset_id": {
+          "$ref": "#/definitions/asset_id"
+        },
+        "source_prompt": {
+          "$ref": "#/definitions/normalized_nonempty_string"
+        },
+        "opportunity_tier": {
+          "$ref": "#/definitions/opportunity_tier"
+        },
+        "asset_title": {
+          "$ref": "#/definitions/normalized_nonempty_string"
+        },
+        "asset_type": {
+          "$ref": "#/definitions/asset_type"
+        },
+        "publish_target_type": {
+          "$ref": "#/definitions/publish_target_type"
+        },
+        "recommended_publish_surface": {
+          "$ref": "#/definitions/recommended_publish_surface"
+        },
+        "target_site_section": {
+          "$ref": "#/definitions/normalized_nonempty_string"
+        },
+        "target_url_slug": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+          "description": "Slug fragment generated from title or route convention."
+        },
+        "target_intent": {
+          "$ref": "#/definitions/target_intent"
+        },
+        "target_query_cluster": {
+          "$ref": "#/definitions/query_cluster"
+        },
+        "primary_angle": {
+          "$ref": "#/definitions/normalized_nonempty_string"
+        },
+        "why_exists": {
+          "$ref": "#/definitions/normalized_nonempty_string"
+        },
+        "derived_from": {
+          "$ref": "#/definitions/nonempty_string_array"
+        },
+        "writing_inputs": {
+          "$ref": "#/definitions/nonempty_string_array"
+        },
+        "required_content_blocks": {
+          "$ref": "#/definitions/nonempty_string_array"
+        },
+        "schema_type": {
+          "$ref": "#/definitions/normalized_nonempty_string"
+        },
+        "cta_goal": {
+          "$ref": "#/definitions/normalized_nonempty_string"
+        },
+        "priority": {
+          "$ref": "#/definitions/priority"
+        },
+        "status": {
+          "$ref": "#/definitions/status"
+        },
+        "notes": {
+          "type": "string",
+          "description": "Optional operator notes or exceptions.",
+          "default": ""
+        }
+      }
+    }
+  }
+}

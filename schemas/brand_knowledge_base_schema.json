@@ -1,0 +1,78 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/GEO-SEO/geo-content-writer/schemas/brand_knowledge_base_schema.json",
+  "title": "Brand Knowledge Base Schema",
+  "description": "Structured brand context used to keep content outputs consistent across multiple assets.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "brand_name",
+    "category",
+    "one_liner",
+    "differentiators",
+    "proof_points",
+    "preferred_cta"
+  ],
+  "properties": {
+    "brand_name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "category": {
+      "type": "string",
+      "minLength": 1
+    },
+    "one_liner": {
+      "type": "string",
+      "minLength": 1
+    },
+    "target_audience": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "differentiators": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "proof_points": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "core_messages": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "preferred_cta": {
+      "type": "string",
+      "minLength": 1
+    },
+    "prohibited_claims": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "tone_guidelines": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  }
+}

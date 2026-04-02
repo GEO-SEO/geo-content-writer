@@ -41,6 +41,14 @@ metadata:
 
 Use this skill to turn one Dageno GEO opportunity into a usable content plan.
 
+Before running the main workflow, check for a brand knowledge base at:
+
+- `knowledge/brand/brand-knowledge-base.json`
+
+If the file is missing, warn the user that the workflow can still run, but brand positioning, proof points, and CTA language may become inconsistent across outputs.
+
+If an external agent is calling this skill, that agent should assume this skill reads from that standard path unless the user explicitly supplies another file location.
+
 ## Best Use Case
 
 Use this skill when a team wants to answer:
@@ -76,6 +84,20 @@ So the workflow should prioritize:
 not just volume.
 
 ## Workflow
+
+### 0. Load the brand knowledge base
+
+Read the brand knowledge base from:
+
+- `knowledge/brand/brand-knowledge-base.json`
+
+Use it to keep these things consistent across the content plan and future drafts:
+
+- brand positioning
+- differentiators
+- proof points
+- claims to avoid
+- CTA direction
 
 ### 1. Classify opportunities
 
@@ -119,6 +141,8 @@ The goal is to turn one opportunity into multiple nearby writing directions.
 
 The content plan should include:
 
+- brand knowledge base status
+- brand context summary
 - selected prompt
 - evidence summary
 - fanout ideas

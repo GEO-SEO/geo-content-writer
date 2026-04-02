@@ -1,0 +1,215 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at": "2026-04-02T02:43:51Z",
+  "time_window_days": 1,
+  "selected_prompt": "AEO tool for tracking AI answer rankings",
+  "brand_knowledge_base": {
+    "path": "/Users/timlin/Documents/New project 2/geo-content-opportunity-engine/knowledge/brand/brand-knowledge-base.json",
+    "loaded": true,
+    "message": "Brand knowledge base loaded from the standard project location.",
+    "brand_context_summary": {
+      "brand_name": "Dageno",
+      "category": "Answer Engine Optimization and GEO platform",
+      "one_liner": "Dageno helps brands understand how AI systems talk about their business and turn that insight into content and growth execution.",
+      "differentiators": [
+        "Prompt-level brand and source gap visibility",
+        "Citation and response evidence instead of generic keyword-only planning",
+        "Clear path from insight to content execution"
+      ],
+      "preferred_cta": "Invite the reader to review their current AI visibility workflow and book a demo if they want a clearer path from visibility data to content execution."
+    }
+  },
+  "assets": [
+    {
+      "asset_id": "A1",
+      "asset_title": "What Is an Enterprise Answer Engine Optimization Solution?",
+      "asset_type": "article",
+      "recommended_publish_surface": "website_blog",
+      "target_intent": "Informational",
+      "primary_angle": "Define the category and frame the enterprise problem clearly.",
+      "why_exists": "AI answers repeatedly define the topic before recommending anything else.",
+      "derived_from": [
+        "high_brand_gap",
+        "high_source_gap",
+        "repeated_response_framing",
+        "dominant_article_citations"
+      ],
+      "writing_inputs": [
+        "top_response_details",
+        "top_citation_urls",
+        "dageno_product_positioning"
+      ],
+      "priority": "high",
+      "source_prompt": "AEO tool for tracking AI answer rankings",
+      "opportunity_tier": "Medium",
+      "publish_target_type": "editorial",
+      "target_site_section": "blog",
+      "target_url_slug": "what-is-an-enterprise-answer-engine-optimization-solution",
+      "target_query_cluster": "Answer Engine Optimization",
+      "required_content_blocks": [
+        "direct_answer",
+        "definition",
+        "proof_points",
+        "faq"
+      ],
+      "schema_type": "Article + FAQPage",
+      "cta_goal": "newsletter_or_retargeting",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "asset_id": "A2",
+      "asset_title": "How to Evaluate Enterprise Answer Engine Optimization Platforms",
+      "asset_type": "article",
+      "recommended_publish_surface": "website_blog",
+      "target_intent": "Commercial",
+      "primary_angle": "Turn the prompt into a buyer-side evaluation framework.",
+      "why_exists": "The prompt is close to purchase-stage evaluation and solution selection.",
+      "derived_from": [
+        "high_brand_gap",
+        "high_source_gap",
+        "repeated_response_framing",
+        "high_transactional_intent",
+        "fanout_prompt_cluster"
+      ],
+      "writing_inputs": [
+        "top_response_details",
+        "top_entities_in_mentions",
+        "fanout_prompt_set",
+        "keyword_cluster"
+      ],
+      "priority": "high",
+      "source_prompt": "AEO tool for tracking AI answer rankings",
+      "opportunity_tier": "Medium",
+      "publish_target_type": "editorial",
+      "target_site_section": "blog",
+      "target_url_slug": "how-to-evaluate-enterprise-answer-engine-optimization-platforms",
+      "target_query_cluster": "Answer Engine Optimization",
+      "required_content_blocks": [
+        "direct_answer",
+        "evaluation_framework",
+        "proof_points",
+        "faq"
+      ],
+      "schema_type": "Article + FAQPage",
+      "cta_goal": "commercial_consideration",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "asset_id": "A3",
+      "asset_title": "Best Enterprise Answer Engine Optimization Solutions for Brand Authority",
+      "asset_type": "article",
+      "recommended_publish_surface": "third_party_article",
+      "target_intent": "Transactional",
+      "primary_angle": "Compete directly with the landscape that AI is already citing.",
+      "why_exists": "Citation patterns show that the market already rewards roundup and recommendation-style content.",
+      "derived_from": [
+        "high_brand_gap",
+        "high_source_gap",
+        "repeated_response_framing",
+        "dominant_listicle_citations",
+        "keyword_search_demand"
+      ],
+      "writing_inputs": [
+        "top_citation_urls",
+        "top_entities_in_mentions",
+        "fanout_prompt_set",
+        "keyword_cluster"
+      ],
+      "priority": "high",
+      "source_prompt": "AEO tool for tracking AI answer rankings",
+      "opportunity_tier": "Medium",
+      "publish_target_type": "editorial",
+      "target_site_section": "external-contributions",
+      "target_url_slug": "best-enterprise-answer-engine-optimization-solutions-for-brand-authority",
+      "target_query_cluster": "Answer Engine Optimization",
+      "required_content_blocks": [
+        "direct_answer",
+        "evaluation_framework",
+        "proof_points",
+        "faq"
+      ],
+      "schema_type": "Article",
+      "cta_goal": "commercial_consideration",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "asset_id": "A4",
+      "asset_title": "How to Measure Brand Authority in AI Answers",
+      "asset_type": "article",
+      "recommended_publish_surface": "website_blog",
+      "target_intent": "Commercial",
+      "primary_angle": "Translate brand authority into measurable AI visibility and citation metrics.",
+      "why_exists": "The answer space talks about authority, but buyers still need measurable evaluation criteria.",
+      "derived_from": [
+        "high_brand_gap",
+        "high_source_gap",
+        "repeated_response_framing",
+        "response_metric_gap",
+        "fanout_prompt_cluster"
+      ],
+      "writing_inputs": [
+        "top_response_details",
+        "top_citation_urls",
+        "dageno_product_positioning"
+      ],
+      "priority": "medium",
+      "source_prompt": "AEO tool for tracking AI answer rankings",
+      "opportunity_tier": "Medium",
+      "publish_target_type": "editorial",
+      "target_site_section": "blog",
+      "target_url_slug": "how-to-measure-brand-authority-in-ai-answers",
+      "target_query_cluster": "Answer Engine Optimization",
+      "required_content_blocks": [
+        "direct_answer",
+        "evaluation_framework",
+        "proof_points",
+        "faq"
+      ],
+      "schema_type": "Article + FAQPage",
+      "cta_goal": "commercial_consideration",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "asset_id": "A5",
+      "asset_title": "Enterprise Answer Engine Optimization Platform for Brand Authority",
+      "asset_type": "landing_page",
+      "recommended_publish_surface": "landing_page",
+      "target_intent": "Transactional",
+      "primary_angle": "Commercial landing page for future conversion capture.",
+      "why_exists": "The prompt is BOFU and should leave room for future landing-page generation.",
+      "derived_from": [
+        "high_brand_gap",
+        "high_source_gap",
+        "repeated_response_framing",
+        "future_landing_page_branch"
+      ],
+      "writing_inputs": [
+        "dageno_product_positioning",
+        "keyword_cluster",
+        "top_citation_urls"
+      ],
+      "priority": "medium",
+      "source_prompt": "AEO tool for tracking AI answer rankings",
+      "opportunity_tier": "Medium",
+      "publish_target_type": "commercial",
+      "target_site_section": "solutions",
+      "target_url_slug": "enterprise-answer-engine-optimization-platform-for-brand-authority",
+      "target_query_cluster": "Answer Engine Optimization",
+      "required_content_blocks": [
+        "direct_answer",
+        "proof_points",
+        "comparison_table",
+        "cta",
+        "faq"
+      ],
+      "schema_type": "WebPage + FAQPage",
+      "cta_goal": "demo_request",
+      "status": "planned",
+      "notes": ""
+    }
+  ]
+}

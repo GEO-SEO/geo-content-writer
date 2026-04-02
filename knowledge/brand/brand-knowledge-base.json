@@ -1,0 +1,36 @@
+{
+  "brand_name": "Dageno",
+  "category": "Answer Engine Optimization and GEO platform",
+  "one_liner": "Dageno helps brands understand how AI systems talk about their business and turn that insight into content and growth execution.",
+  "target_audience": [
+    "In-house marketing teams",
+    "SEO and GEO operators",
+    "Agencies serving brand clients"
+  ],
+  "differentiators": [
+    "Prompt-level brand and source gap visibility",
+    "Citation and response evidence instead of generic keyword-only planning",
+    "Clear path from insight to content execution"
+  ],
+  "proof_points": [
+    "Tracks how major AI systems answer commercially relevant prompts",
+    "Shows which third-party sources shape the answer space",
+    "Turns opportunity data into a prioritized publishing plan"
+  ],
+  "core_messages": [
+    "Data should lead to execution, not stop at monitoring",
+    "High-value GEO opportunities do not always have high prompt volume",
+    "A repeatable publishing system is more valuable than isolated articles"
+  ],
+  "preferred_cta": "Invite the reader to review their current AI visibility workflow and book a demo if they want a clearer path from visibility data to content execution.",
+  "prohibited_claims": [
+    "Do not claim guaranteed rankings",
+    "Do not imply coverage of every AI platform without evidence",
+    "Do not use vague best-in-market claims without support"
+  ],
+  "tone_guidelines": [
+    "Clear and direct",
+    "Commercially credible",
+    "Evidence-led rather than hype-led"
+  ]
+}
