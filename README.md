@@ -180,6 +180,13 @@ export WORDPRESS_APP_PASSWORD="your-application-password"
 PYTHONPATH=src python -m geo_content_writer.cli publish-wordpress examples/first-asset-draft.md --status draft
 ```
 
+For `wordpress.com` hosted sites, also set:
+
+```bash
+export WORDPRESS_CLIENT_ID="your-client-id"
+export WORDPRESS_CLIENT_SECRET="your-client-secret"
+```
+
 ### Short aliases
 
 ```bash

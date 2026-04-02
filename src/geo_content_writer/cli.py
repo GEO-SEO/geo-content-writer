@@ -176,6 +176,8 @@ def build_parser() -> argparse.ArgumentParser:
     wp_parser.add_argument("--site-url", default=None, help="WordPress site URL")
     wp_parser.add_argument("--username", default=None, help="WordPress username")
     wp_parser.add_argument("--app-password", default=None, help="WordPress application password")
+    wp_parser.add_argument("--client-id", default=None, help="WordPress.com OAuth client ID")
+    wp_parser.add_argument("--client-secret", default=None, help="WordPress.com OAuth client secret")
     wp_parser.add_argument("--status", default="draft", choices=["draft", "publish", "private"], help="Post status")
     wp_parser.add_argument("--title", default=None, help="Optional title override")
     wp_parser.add_argument("--slug", default=None, help="Optional slug override")
@@ -229,6 +231,8 @@ def main() -> None:
             site_url=args.site_url,
             username=args.username,
             app_password=args.app_password,
+            client_id=args.client_id,
+            client_secret=args.client_secret,
         )
         result = client.create_post(
             title=args.title or inferred_title,
