@@ -78,6 +78,27 @@ The skill should:
 
 After the content pack is ready, the skill can draft the top asset.
 
+### 3. Generate a publish-ready article
+
+Before distribution, convert the internal draft into a publish-ready article.
+
+That article should follow the fixed CORE-EEAT writing policy from:
+
+- <https://github.com/aaron-he-zhu/core-eeat-content-benchmark>
+
+At minimum, enforce:
+
+- direct answer early
+- definition first
+- audience statement
+- scope statement
+- heading hierarchy
+- TL;DR
+- comparison or decision framework
+- FAQ
+- references
+- conclusion and next step
+
 ## GEO Writing Rules
 
 1. Start with a direct answer or definition.

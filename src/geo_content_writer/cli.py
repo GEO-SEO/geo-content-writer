@@ -18,8 +18,10 @@ from .workflows import (
     content_pack_compact_json,
     content_pack_json,
     default_brand_kb_path,
+    daily_publish_ready_package,
     first_asset_draft,
     new_content_brief,
+    publish_ready_article,
     prompt_deep_dive,
     prompt_gap_report,
     topic_watchlist,
@@ -135,6 +137,24 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Optional file path to write the first-asset draft output",
     )
+    publish_ready_parser = subparsers.add_parser(
+        "publish-ready-article",
+        parents=[common],
+        help="Generate a publish-ready article from the top article asset using the fixed CORE-EEAT workflow",
+    )
+    publish_ready_parser.add_argument("--prompt-id", default=None, help="Optional prompt ID to target")
+    publish_ready_parser.add_argument("--prompt-text", default=None, help="Optional prompt text to target")
+    publish_ready_parser.add_argument("--asset-id", default=None, help="Optional asset row ID such as A1")
+    publish_ready_parser.add_argument(
+        "--brand-kb-file",
+        default=str(default_brand_kb_path()),
+        help="Brand knowledge base JSON file. Default project path: knowledge/brand/brand-knowledge-base.json",
+    )
+    publish_ready_parser.add_argument(
+        "--output-file",
+        default=None,
+        help="Optional file path to write the publish-ready article output",
+    )
     new_content_parser = subparsers.add_parser(
         "new-content-brief",
         parents=[common],
@@ -184,6 +204,28 @@ def build_parser() -> argparse.ArgumentParser:
     wp_parser.add_argument("--excerpt", default=None, help="Optional excerpt")
     wp_parser.add_argument("--categories", default=None, help="Optional comma-separated WordPress category IDs")
     wp_parser.add_argument("--tags", default=None, help="Optional comma-separated WordPress tag IDs")
+    batch_parser = subparsers.add_parser(
+        "daily-wordpress-batch",
+        parents=[common],
+        help="Generate multiple publish-ready articles for the daily window and publish them to WordPress drafts",
+    )
+    batch_parser.add_argument("--count", type=int, default=3, help="How many article posts to generate and publish")
+    batch_parser.add_argument(
+        "--brand-kb-file",
+        default=str(default_brand_kb_path()),
+        help="Brand knowledge base JSON file. Default project path: knowledge/brand/brand-knowledge-base.json",
+    )
+    batch_parser.add_argument("--site-url", default=None, help="WordPress site URL")
+    batch_parser.add_argument("--username", default=None, help="WordPress username")
+    batch_parser.add_argument("--app-password", default=None, help="WordPress application password")
+    batch_parser.add_argument("--client-id", default=None, help="WordPress.com OAuth client ID")
+    batch_parser.add_argument("--client-secret", default=None, help="WordPress.com OAuth client secret")
+    batch_parser.add_argument("--status", default="draft", choices=["draft", "publish", "private"], help="Post status")
+    batch_parser.add_argument(
+        "--output-dir",
+        default="examples/daily-wordpress-batch",
+        help="Directory to write generated article files before publishing",
+    )
 
     return parser
 
@@ -256,6 +298,59 @@ def main() -> None:
                 indent=2,
             )
         )
+        return
+
+    if args.command == "publish-ready-article":
+        emit_output(
+            publish_ready_article(
+                client=DagenoClient(api_key=args.api_key, base_url=args.base_url),
+                days=args.days,
+                prompt_id=args.prompt_id,
+                prompt_text=args.prompt_text,
+                asset_id=args.asset_id,
+                brand_kb_file=args.brand_kb_file,
+            )
+        )
+        return
+
+    if args.command == "daily-wordpress-batch":
+        dclient = DagenoClient(api_key=args.api_key, base_url=args.base_url)
+        wp_client = WordPressClient(
+            site_url=args.site_url,
+            username=args.username,
+            app_password=args.app_password,
+            client_id=args.client_id,
+            client_secret=args.client_secret,
+        )
+        output_dir = Path(args.output_dir).expanduser()
+        output_dir.mkdir(parents=True, exist_ok=True)
+        package = daily_publish_ready_package(
+            client=dclient,
+            days=args.days,
+            count=args.count,
+            brand_kb_file=args.brand_kb_file,
+        )
+        results = []
+        for item in package:
+            output_path = output_dir / f"{item['slug']}.md"
+            output_path.write_text(item["markdown"], encoding="utf-8")
+            post = wp_client.create_post(
+                title=item["title"],
+                content=markdown_to_basic_html(item["markdown"]),
+                status=args.status,
+                slug=item["slug"],
+            )
+            results.append(
+                {
+                    "asset_id": item["asset_id"],
+                    "title": item["title"],
+                    "file": str(output_path),
+                    "wordpress_post_id": post.get("id"),
+                    "status": post.get("status"),
+                    "link": post.get("link"),
+                }
+            )
+        print(json.dumps({"count": len(results), "items": results}, ensure_ascii=False, indent=2))
         return
 
     client = DagenoClient(api_key=args.api_key, base_url=args.base_url)

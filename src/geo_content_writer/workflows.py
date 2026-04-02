@@ -785,6 +785,200 @@ def first_asset_draft(
     return "\n".join(lines)
 
 
+def _pick_publishable_article_asset(rows: List[Dict[str, Any]], asset_id: str | None = None) -> Dict[str, Any]:
+    candidates = [row for row in rows if row.get("asset_type") == "article"]
+    if asset_id:
+        for row in candidates:
+            if row.get("asset_id") == asset_id:
+                return row
+    ordered = sorted(candidates, key=lambda row: (_priority_rank(row.get("priority", "")), row.get("asset_id", "")))
+    return ordered[0] if ordered else {}
+
+
+def _publish_cta_text(asset: Dict[str, Any]) -> str:
+    intent = asset.get("target_intent", "")
+    if intent in {"Commercial", "Transactional"}:
+        return "If you are actively evaluating solutions, use this article as a shortlist framework and compare vendors against your own requirements before requesting demos."
+    return "If this topic matters to your team, the next step is to document your current workflow, note the gaps in visibility or measurement, and compare that baseline against the options discussed here."
+
+
+def _references_markdown(citations: List[Dict[str, Any]], limit: int = 5) -> List[str]:
+    lines: List[str] = []
+    for item in _top(citations, "citationCount", limit):
+        url = item.get("url", "").strip()
+        domain = item.get("domain", "-")
+        if not url:
+            continue
+        lines.append(f"- [{domain}]({url})")
+    return lines
+
+
+def _audience_text(brand_context: Dict[str, Any], topic: str) -> str:
+    audience = brand_context.get("target_audience") or []
+    if audience:
+        return ", ".join(audience[:3])
+    return f"teams researching {topic} and evaluating how it applies to their workflow"
+
+
+def _comparison_table_lines(topic: str) -> List[str]:
+    return [
+        "| Evaluation area | What to look for | Why it matters |",
+        "|---|---|---|",
+        f"| Coverage | Can the solution track the prompts and answer spaces that matter for {topic}? | Teams need visibility into the queries that actually shape buyer perception. |",
+        "| Evidence quality | Does it show response detail, citations, and source patterns instead of only rank-like summaries? | Better evidence leads to better content and prioritization decisions. |",
+        "| Workflow fit | Can the team move from insight to action without rebuilding the process manually? | Operational fit determines whether insights get used or ignored. |",
+        "| Measurement | Are there clear metrics, review cycles, and update triggers? | Without measurement, teams cannot prove whether the content strategy is working. |",
+    ]
+
+
+def _publish_ready_article_from_context(context: Dict[str, Any], asset: Dict[str, Any]) -> str:
+    selected = context["selected_opportunity"]
+    topic = selected.get("topic", "the topic")
+    prompt_text_value = selected.get("prompt", "the prompt")
+    brand_context = context.get("brand_context", {})
+    top_entities = [name for name, _ in context.get("mention_counter", Counter()).most_common(4)]
+    top_entities_text = ", ".join(top_entities) or "current market leaders"
+    references = _references_markdown(context.get("citations", []))
+    faq_items = _faq_items(asset, topic, prompt_text_value)
+    audience_text = _audience_text(brand_context, topic)
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    title = asset.get("asset_title", "Publish-Ready Article")
+    summary_box = [
+        "- Direct answer: teams should treat this category as a workflow decision, not just a tooling label.",
+        f"- Best fit: {audience_text}.",
+        f"- What matters most: evidence quality, workflow fit, measurement, and whether the approach can support {topic}.",
+    ]
+
+    lines = [
+        f"# {title}",
+        "",
+        f"_Last updated: {today}_",
+        "",
+        "## TL;DR",
+        "",
+    ]
+    lines.extend(summary_box)
+    lines.extend(
+        [
+            "",
+            "## Who This Article Is For",
+            "",
+            f"This article is for {audience_text}. It is most useful for teams that need to understand the category, compare approaches, and decide what matters before they commit to a workflow or vendor.",
+            "",
+            "## What This Article Covers",
+            "",
+            f"This article explains what {topic} is, why it matters now, how teams should evaluate available approaches, and which common mistakes to avoid.",
+            "",
+            "## What This Article Does Not Cover",
+            "",
+            "This article does not attempt to rank every vendor exhaustively, and it does not replace a hands-on evaluation process or product trial.",
+            "",
+            f"## What Is {topic}?",
+            "",
+            f"{topic} is the set of workflows, systems, and measurement practices teams use to improve how their brand appears in AI-generated answers. In practice, that means understanding which prompts matter, which sources shape those answers, and what content should be published so the brand becomes easier to cite and recommend.",
+            "",
+            f"## Why {topic} Matters Now",
+            "",
+            f"AI systems are already answering prompts like \"{prompt_text_value}\" even when the brand is missing. That means the market narrative is often shaped by third-party pages before buyers see a brand's own explanation. Right now, many of those answer spaces are influenced by sources such as {top_entities_text}, which makes category-defining content especially valuable.",
+            "",
+            f"## How Teams Should Evaluate {topic} Solutions",
+            "",
+            f"The best way to evaluate {topic} is to compare approaches against the decision areas that actually affect execution quality.",
+            "",
+        ]
+    )
+    lines.extend(_comparison_table_lines(topic))
+    lines.extend(
+        [
+            "",
+            f"## Common Mistakes Teams Make When Approaching {topic}",
+            "",
+            "A common mistake is treating the problem like a generic dashboard exercise. Another is publishing a single high-level article and assuming that one piece alone will influence AI answer spaces. In most cases, the stronger approach is to define the category clearly, create evaluation-oriented content, and then add supporting assets that match different stages of user intent.",
+            "",
+            "## FAQ",
+            "",
+        ]
+    )
+    for question, answer in faq_items:
+        lines.extend([f"### {question}", "", answer, ""])
+
+    if references:
+        lines.extend(["## References", ""])
+        lines.extend(references)
+        lines.extend([""])
+
+    lines.extend(
+        [
+            "## Conclusion",
+            "",
+            f"Teams evaluating {topic} should prioritize clear category understanding, verifiable evidence, and a workflow that connects insight to action. The goal is not only to monitor how AI systems talk about the category, but to create content and decision support that earns a place in those answers over time.",
+            "",
+            "## Next Step",
+            "",
+            _publish_cta_text(asset),
+        ]
+    )
+    return "\n".join(lines)
+
+
+def publish_ready_article(
+    client: DagenoClient,
+    days: int = 30,
+    *,
+    prompt_id: str | None = None,
+    prompt_text: str | None = None,
+    asset_id: str | None = None,
+    brand_kb_file: str | None = None,
+) -> str:
+    context = _build_content_pack_context(
+        client,
+        days,
+        prompt_id=prompt_id,
+        prompt_text=prompt_text,
+        brand_kb_file=brand_kb_file,
+        detail_limit=1,
+    )
+    if context["empty"]:
+        return "# Publish-Ready Article\n\nNo content opportunities were returned for the selected window."
+
+    asset = _pick_publishable_article_asset(context["asset_rows"], asset_id=asset_id)
+    if not asset:
+        return "# Publish-Ready Article\n\nNo publishable article asset was available for the selected window."
+    return _publish_ready_article_from_context(context, asset)
+
+
+def daily_publish_ready_package(
+    client: DagenoClient,
+    days: int = 1,
+    *,
+    count: int = 3,
+    brand_kb_file: str | None = None,
+) -> List[Dict[str, str]]:
+    context = _build_content_pack_context(
+        client,
+        days,
+        brand_kb_file=brand_kb_file,
+        detail_limit=1,
+    )
+    if context["empty"]:
+        return []
+
+    article_rows = [row for row in context["asset_rows"] if row.get("asset_type") == "article"]
+    ordered = sorted(article_rows, key=lambda row: (_priority_rank(row.get("priority", "")), row.get("asset_id", "")))
+    package: List[Dict[str, str]] = []
+    for row in ordered[:count]:
+        article_markdown = _publish_ready_article_from_context(context, row)
+        package.append(
+            {
+                "asset_id": row["asset_id"],
+                "title": row["asset_title"],
+                "slug": row["target_url_slug"],
+                "markdown": article_markdown,
+            }
+        )
+    return package
+
+
 def _build_content_pack_context(
     client: DagenoClient,
     days: int,

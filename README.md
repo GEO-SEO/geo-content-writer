@@ -51,9 +51,29 @@ The main value is simple:
 
 1. set the brand knowledge base in `knowledge/brand/brand-knowledge-base.json`
 2. run `content-pack` to identify assets and publishing order
-3. review the unified asset table
-4. generate the first asset draft
-5. edit and publish based on the article type
+3. generate a publish-ready article
+4. publish to WordPress as draft or publish status
+5. repeat this for the daily batch when needed
+
+## Fixed Writing Policy
+
+Publish-ready articles in this project should follow the fixed rules from:
+
+- [CORE-EEAT Content Benchmark](https://github.com/aaron-he-zhu/core-eeat-content-benchmark)
+
+In practice, the publish-ready workflow now enforces a stable subset of those rules:
+
+- direct answer early
+- definition first
+- audience targeting
+- scope and non-scope statement
+- clear heading hierarchy
+- TL;DR section
+- decision framework / comparison table
+- FAQ coverage
+- references section
+- conclusion plus next step
+- softer CTA for traffic articles, stronger CTA only for commercial intent
 
 ## 10-Second View
 
@@ -169,6 +189,12 @@ PYTHONPATH=src python -m geo_content_writer.cli validate-output examples/content
 PYTHONPATH=src python -m geo_content_writer.cli first-asset-draft --output-file examples/first-asset-draft.md
 ```
 
+### Generate a publish-ready article
+
+```bash
+PYTHONPATH=src python -m geo_content_writer.cli publish-ready-article --output-file examples/publish-ready-article.md
+```
+
 ### Publish a draft to WordPress
 
 Purpose: use WordPress as a simple distribution example for the content this project generates.
@@ -177,7 +203,7 @@ Purpose: use WordPress as a simple distribution example for the content this pro
 export WORDPRESS_SITE_URL="https://your-site.com"
 export WORDPRESS_USERNAME="your-username"
 export WORDPRESS_APP_PASSWORD="your-application-password"
-PYTHONPATH=src python -m geo_content_writer.cli publish-wordpress examples/first-asset-draft.md --status draft
+PYTHONPATH=src python -m geo_content_writer.cli publish-wordpress examples/publish-ready-article.md --status draft
 ```
 
 For `wordpress.com` hosted sites, also set:
@@ -185,6 +211,14 @@ For `wordpress.com` hosted sites, also set:
 ```bash
 export WORDPRESS_CLIENT_ID="your-client-id"
 export WORDPRESS_CLIENT_SECRET="your-client-secret"
+```
+
+### Daily batch to WordPress
+
+Purpose: generate multiple publish-ready articles from the daily window and push them to WordPress drafts.
+
+```bash
+PYTHONPATH=src python -m geo_content_writer.cli daily-wordpress-batch --count 3 --status draft
 ```
 
 ### Short aliases
