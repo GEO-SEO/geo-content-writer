@@ -90,6 +90,13 @@ Default backlog file:
 knowledge/backlog/fanout-backlog.json
 ```
 
+Suggested backlog statuses:
+
+- `write_now`
+- `needs_merge`
+- `needs_cleanup`
+- `skip`
+
 ### 3. Generate one publish-ready article
 
 ```bash

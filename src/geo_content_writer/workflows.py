@@ -309,22 +309,135 @@ def _dedupe_keep_order(values: List[str]) -> List[str]:
     return output
 
 
+def _canonical_fanout_key(value: str) -> str:
+    text = _normalize_text(value)
+    text = re.sub(r"\b20\d{2}\b", " ", text)
+    text = re.sub(r"[^a-z0-9\s]", " ", text)
+    stopwords = {
+        "best",
+        "top",
+        "app",
+        "apps",
+        "option",
+        "options",
+        "guide",
+        "guides",
+        "one",
+        "place",
+        "in",
+        "for",
+        "the",
+        "a",
+        "an",
+    }
+    tokens = [token for token in text.split() if token and token not in stopwords]
+    return " ".join(tokens)
+
+
+def _looks_non_latin_heavy(value: str) -> bool:
+    if not value:
+        return False
+    non_latin = sum(1 for ch in value if ord(ch) > 127)
+    return non_latin >= max(6, len(value) // 4)
+
+
+def _truncate_words(text: str, max_words: int = 12) -> str:
+    words = text.split()
+    if len(words) <= max_words:
+        return text
+    return " ".join(words[:max_words]).strip()
+
+
+def _title_case_basic(text: str) -> str:
+    small = {"and", "or", "for", "to", "in", "of", "the", "a", "an", "vs"}
+    words = text.split()
+    output = []
+    for idx, word in enumerate(words):
+        low = word.lower()
+        if idx > 0 and low in small:
+            output.append(low)
+        else:
+            output.append(low.capitalize())
+    return " ".join(output)
+
+
+def _cleanup_title_phrase(text: str) -> str:
+    cleaned = text
+    cleaned = re.sub(r"\bprice differences\b", "pricing", cleaned, flags=re.I)
+    cleaned = re.sub(r"\bprice difference\b", "pricing", cleaned, flags=re.I)
+    cleaned = re.sub(r"\bprices comparison\b", "pricing comparison", cleaned, flags=re.I)
+    cleaned = re.sub(r"\bdeals tips\b", "deals", cleaned, flags=re.I)
+    cleaned = re.sub(r"\bapp recommendations\b", "apps", cleaned, flags=re.I)
+    cleaned = re.sub(r"\bmobile apps recommendations\b", "mobile apps", cleaned, flags=re.I)
+    cleaned = re.sub(r"\bcomparison and\b", "comparison", cleaned, flags=re.I)
+    cleaned = re.sub(r"\ball in one\b", "all-in-one", cleaned, flags=re.I)
+    cleaned = re.sub(r"\s{2,}", " ", cleaned).strip(" -")
+    return cleaned
+
+
+def _editorialize_title(text: str, article_type: str, profile: str) -> str:
+    lower = text.lower().strip()
+
+    if article_type == "comparison":
+        if re.search(r"\bapp vs website\b", lower):
+            brand = text.split(" app vs ")[0].strip()
+            return f"{brand} App vs Website Pricing"
+        if lower.startswith("booking hotels via app vs web"):
+            return "Is It Cheaper to Book Hotels in an App or on the Website?"
+        if "vs" in lower and lower.count(" vs ") >= 2:
+            parts = [part.strip() for part in re.split(r"\bvs\b", text, flags=re.I)]
+            parts = [part for part in parts if part][:4]
+            if len(parts) >= 2:
+                return " vs ".join(parts) + ": Which One Is Better?"
+        if lower.endswith("comparison"):
+            return _title_case_basic(text)
+
+    if article_type == "recommendation":
+        if profile == "consumer_travel":
+            if "trip planning and booking" in lower:
+                return "Best Apps for Trip Planning and Booking"
+            if "travel booking" in lower:
+                return "Best Travel Booking Apps"
+            if "hotel booking" in lower:
+                return "Best Hotel Booking Apps"
+            if "travel deal" in lower:
+                return "Best Travel Deal Apps"
+
+    if article_type == "explainer":
+        if lower.startswith("what travel apps let you"):
+            return "What Travel Apps Let You Book Flights and Hotels in One Place?"
+        if "travel booking in one place" in lower:
+            return "Travel Booking Apps That Keep Flights and Hotels in One Place"
+        if "travel planning and booking mobile apps" in lower:
+            return "Mobile Apps for Travel Planning and Booking"
+        if "vacation package booking process" in lower:
+            return "How Vacation Package Booking Works"
+        if "tips for booking" in lower:
+            return _title_case_basic(text)
+
+    return _title_case_basic(text)
+
+
 def _dedupe_rows_by_text(rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     grouped: Dict[str, Dict[str, Any]] = {}
     for row in rows:
-        key = _normalize_text(row.get("fanout_text", ""))
+        key = _canonical_fanout_key(row.get("fanout_text", ""))
         if not key:
             continue
         if key not in grouped:
             grouped[key] = dict(row)
             grouped[key]["source_prompt_ids"] = list(row.get("source_prompt_ids", []))
             grouped[key]["source_prompts"] = list(row.get("source_prompts", []))
+            grouped[key]["fanout_variants"] = [row.get("fanout_text", "")]
             continue
         grouped[key]["source_prompt_ids"] = _dedupe_keep_order(
             grouped[key]["source_prompt_ids"] + row.get("source_prompt_ids", [])
         )
         grouped[key]["source_prompts"] = _dedupe_keep_order(
             grouped[key]["source_prompts"] + row.get("source_prompts", [])
+        )
+        grouped[key]["fanout_variants"] = _dedupe_keep_order(
+            grouped[key].get("fanout_variants", []) + [row.get("fanout_text", "")]
         )
         grouped[key]["source_count"] = len(grouped[key]["source_prompt_ids"])
     return list(grouped.values())
@@ -348,21 +461,48 @@ def _rewrite_fanout_title(fanout_text: str, article_type: str, brand_context: Di
     if not text:
         return "Untitled Article"
     profile = _market_profile(fanout_text, fanout_text, brand_context)
+    text = re.sub(r"\b20\d{2}\b", "", text).strip()
+    text = re.sub(r"\s{2,}", " ", text).strip(" -")
+    text = _cleanup_title_phrase(text)
     if article_type == "comparison":
-        return text[0].upper() + text[1:]
+        if text.lower().count(" vs ") >= 2:
+            return _editorialize_title(_truncate_words(text, 10), article_type, profile)
+        return _editorialize_title(_truncate_words(text, 12), article_type, profile)
     if article_type == "recommendation":
         if profile == "consumer_travel" and "best" not in text.lower():
-            return f"Best {text[0].upper() + text[1:]}"
-        return text[0].upper() + text[1:]
+            text = f"Best {text}"
+        text = re.sub(r"^Best top\b", "Best", text, flags=re.I)
+        return _editorialize_title(_truncate_words(text, 10), article_type, profile)
     if article_type == "guide":
         if text.lower().startswith("how to "):
-            return text[0].upper() + text[1:]
-        return f"How to {text[0].upper() + text[1:]}"
+            return _editorialize_title(_truncate_words(text, 10), article_type, profile)
+        return _editorialize_title(_truncate_words(f"How to {text}", 10), article_type, profile)
     if article_type == "review":
-        return text[0].upper() + text[1:]
+        return _editorialize_title(_truncate_words(text, 10), article_type, profile)
     if profile == "b2b_software":
-        return f"What Is {text[0].upper() + text[1:]}?"
-    return text[0].upper() + text[1:]
+        return _editorialize_title(_truncate_words(f"What is {text}", 10), article_type, profile) + "?"
+    return _editorialize_title(_truncate_words(text, 10), article_type, profile)
+
+
+def _fanout_quality_state(fanout_text: str, normalized_title: str, source_count: int = 1) -> Tuple[str, str]:
+    text = _normalize_text(fanout_text)
+    if not text:
+        return "skip", "Empty fanout text."
+    if _looks_non_latin_heavy(fanout_text):
+        return "needs_cleanup", "Contains heavy non-Latin or mixed-script text."
+    if len(text.split()) < 3:
+        return "needs_cleanup", "Too short to become a standalone article safely."
+    if len(text.split()) > 18:
+        return "needs_cleanup", "Too long and likely still query-shaped."
+    if text.count(" vs ") >= 3:
+        return "needs_cleanup", "Comparison query is too broad and should be simplified before writing."
+    if len(normalized_title.split()) > 10:
+        return "needs_cleanup", "Title still too long for a clean backlog item."
+    if normalized_title.lower().startswith(("best top", "tips for booking deals", "travel booking in one place app")):
+        return "needs_cleanup", "Title still sounds like a raw query instead of an editorial title."
+    if source_count > 1:
+        return "needs_merge", "Shared across multiple prompts and should be merged before writing."
+    return "write_now", "Ready for article drafting."
 
 
 def _page_type_family(citations: List[Dict[str, Any]]) -> str:
@@ -1712,16 +1852,24 @@ def build_fanout_backlog(
                 }
             )
     deduped = _dedupe_rows_by_text(backlog_rows)
+    article_type_rank = {"comparison": 0, "recommendation": 1, "guide": 2, "review": 3, "explainer": 4}
     for row in deduped:
         row["source_count"] = len(row.get("source_prompt_ids", []))
+        row["status"], row["notes"] = _fanout_quality_state(
+            row.get("fanout_text", ""),
+            row.get("normalized_title", ""),
+            row["source_count"],
+        )
         if row["source_count"] > 1:
             row["overlap_status"] = "merge"
-            row["notes"] = "Shared across multiple source prompts."
+        else:
+            row["overlap_status"] = "new"
     ordered = sorted(
         deduped,
         key=lambda row: (
-            0 if row["overlap_status"] == "new" else 1,
+            0 if row["status"] == "write_now" else 1 if row["status"] == "needs_merge" else 2,
             -row.get("source_count", 1),
+            article_type_rank.get(row.get("article_type", "explainer"), 9),
             row.get("normalized_title", ""),
         ),
     )
