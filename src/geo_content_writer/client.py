@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import time
 from typing import Any, Dict, Optional
 
 import requests
@@ -14,10 +15,12 @@ class DagenoClient:
         api_key: Optional[str] = None,
         base_url: str = "https://api.dageno.ai/business/api",
         timeout: int = 30,
+        max_retries: int = 3,
     ) -> None:
         self.api_key = api_key or os.environ.get("DAGENO_API_KEY")
         self.base_url = base_url.rstrip("/")
         self.timeout = timeout
+        self.max_retries = max_retries
 
         if not self.api_key:
             raise ValueError("Missing DAGENO_API_KEY. Pass api_key or set the environment variable.")
@@ -37,16 +40,27 @@ class DagenoClient:
         params: Optional[Dict[str, Any]] = None,
         json: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
-        response = requests.request(
-            method=method,
-            url=f"{self.base_url}{path}",
-            headers=self.headers,
-            params=params,
-            json=json,
-            timeout=self.timeout,
-        )
-        response.raise_for_status()
-        return response.json()
+        last_error: Exception | None = None
+        for attempt in range(1, self.max_retries + 1):
+            try:
+                response = requests.request(
+                    method=method,
+                    url=f"{self.base_url}{path}",
+                    headers=self.headers,
+                    params=params,
+                    json=json,
+                    timeout=self.timeout,
+                )
+                response.raise_for_status()
+                return response.json()
+            except requests.exceptions.RequestException as exc:
+                last_error = exc
+                if attempt == self.max_retries:
+                    break
+                time.sleep(0.8 * attempt)
+        if last_error:
+            raise last_error
+        raise RuntimeError("Request failed without an exception.")
 
     def brand_info(self) -> Dict[str, Any]:
         return self._request("GET", "/v1/open-api/brand")

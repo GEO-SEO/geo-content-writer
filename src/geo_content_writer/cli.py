@@ -67,6 +67,13 @@ def _derive_title_and_slug(markdown_text: str) -> tuple[str, str]:
     return title, slug or "untitled-draft"
 
 
+def _extract_publishable_markdown(markdown_text: str) -> str:
+    marker = "\n## Article\n"
+    if marker in markdown_text:
+        return markdown_text.split(marker, 1)[1].lstrip()
+    return markdown_text
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="GEO Content Writer CLI")
     common = argparse.ArgumentParser(add_help=False)
@@ -269,6 +276,7 @@ def main() -> None:
     if args.command == "publish-wordpress":
         input_path = Path(args.input_file).expanduser()
         markdown_text = input_path.read_text(encoding="utf-8")
+        publishable_markdown = _extract_publishable_markdown(markdown_text)
         inferred_title, inferred_slug = _derive_title_and_slug(markdown_text)
         client = WordPressClient(
             site_url=args.site_url,
@@ -277,7 +285,7 @@ def main() -> None:
             client_id=args.client_id,
             client_secret=args.client_secret,
         )
-        html_content = markdown_to_basic_html(markdown_text)
+        html_content = markdown_to_basic_html(publishable_markdown)
         if args.post_id:
             result = client.update_post(
                 args.post_id,

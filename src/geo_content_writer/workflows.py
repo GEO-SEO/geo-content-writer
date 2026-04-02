@@ -813,6 +813,25 @@ def _references_markdown(citations: List[Dict[str, Any]], limit: int = 5) -> Lis
     return lines
 
 
+def _reference_conclusion_lines(citations: List[Dict[str, Any]], limit: int = 5) -> List[str]:
+    fallback_notes = [
+        "Supports the conclusion that category-defining articles shape early buyer understanding.",
+        "Supports the conclusion that comparison-style content influences evaluation behavior.",
+        "Supports the conclusion that teams need evidence, not only broad claims, when choosing solutions.",
+        "Supports the conclusion that market framing is often controlled by third-party sources.",
+        "Supports the conclusion that clear workflows and measurement criteria matter in real buying decisions.",
+    ]
+    lines: List[str] = []
+    for idx, item in enumerate(_top(citations, "citationCount", limit)):
+        url = item.get("url", "").strip()
+        domain = item.get("domain", "-")
+        if not url:
+            continue
+        note = fallback_notes[idx] if idx < len(fallback_notes) else fallback_notes[-1]
+        lines.append(f"- [{domain}]({url}) - {note}")
+    return lines
+
+
 def _audience_text(brand_context: Dict[str, Any], topic: str) -> str:
     audience = brand_context.get("target_audience") or []
     if audience:
@@ -831,6 +850,50 @@ def _comparison_table_lines(topic: str) -> List[str]:
     ]
 
 
+def _blog_intro(topic: str, prompt_text: str, audience_text: str) -> str:
+    return (
+        f"If your team is trying to decide whether {topic} deserves budget, process ownership, or new content investment, the hard part is not finding more definitions. "
+        f"The hard part is knowing what actually matters when prompts like \"{prompt_text}\" are already shaping buyer expectations. "
+        f"This article is for {audience_text}, and it will help you understand the category, compare options more confidently, and avoid the mistakes that turn AI visibility into another vague reporting exercise."
+    )
+
+
+def _section_block(heading: str, conclusion: str, steps: List[str], example: str, pitfall: str) -> List[str]:
+    lines = [
+        f"## {heading}",
+        "",
+        conclusion,
+        "",
+        "Steps to apply this:",
+    ]
+    for step in steps:
+        lines.append(f"- {step}")
+    lines.extend(
+        [
+            "",
+            f"Example: {example}",
+            "",
+            f"Common pitfall: {pitfall}",
+            "",
+        ]
+    )
+    return lines
+
+
+def _article_outline_lines(topic: str) -> List[str]:
+    return [
+        "## Outline",
+        "",
+        f"- Intro: why {topic} matters now and what the reader will get from the article",
+        f"- H2: what {topic} is and what problem it actually solves",
+        f"- H2: how teams should evaluate {topic} in practice",
+        f"- H2: what a realistic workflow looks like",
+        f"- H2: the mistakes that create weak results",
+        "- FAQ",
+        "- References",
+    ]
+
+
 def _publish_ready_article_from_context(context: Dict[str, Any], asset: Dict[str, Any]) -> str:
     selected = context["selected_opportunity"]
     topic = selected.get("topic", "the topic")
@@ -838,57 +901,83 @@ def _publish_ready_article_from_context(context: Dict[str, Any], asset: Dict[str
     brand_context = context.get("brand_context", {})
     top_entities = [name for name, _ in context.get("mention_counter", Counter()).most_common(4)]
     top_entities_text = ", ".join(top_entities) or "current market leaders"
-    references = _references_markdown(context.get("citations", []))
+    references = _reference_conclusion_lines(context.get("citations", []))
     faq_items = _faq_items(asset, topic, prompt_text_value)
     audience_text = _audience_text(brand_context, topic)
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     title = asset.get("asset_title", "Publish-Ready Article")
-    summary_box = [
-        f"- {topic} should be evaluated as an operational workflow, not just a tooling label.",
-        f"- Best fit: {audience_text}.",
-        f"- Key criteria: evidence quality, workflow fit, measurement, and support for real {topic} execution.",
-    ]
+    intro = _blog_intro(topic, prompt_text_value, audience_text)
+    section_one = _section_block(
+        f"What {topic} Actually Means in Practice",
+        f"The most useful way to understand {topic} is to see it as a workflow for shaping how buyers encounter your brand in AI answers, not as a single reporting feature.",
+        [
+            "List the prompts that influence category understanding or purchase intent.",
+            "Review which sources and page types appear repeatedly in those answer spaces.",
+            "Map the gaps you see to the content assets your team has already published.",
+        ],
+        f"When a team researches \"{prompt_text_value}\", they may find that article and comparison pages shape the answer space more than homepages. That tells them a single product page will not be enough.",
+        "Reducing the category to one metric and never connecting the insight back to content planning.",
+    )
+    section_two = _section_block(
+        f"How Teams Should Evaluate {topic} Solutions",
+        f"The strongest evaluation process focuses on whether the solution produces usable evidence and practical next steps, not just a cleaner dashboard.",
+        [
+            "Check whether the workflow covers the prompts and platforms that matter commercially.",
+            "Verify that it exposes response detail, citations, and source patterns.",
+            "Compare whether your team can move from insight to published content without rebuilding the process manually.",
+        ],
+        f"If one platform only summarizes visibility while another shows prompt-level evidence, citations, and recurring competitor sources, the second platform is more useful for editorial decisions.",
+        "Choosing based on UI polish while ignoring whether the workflow can support actual publishing decisions.",
+    )
+    section_three = _section_block(
+        f"What a Realistic {topic} Workflow Looks Like",
+        f"A realistic workflow starts with category clarification, then moves into comparison content, and only later into stronger conversion assets.",
+        [
+            "Start with a category article that explains the problem in plain language.",
+            "Publish a comparison or evaluation article once the category framing is established.",
+            "Add conversion-oriented assets only after the informational layer is in place.",
+        ],
+        f"A team might begin with a category article, follow with a buyer guide, and then publish a landing page once they know which queries consistently show commercial intent.",
+        "Trying to jump straight to a sales page before the category has been clearly explained to the market.",
+    )
+    section_four = _section_block(
+        f"The Mistakes That Make {topic} Content Weak",
+        f"The weakest articles usually explain the category without giving the reader any way to make a better decision.",
+        [
+            "Replace vague claims with concrete evaluation criteria.",
+            "Use one example to make each key point easier to apply.",
+            "Keep transitions between sections explicit so the article reads like a blog, not a checklist dump.",
+        ],
+        f"An article that only says \"AI visibility matters\" is weaker than one that shows how a team should review prompts, citations, workflow fit, and publishing gaps.",
+        "Stacking terminology without explaining what the reader should do next.",
+    )
 
     lines = [
         f"# {title}",
+        "",
+        *_article_outline_lines(topic),
+        "",
+        "## Article",
         "",
         f"_Last updated: {today}_",
         "",
         "## TL;DR",
         "",
+        f"- {topic} should be treated as an operational workflow, not just a tooling label.",
+        f"- Best fit: {audience_text}.",
+        f"- The real decision comes down to evidence quality, workflow fit, and whether the team can turn insight into content action.",
+        "",
+        intro,
+        "",
     ]
-    lines.extend(summary_box)
-    lines.extend(
-        [
-            "",
-            f"{topic} is becoming more important because AI systems already shape how buyers understand categories, vendors, and workflows. When brands are missing from those answer spaces, third-party sources often define the narrative first. That makes category-defining content much more valuable than another generic top-of-funnel article.",
-            "",
-            f"## What Is {topic}?",
-            "",
-            f"{topic} is the set of workflows, systems, and measurement practices teams use to improve how their brand appears in AI-generated answers. In practice, that means understanding which prompts matter, which sources shape those answers, and what content should be published so the brand becomes easier to cite and recommend.",
-            "",
-            f"## Why {topic} Matters Now",
-            "",
-            f"AI systems are already answering prompts like \"{prompt_text_value}\" even when the brand is missing. That means the market narrative is often shaped by third-party pages before buyers see a brand's own explanation. Right now, many of those answer spaces are influenced by sources such as {top_entities_text}, which makes category-defining content especially valuable.",
-            "",
-            f"## How Teams Should Evaluate {topic} Solutions",
-            "",
-            f"The best way to evaluate {topic} is to compare approaches against the decision areas that actually affect execution quality.",
-            "",
-        ]
-    )
+    lines.extend(section_one)
+    lines.extend(section_two)
+    lines.extend(["## Decision Table", ""])
     lines.extend(_comparison_table_lines(topic))
-    lines.extend(
-        [
-            "",
-            f"## Common Mistakes Teams Make When Approaching {topic}",
-            "",
-            "A common mistake is treating the problem like a generic dashboard exercise. Another is publishing a single high-level article and assuming that one piece alone will influence AI answer spaces. In most cases, the stronger approach is to define the category clearly, create evaluation-oriented content, and then add supporting assets that match different stages of user intent.",
-            "",
-            "## FAQ",
-            "",
-        ]
-    )
+    lines.extend([""])
+    lines.extend(section_three)
+    lines.extend(section_four)
+    lines.extend(["## FAQ", ""])
     for question, answer in faq_items:
         lines.extend([f"### {question}", "", answer, ""])
 
@@ -901,7 +990,7 @@ def _publish_ready_article_from_context(context: Dict[str, Any], asset: Dict[str
         [
             "## Conclusion",
             "",
-            f"Teams evaluating {topic} should prioritize clear category understanding, verifiable evidence, and a workflow that connects insight to action. The goal is not only to monitor how AI systems talk about the category, but to create content and decision support that earns a place in those answers over time.",
+            f"Teams evaluating {topic} should prioritize clear category understanding, verifiable evidence, and a workflow that connects insight to action. The goal is not only to monitor how AI systems talk about the category, but to create content that helps buyers make better decisions and gives the brand a credible place in those answers over time.",
             "",
             "## Final Takeaway",
             "",
