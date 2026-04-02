@@ -139,29 +139,123 @@ def _primary_intention(intentions: List[Dict[str, Any]]) -> str:
     return _normalize_intention_label(best)
 
 
-def _fanout_prompt_guesses(prompt_text: str, topic: str, primary_intent: str) -> List[str]:
+def _market_profile(prompt_text: str, topic: str, brand_context: Dict[str, Any] | None = None) -> str:
+    haystack = f"{prompt_text} {topic}".lower()
+    brand_category = ((brand_context or {}).get("category") or "").lower()
+    travel_markers = [
+        "travel",
+        "booking",
+        "flight",
+        "hotel",
+        "trip",
+        "vacation",
+        "airline",
+    ]
+    consumer_markers = [
+        "best app",
+        "iphone",
+        "android",
+        "family",
+        "student",
+        "free app",
+        "top rated",
+    ]
+    b2b_markers = [
+        "enterprise",
+        "agency",
+        "saas",
+        "software",
+        "platform",
+        "b2b",
+        "for brands",
+    ]
+    if any(marker in haystack for marker in travel_markers):
+        return "consumer_travel"
+    if any(marker in brand_category for marker in ["travel", "booking"]):
+        return "consumer_travel"
+    if any(marker in haystack for marker in consumer_markers):
+        return "consumer_general"
+    if any(marker in haystack for marker in b2b_markers):
+        return "b2b_software"
+    return "generic"
+
+
+def _fanout_prompt_guesses(prompt_text: str, topic: str, primary_intent: str, brand_context: Dict[str, Any] | None = None) -> List[str]:
     base = prompt_text.strip()
     topic_part = topic.strip() if topic else "the topic"
+    profile = _market_profile(prompt_text, topic, brand_context)
+    if profile == "consumer_travel":
+        return [
+            f"what is the best {topic_part.lower()} option",
+            f"best {topic_part.lower()} for flights and hotels",
+            f"how to choose a {topic_part.lower()} app",
+            f"{topic_part.lower()} comparison",
+            f"common mistakes when choosing {topic_part.lower()}",
+        ]
+    if profile == "consumer_general":
+        return [
+            f"what is the best {topic_part.lower()}",
+            f"how to choose a {topic_part.lower()} app",
+            f"{topic_part.lower()} comparison",
+            f"top {topic_part.lower()} options right now",
+            f"common mistakes when choosing {topic_part.lower()}",
+        ]
+    if profile == "b2b_software":
+        return [
+            f"what is {base.lower()}",
+            f"best {topic_part.lower()} platforms for teams",
+            f"how to evaluate {topic_part.lower()} solutions",
+            f"{topic_part.lower()} software comparison",
+            f"how to measure results from {topic_part.lower()}",
+        ]
     return [
         f"what is {base.lower()}",
-        f"best {topic_part.lower()} platforms for enterprises",
-        f"how to evaluate {topic_part.lower()} solutions",
-        f"{topic_part.lower()} software for enterprise teams",
-        f"how to measure results from {topic_part.lower()}",
+        f"best {topic_part.lower()} options",
+        f"how to evaluate {topic_part.lower()}",
+        f"{topic_part.lower()} comparison",
+        f"common mistakes with {topic_part.lower()}",
     ]
 
 
-def _keyword_cluster_guesses(prompt_text: str, topic: str) -> List[str]:
+def _keyword_cluster_guesses(prompt_text: str, topic: str, brand_context: Dict[str, Any] | None = None) -> List[str]:
     seed = prompt_text.lower()
     topic_key = topic.lower() if topic else "topic"
-    variants = [
-        seed,
-        f"enterprise {topic_key} solutions",
-        f"{topic_key} platform",
-        f"{topic_key} software",
-        f"{topic_key} tools",
-        f"{topic_key} for enterprise brands",
-    ]
+    profile = _market_profile(prompt_text, topic, brand_context)
+    if profile == "consumer_travel":
+        variants = [
+            seed,
+            f"best {topic_key}",
+            f"{topic_key} comparison",
+            f"all in one {topic_key}",
+            f"{topic_key} for flights and hotels",
+            f"travel booking apps in one place",
+        ]
+    elif profile == "consumer_general":
+        variants = [
+            seed,
+            f"best {topic_key}",
+            f"{topic_key} comparison",
+            f"top rated {topic_key}",
+            f"{topic_key} buying guide",
+            f"how to choose {topic_key}",
+        ]
+    elif profile == "b2b_software":
+        variants = [
+            seed,
+            f"{topic_key} software",
+            f"{topic_key} platform",
+            f"{topic_key} tools",
+            f"{topic_key} comparison",
+            f"{topic_key} for teams",
+        ]
+    else:
+        variants = [
+            seed,
+            f"best {topic_key}",
+            f"{topic_key} guide",
+            f"{topic_key} comparison",
+            f"{topic_key} tools",
+        ]
     seen = []
     for item in variants:
         item = " ".join(item.split())
@@ -193,6 +287,10 @@ def _slugify(value: str) -> str:
     cleaned = re.sub(r"[^a-z0-9]+", "-", (value or "").strip().lower())
     cleaned = re.sub(r"-{2,}", "-", cleaned).strip("-")
     return cleaned or "untitled"
+
+
+def _normalize_key(value: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "", (value or "").strip().lower())
 
 
 def _publish_target_type(asset_type: str) -> str:
@@ -245,6 +343,43 @@ def _cta_goal(asset_type: str, target_intent: str) -> str:
     return "newsletter_or_retargeting"
 
 
+def _asset_title_set(prompt_text: str, topic: str, primary_intent: str, dominant_page_type: str, brand_context: Dict[str, Any] | None = None) -> List[str]:
+    profile = _market_profile(prompt_text, topic, brand_context)
+    topic_l = topic or "topic"
+    if profile == "consumer_travel":
+        return [
+            "Best Travel Booking Apps in One Place",
+            "How to Choose a Travel Booking App That Actually Saves Time",
+            "Travel Booking Apps Compared: Which One Fits Your Trip Style?",
+            "Common Mistakes People Make When Choosing Travel Booking Apps",
+            "Travel Booking App Buying Guide",
+        ]
+    if profile == "consumer_general":
+        return [
+            f"What {topic_l} Actually Helps You Do",
+            f"How to Choose the Best {topic_l}",
+            f"Best {topic_l} Options Right Now",
+            f"Common Mistakes People Make When Choosing {topic_l}",
+            f"{topic_l}: Buying Guide",
+        ]
+    if profile == "b2b_software":
+        suffix = " Solution" if "solution" not in topic_l.lower() else ""
+        return [
+            f"What Is an Enterprise {topic_l}{suffix}?",
+            f"How to Evaluate Enterprise {topic_l} Platforms",
+            f"Best Enterprise {topic_l} Solutions for Brand Authority",
+            f"How to Measure Brand Authority in AI Answers",
+            f"Enterprise {topic_l} Platform for Brand Authority",
+        ]
+    return [
+        f"What Is {topic_l}?",
+        f"How to Evaluate {topic_l}",
+        f"Best {topic_l} Options Right Now",
+        f"Common Mistakes People Make With {topic_l}",
+        f"{topic_l}: Practical Guide",
+    ]
+
+
 def _asset_rows(
     *,
     prompt_text: str,
@@ -257,10 +392,11 @@ def _asset_rows(
     topic_l = topic or "topic"
     intent = primary_intent if primary_intent != "-" else "Informational"
     derived_common = ["high_brand_gap", "high_source_gap", "repeated_response_framing"]
+    titles = _asset_title_set(prompt_text, topic_l, primary_intent, dominant_page_type)
     rows = [
         {
             "asset_id": "A1",
-            "asset_title": f"What Is an Enterprise {topic_l} Solution?",
+            "asset_title": titles[0],
             "asset_type": "article",
             "recommended_publish_surface": "website_blog",
             "target_intent": "Informational",
@@ -272,7 +408,7 @@ def _asset_rows(
         },
         {
             "asset_id": "A2",
-            "asset_title": f"How to Evaluate Enterprise {topic_l} Platforms",
+            "asset_title": titles[1],
             "asset_type": "article",
             "recommended_publish_surface": "website_blog",
             "target_intent": "Commercial",
@@ -284,7 +420,7 @@ def _asset_rows(
         },
         {
             "asset_id": "A3",
-            "asset_title": f"Best Enterprise {topic_l} Solutions for Brand Authority",
+            "asset_title": titles[2],
             "asset_type": "article",
             "recommended_publish_surface": "third_party_article" if dominant_page_type == "Listicle" else "website_blog",
             "target_intent": intent,
@@ -296,7 +432,7 @@ def _asset_rows(
         },
         {
             "asset_id": "A4",
-            "asset_title": f"How to Measure Brand Authority in AI Answers",
+            "asset_title": titles[3],
             "asset_type": "article",
             "recommended_publish_surface": "website_blog",
             "target_intent": "Commercial",
@@ -308,7 +444,7 @@ def _asset_rows(
         },
         {
             "asset_id": "A5",
-            "asset_title": f"Enterprise {topic_l} Platform for Brand Authority",
+            "asset_title": titles[4],
             "asset_type": "landing_page",
             "recommended_publish_surface": "landing_page",
             "target_intent": intent,
@@ -521,6 +657,7 @@ def _brand_context_summary(brand_context: Dict[str, Any]) -> Dict[str, Any]:
         return {}
     return {
         "brand_name": brand_context.get("brand_name") or brand_context.get("name") or "",
+        "domain": brand_context.get("domain") or "",
         "category": brand_context.get("category") or "",
         "one_liner": brand_context.get("one_liner") or brand_context.get("tagline") or "",
         "differentiators": (brand_context.get("differentiators") or [])[:5],
@@ -535,6 +672,9 @@ def _brand_context_compact_lines(brand_context: Dict[str, Any]) -> List[str]:
     name = brand_context.get("brand_name") or brand_context.get("name")
     if name:
         lines.append(f"- Brand: `{name}`")
+    domain = brand_context.get("domain")
+    if domain:
+        lines.append(f"- Domain: `{domain}`")
     one_liner = brand_context.get("one_liner") or brand_context.get("tagline")
     if one_liner:
         lines.append(f"- Positioning: {one_liner}")
@@ -545,6 +685,39 @@ def _brand_context_compact_lines(brand_context: Dict[str, Any]) -> List[str]:
     if prohibited_claims:
         lines.append(f"- Avoid claims: {', '.join(prohibited_claims[:3])}")
     return lines
+
+
+def _remote_brand_context(client: DagenoClient) -> Dict[str, Any]:
+    try:
+        return client.brand_info().get("data", {})
+    except Exception:
+        return {}
+
+
+def _brand_alignment_status(local_kb: Dict[str, Any], remote_brand: Dict[str, Any], brand_kb_file: str | None) -> Dict[str, Any]:
+    status = _brand_kb_status(brand_kb_file)
+    if not local_kb or not remote_brand:
+        status["matches_remote_brand"] = None
+        return status
+    local_name = _normalize_key(local_kb.get("brand_name") or local_kb.get("name") or "")
+    remote_name = _normalize_key(remote_brand.get("name") or "")
+    local_domain = _normalize_key(local_kb.get("domain") or "")
+    remote_domain = _normalize_key(remote_brand.get("domain") or "")
+    matches = False
+    if local_name and remote_name and local_name == remote_name:
+        matches = True
+    if local_domain and remote_domain and local_domain == remote_domain:
+        matches = True
+    status["matches_remote_brand"] = matches
+    if status["loaded"] and not matches:
+        status["message"] = "Brand knowledge base does not match the Dageno brand snapshot. Use a matching knowledge base before generating publish-ready output."
+    return status
+
+
+def _assert_brand_alignment(context: Dict[str, Any]) -> None:
+    brand_kb = context.get("brand_kb", {})
+    if brand_kb.get("loaded") and brand_kb.get("matches_remote_brand") is False:
+        raise ValueError(brand_kb.get("message"))
 
 
 def _priority_rank(priority: str) -> int:
@@ -576,6 +749,22 @@ def _top_citation_lines(citations: List[Dict[str, Any]], limit: int = 3) -> List
 def _faq_items(asset: Dict[str, Any], topic: str, prompt_text: str) -> List[Tuple[str, str]]:
     category = topic or "the category"
     title = asset.get("asset_title", "this topic")
+    profile = _market_profile(prompt_text, topic, {})
+    if profile == "consumer_travel":
+        return [
+            (
+                "What is the best type of travel booking app for most people?",
+                "For most travelers, the best option is an app that lets them compare flights and hotels clearly, shows booking conditions up front, and keeps itinerary management simple after purchase.",
+            ),
+            (
+                "Should I use one app for everything or separate apps for flights and hotels?",
+                "If convenience matters most, one all-in-one app is usually the better starting point. If you are optimizing for one specific part of the trip, specialist tools can still be worth checking.",
+            ),
+            (
+                "What should I compare before booking through a travel app?",
+                "Compare route and hotel coverage, pricing clarity, refund rules, support quality, and whether the booking flow feels simple enough to trust when plans change.",
+            ),
+        ]
     return [
         (
             f"What is {category}?",
@@ -797,6 +986,10 @@ def _pick_publishable_article_asset(rows: List[Dict[str, Any]], asset_id: str | 
 
 def _publish_cta_text(asset: Dict[str, Any]) -> str:
     intent = asset.get("target_intent", "")
+    title = asset.get("asset_title", "")
+    profile = _market_profile(title, title, {})
+    if profile == "consumer_travel":
+        return "If you are actively comparing apps, shortlist two or three options, run the same trip search in each one, and choose the app that gives you the clearest mix of convenience, pricing transparency, and trust."
     if intent in {"Commercial", "Transactional"}:
         return "If you are actively evaluating solutions, use this article as a shortlist framework and compare vendors against your own requirements before requesting demos."
     return "If this topic matters to your team, the next step is to document your current workflow, note the gaps in visibility or measurement, and compare that baseline against the options discussed here."
@@ -850,6 +1043,17 @@ def _comparison_table_lines(topic: str) -> List[str]:
     ]
 
 
+def _consumer_comparison_table_lines() -> List[str]:
+    return [
+        "| Decision area | What to compare | Why it matters |",
+        "|---|---|---|",
+        "| Booking coverage | Flights, hotels, trains, cars, or packages in one app | Coverage determines whether the app really saves time or still forces users to jump between tools. |",
+        "| Price clarity | Fees, filters, and refund visibility | Clear pricing reduces last-minute surprises and comparison fatigue. |",
+        "| User experience | Search speed, app flow, itinerary handling | The best app is not only cheaper, but easier to use when plans change. |",
+        "| Support and trust | Reviews, support quality, booking confidence | Travel booking is high-stakes, so reliability matters as much as convenience. |",
+    ]
+
+
 def _blog_intro(topic: str, prompt_text: str, audience_text: str) -> str:
     return (
         f"If your team is trying to decide whether {topic} deserves budget, process ownership, or new content investment, the hard part is not finding more definitions. "
@@ -894,6 +1098,22 @@ def _article_outline_lines(topic: str) -> List[str]:
     ]
 
 
+def _article_outline_lines_for_profile(topic: str, profile: str) -> List[str]:
+    if profile == "consumer_travel":
+        return [
+            "## Outline",
+            "",
+            "- Intro: traveler problem and reader payoff",
+            "- H2: what makes a travel booking app genuinely useful",
+            "- H2: how to compare travel booking apps without wasting time",
+            "- H2: when an all-in-one app is the better choice",
+            "- H2: the mistakes people make when choosing travel apps",
+            "- FAQ",
+            "- References",
+        ]
+    return _article_outline_lines(topic)
+
+
 def _publish_ready_article_from_context(context: Dict[str, Any], asset: Dict[str, Any]) -> str:
     selected = context["selected_opportunity"]
     topic = selected.get("topic", "the topic")
@@ -906,8 +1126,60 @@ def _publish_ready_article_from_context(context: Dict[str, Any], asset: Dict[str
     audience_text = _audience_text(brand_context, topic)
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     title = asset.get("asset_title", "Publish-Ready Article")
-    intro = _blog_intro(topic, prompt_text_value, audience_text)
-    section_one = _section_block(
+    profile = _market_profile(prompt_text_value, topic, brand_context)
+    if profile == "consumer_travel":
+        intro = (
+            f"If you are trying to book flights, hotels, and maybe even trains or cars without bouncing between five different apps, the real question is not which app is most famous. "
+            f"The real question is which one actually makes trip planning simpler, clearer, and easier to trust. This article is for {audience_text}, and it will help you compare travel booking apps in a way that feels useful before you commit to one."
+        )
+        section_one = _section_block(
+            "What Makes a Travel Booking App Actually Useful",
+            "The best travel booking app is the one that reduces friction across the whole trip-planning journey, not just the one with the flashiest brand or the most ads.",
+            [
+                "Check whether you can search flights, hotels, and other trip pieces in one place.",
+                "Compare how clearly the app shows prices, filters, and booking conditions.",
+                "Look at whether itinerary management is simple after the booking is complete.",
+            ],
+            "A traveler comparing apps may find that one app has great hotel inventory but weak flight filters, while another handles both in one flow and saves time immediately.",
+            "Choosing based on app-store popularity without checking whether the workflow actually fits how you book trips.",
+        )
+        section_two = _section_block(
+            "How to Compare Travel Booking Apps Without Wasting Time",
+            "The easiest way to compare travel booking apps is to judge them against booking coverage, pricing clarity, trust, and ease of use.",
+            [
+                "Test the same trip search in two or three apps using the same dates and route.",
+                "Compare not only headline prices, but refund rules, booking conditions, and hidden friction.",
+                "Look at review quality and support expectations before treating low price as the only signal.",
+            ],
+            "If one app looks cheaper at first glance but adds confusion around baggage, cancellation, or booking confirmation, it may be worse for real-world travel planning.",
+            "Mistaking a cheaper starting price for a better overall booking experience.",
+        )
+        section_three = _section_block(
+            "When an All-in-One Booking App Is the Better Choice",
+            "An all-in-one booking app is strongest when your goal is convenience across multiple travel steps, not endless manual comparison.",
+            [
+                "Use one-stop apps when you want to manage flights, hotels, and itinerary changes in one workflow.",
+                "Use specialist tools only when one part of the trip matters more than everything else.",
+                "Decide upfront whether you value maximum flexibility or faster booking completion.",
+            ],
+            "For a weekend city trip, an all-in-one booking app may be the fastest choice because the traveler can search flights and hotels in one session instead of juggling separate tools.",
+            "Forcing every trip into the same booking behavior instead of adjusting for trip complexity.",
+        )
+        section_four = _section_block(
+            "Common Mistakes People Make When Choosing Travel Apps",
+            "Most bad travel app decisions come from rushing the comparison and overvaluing convenience claims that are not backed by a better experience.",
+            [
+                "Ignore marketing language and compare the actual booking flow.",
+                "Check whether support and changes are easy to handle after purchase.",
+                "Treat app ratings as a clue, not as final proof.",
+            ],
+            "An app can have millions of downloads and still feel frustrating if the filters, pricing details, or after-booking support are weak.",
+            "Assuming the most downloaded app will automatically be the best fit for your trip.",
+        )
+        table_lines = _consumer_comparison_table_lines()
+    else:
+        intro = _blog_intro(topic, prompt_text_value, audience_text)
+        section_one = _section_block(
         f"What {topic} Actually Means in Practice",
         f"The most useful way to understand {topic} is to see it as a workflow for shaping how buyers encounter your brand in AI answers, not as a single reporting feature.",
         [
@@ -917,8 +1189,8 @@ def _publish_ready_article_from_context(context: Dict[str, Any], asset: Dict[str
         ],
         f"When a team researches \"{prompt_text_value}\", they may find that article and comparison pages shape the answer space more than homepages. That tells them a single product page will not be enough.",
         "Reducing the category to one metric and never connecting the insight back to content planning.",
-    )
-    section_two = _section_block(
+        )
+        section_two = _section_block(
         f"How Teams Should Evaluate {topic} Solutions",
         f"The strongest evaluation process focuses on whether the solution produces usable evidence and practical next steps, not just a cleaner dashboard.",
         [
@@ -928,8 +1200,8 @@ def _publish_ready_article_from_context(context: Dict[str, Any], asset: Dict[str
         ],
         f"If one platform only summarizes visibility while another shows prompt-level evidence, citations, and recurring competitor sources, the second platform is more useful for editorial decisions.",
         "Choosing based on UI polish while ignoring whether the workflow can support actual publishing decisions.",
-    )
-    section_three = _section_block(
+        )
+        section_three = _section_block(
         f"What a Realistic {topic} Workflow Looks Like",
         f"A realistic workflow starts with category clarification, then moves into comparison content, and only later into stronger conversion assets.",
         [
@@ -939,8 +1211,8 @@ def _publish_ready_article_from_context(context: Dict[str, Any], asset: Dict[str
         ],
         f"A team might begin with a category article, follow with a buyer guide, and then publish a landing page once they know which queries consistently show commercial intent.",
         "Trying to jump straight to a sales page before the category has been clearly explained to the market.",
-    )
-    section_four = _section_block(
+        )
+        section_four = _section_block(
         f"The Mistakes That Make {topic} Content Weak",
         f"The weakest articles usually explain the category without giving the reader any way to make a better decision.",
         [
@@ -950,12 +1222,36 @@ def _publish_ready_article_from_context(context: Dict[str, Any], asset: Dict[str
         ],
         f"An article that only says \"AI visibility matters\" is weaker than one that shows how a team should review prompts, citations, workflow fit, and publishing gaps.",
         "Stacking terminology without explaining what the reader should do next.",
-    )
+        )
+        table_lines = _comparison_table_lines(topic)
+
+    if profile == "consumer_travel":
+        tldr_lines = [
+            "- The best travel booking app is the one that makes comparing and completing the booking easier, not just the one with the loudest brand.",
+            f"- Best fit: {audience_text}.",
+            "- Focus on booking coverage, price clarity, after-booking support, and how smooth the app feels when plans change.",
+        ]
+        conclusion_text = (
+            "The best travel booking app is usually the one that saves time without hiding important details. If the app makes search, comparison, booking, and trip changes feel clearer, it is probably the better fit even if it is not the loudest name in the category."
+        )
+        takeaway_text = (
+            "Before you book, run the same trip through a few apps and compare the experience, not just the headline price. That simple check usually tells you more than ratings or ads ever will."
+        )
+    else:
+        tldr_lines = [
+            f"- {topic} should be treated as an operational workflow, not just a tooling label.",
+            f"- Best fit: {audience_text}.",
+            f"- The real decision comes down to evidence quality, workflow fit, and whether the team can turn insight into content action.",
+        ]
+        conclusion_text = (
+            f"Teams evaluating {topic} should prioritize clear category understanding, verifiable evidence, and a workflow that connects insight to action. The goal is not only to monitor how AI systems talk about the category, but to create content that helps buyers make better decisions and gives the brand a credible place in those answers over time."
+        )
+        takeaway_text = _publish_cta_text(asset)
 
     lines = [
         f"# {title}",
         "",
-        *_article_outline_lines(topic),
+        *_article_outline_lines_for_profile(topic, profile),
         "",
         "## Article",
         "",
@@ -963,9 +1259,7 @@ def _publish_ready_article_from_context(context: Dict[str, Any], asset: Dict[str
         "",
         "## TL;DR",
         "",
-        f"- {topic} should be treated as an operational workflow, not just a tooling label.",
-        f"- Best fit: {audience_text}.",
-        f"- The real decision comes down to evidence quality, workflow fit, and whether the team can turn insight into content action.",
+        *tldr_lines,
         "",
         intro,
         "",
@@ -973,7 +1267,7 @@ def _publish_ready_article_from_context(context: Dict[str, Any], asset: Dict[str
     lines.extend(section_one)
     lines.extend(section_two)
     lines.extend(["## Decision Table", ""])
-    lines.extend(_comparison_table_lines(topic))
+    lines.extend(table_lines)
     lines.extend([""])
     lines.extend(section_three)
     lines.extend(section_four)
@@ -990,11 +1284,11 @@ def _publish_ready_article_from_context(context: Dict[str, Any], asset: Dict[str
         [
             "## Conclusion",
             "",
-            f"Teams evaluating {topic} should prioritize clear category understanding, verifiable evidence, and a workflow that connects insight to action. The goal is not only to monitor how AI systems talk about the category, but to create content that helps buyers make better decisions and gives the brand a credible place in those answers over time.",
+            conclusion_text,
             "",
             "## Final Takeaway",
             "",
-            _publish_cta_text(asset),
+            takeaway_text,
         ]
     )
     return "\n".join(lines)
@@ -1017,6 +1311,7 @@ def publish_ready_article(
         brand_kb_file=brand_kb_file,
         detail_limit=1,
     )
+    _assert_brand_alignment(context)
     if context["empty"]:
         return "# Publish-Ready Article\n\nNo content opportunities were returned for the selected window."
 
@@ -1039,6 +1334,7 @@ def daily_publish_ready_package(
         brand_kb_file=brand_kb_file,
         detail_limit=1,
     )
+    _assert_brand_alignment(context)
     if context["empty"]:
         return []
 
@@ -1067,8 +1363,10 @@ def _build_content_pack_context(
     brand_kb_file: str | None = None,
     detail_limit: int = 1,
 ) -> Dict[str, Any]:
-    brand_context = _merged_brand_context(client, brand_kb_file=brand_kb_file)
-    brand_kb = _brand_kb_status(brand_kb_file)
+    local_kb = _load_brand_kb(brand_kb_file)
+    remote_brand = _remote_brand_context(client)
+    brand_context = local_kb or remote_brand
+    brand_kb = _brand_alignment_status(local_kb, remote_brand, brand_kb_file)
     start_at, end_at = date_window(days)
     opportunities = _collect_all(
         lambda **kwargs: client.content_opportunities(start_at, end_at, **kwargs),
@@ -1093,6 +1391,7 @@ def _build_content_pack_context(
             "response_details": [],
             "brand_context": brand_context,
             "brand_kb": brand_kb,
+            "remote_brand": remote_brand,
         }
 
     tier_buckets: Dict[str, List[Dict[str, Any]]] = {"High": [], "Medium": [], "Low": []}
@@ -1211,6 +1510,7 @@ def _build_content_pack_context(
         "asset_rows": asset_rows,
         "brand_context": brand_context,
         "brand_kb": brand_kb,
+        "remote_brand": remote_brand,
     }
 
 

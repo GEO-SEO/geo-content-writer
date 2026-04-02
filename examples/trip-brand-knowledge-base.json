@@ -1,0 +1,37 @@
+{
+  "brand_name": "Trip",
+  "domain": "trip.com",
+  "category": "Online travel booking platform",
+  "one_liner": "Trip.com helps travelers compare and book flights, hotels, trains, and travel packages in one place.",
+  "target_audience": [
+    "Travelers comparing booking apps",
+    "People planning multi-step trips",
+    "Users who want flights and hotels in one workflow"
+  ],
+  "differentiators": [
+    "One-stop travel booking across flights, hotels, and transport",
+    "Strong mobile booking experience",
+    "Broad international travel inventory"
+  ],
+  "proof_points": [
+    "Supports flights, hotels, trains, car rentals, and packages",
+    "Global travel inventory and multilingual support",
+    "Designed for mobile-first travel planning and booking"
+  ],
+  "core_messages": [
+    "The value is convenience across the whole booking journey",
+    "Comparison and booking should happen in one place",
+    "Users care about trust, pricing clarity, and workflow simplicity"
+  ],
+  "preferred_cta": "Encourage readers to compare their current booking workflow, shortlist the apps that best fit their trip style, and then test the one that saves them the most friction.",
+  "prohibited_claims": [
+    "Do not claim lowest price guarantees without support",
+    "Do not claim every route or hotel is covered",
+    "Do not use unsupported best-in-market language"
+  ],
+  "tone_guidelines": [
+    "Helpful",
+    "Practical",
+    "Reader-first"
+  ]
+}

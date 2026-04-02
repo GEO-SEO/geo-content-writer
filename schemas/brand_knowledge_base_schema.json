@@ -18,6 +18,10 @@
       "type": "string",
       "minLength": 1
     },
+    "domain": {
+      "type": "string",
+      "minLength": 1
+    },
     "category": {
       "type": "string",
       "minLength": 1

@@ -1,0 +1,109 @@
+{
+  "schema_version": "1.0.0-compact",
+  "generated_at": "2026-04-02T09:21:07Z",
+  "time_window_days": 1,
+  "selected_prompt": "best app for travel bookings in one place",
+  "brand_knowledge_base": {
+    "path": "/Users/timlin/Documents/New project 2/geo-content-opportunity-engine/knowledge/brand/brand-knowledge-base.json",
+    "loaded": true,
+    "brand_context_summary": {
+      "brand_name": "Dageno",
+      "category": "Answer Engine Optimization and GEO platform",
+      "one_liner": "Dageno helps brands understand how AI systems talk about their business and turn that insight into content and growth execution.",
+      "differentiators": [
+        "Prompt-level brand and source gap visibility",
+        "Citation and response evidence instead of generic keyword-only planning",
+        "Clear path from insight to content execution"
+      ],
+      "preferred_cta": "Invite the reader to review their current AI visibility workflow and book a demo if they want a clearer path from visibility data to content execution."
+    }
+  },
+  "opportunity_summary": {
+    "high": 0,
+    "medium": 238,
+    "low": 258,
+    "selected_tier": "Medium",
+    "brand_gap": "100%",
+    "source_gap": "100%"
+  },
+  "evidence_summary": {
+    "response_count": 6,
+    "citation_url_count": 142,
+    "dominant_page_type": "Listicle",
+    "top_entities": [
+      "Google",
+      "Expedia",
+      "Priceline",
+      "Hopper"
+    ]
+  },
+  "seo_summary": {
+    "primary_keyword_candidate": "best app for travel bookings in one place",
+    "keyword_cluster_preview": [
+      "best app for travel bookings in one place",
+      "enterprise top rated travel apps solutions",
+      "top rated travel apps platform",
+      "top rated travel apps software",
+      "top rated travel apps tools",
+      "top rated travel apps for enterprise brands"
+    ],
+    "primary_intention": "Commercial",
+    "fanout_preview": [
+      "best apps for booking flights hotels cars in one place",
+      "best all-in-one travel booking apps 2026",
+      "best app for travel bookings in one place",
+      "best one-stop travel booking app",
+      "Kayak vs Skyscanner vs Google Flights vs Tripadvisor vs Expedia for all-in-one bookings",
+      "top travel booking apps comparison 2025 2026"
+    ]
+  },
+  "creation_order": [
+    "A1",
+    "A2",
+    "A3",
+    "A4",
+    "A5"
+  ],
+  "top_assets": [
+    {
+      "asset_id": "A1",
+      "asset_title": "What Is an Enterprise Top Rated Travel Apps Solution?",
+      "asset_type": "article",
+      "publish_surface": "website_blog",
+      "target_intent": "Informational",
+      "priority": "high"
+    },
+    {
+      "asset_id": "A2",
+      "asset_title": "How to Evaluate Enterprise Top Rated Travel Apps Platforms",
+      "asset_type": "article",
+      "publish_surface": "website_blog",
+      "target_intent": "Commercial",
+      "priority": "high"
+    },
+    {
+      "asset_id": "A3",
+      "asset_title": "Best Enterprise Top Rated Travel Apps Solutions for Brand Authority",
+      "asset_type": "article",
+      "publish_surface": "third_party_article",
+      "target_intent": "Commercial",
+      "priority": "high"
+    },
+    {
+      "asset_id": "A4",
+      "asset_title": "How to Measure Brand Authority in AI Answers",
+      "asset_type": "article",
+      "publish_surface": "website_blog",
+      "target_intent": "Commercial",
+      "priority": "medium"
+    },
+    {
+      "asset_id": "A5",
+      "asset_title": "Enterprise Top Rated Travel Apps Platform for Brand Authority",
+      "asset_type": "landing_page",
+      "publish_surface": "landing_page",
+      "target_intent": "Commercial",
+      "priority": "medium"
+    }
+  ]
+}
