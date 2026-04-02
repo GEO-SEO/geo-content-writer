@@ -33,6 +33,7 @@ from .workflows import (
     topic_watchlist,
     weekly_exec_brief,
 )
+from .citation_crawl import analyze_citation_patterns, crawl_citation_pages
 from .wordpress import WordPressClient, markdown_to_basic_html
 
 
@@ -277,6 +278,18 @@ def build_parser() -> argparse.ArgumentParser:
         default="examples/daily-wordpress-batch",
         help="Directory to write generated article files before publishing",
     )
+    citation_parser = subparsers.add_parser(
+        "analyze-citation-patterns",
+        parents=[common],
+        help="Fetch top citation pages for one prompt and summarize their content structure",
+    )
+    citation_parser.add_argument("--prompt-id", default=None, help="Optional prompt ID to target")
+    citation_parser.add_argument("--prompt-text", default=None, help="Optional prompt text to target")
+    citation_parser.add_argument(
+        "--brand-kb-file",
+        default=str(default_brand_kb_path()),
+        help="Brand knowledge base JSON file. Default project path: knowledge/brand/brand-knowledge-base.json",
+    )
 
     return parser
 
@@ -337,6 +350,24 @@ def main() -> None:
         )
         save_fanout_backlog(backlog, args.output_file)
         print(json.dumps(backlog, ensure_ascii=False, indent=2))
+        return
+
+    if args.command == "analyze-citation-patterns":
+        client = DagenoClient(api_key=args.api_key, base_url=args.base_url)
+        from .workflows import _build_content_pack_context
+
+        context = _build_content_pack_context(
+            client,
+            args.days,
+            prompt_id=args.prompt_id,
+            prompt_text=args.prompt_text,
+            brand_kb_file=args.brand_kb_file,
+            detail_limit=1,
+        )
+        urls = [item.get("url") for item in context.get("citations", []) if item.get("url")]
+        pages = crawl_citation_pages(urls, limit=args.limit)
+        patterns = analyze_citation_patterns(pages)
+        print(json.dumps({"pages": pages, "patterns": patterns}, ensure_ascii=False, indent=2))
         return
 
     if args.command == "select-backlog-items":

@@ -9,6 +9,7 @@ import re
 from typing import Any, Dict, Iterable, List, Tuple
 
 from .client import DagenoClient
+from .citation_crawl import analyze_citation_patterns, crawl_citation_pages
 
 
 def date_window(days: int) -> Tuple[str, str]:
@@ -1264,6 +1265,37 @@ def _reference_conclusion_lines(citations: List[Dict[str, Any]], limit: int = 5)
     return lines
 
 
+def _reference_lines_from_crawled_pages(pages: List[Dict[str, Any]], limit: int = 5) -> List[str]:
+    lines: List[str] = []
+    count = 0
+    for page in pages:
+        if page.get("status") != "ok":
+            continue
+        title = page.get("title") or page.get("h1") or page.get("url")
+        url = page.get("url", "")
+        if not url:
+            continue
+        summary = page.get("meta_description") or page.get("paragraph_preview", "")[:120]
+        summary = " ".join(summary.split())
+        if summary:
+            lines.append(f"- [{title}]({url}) - {summary}")
+        else:
+            lines.append(f"- [{title}]({url})")
+        count += 1
+        if count >= limit:
+            break
+    return lines
+
+
+def _top_citation_urls(citations: List[Dict[str, Any]], limit: int = 5) -> List[str]:
+    urls: List[str] = []
+    for item in _top(citations, "citationCount", limit):
+        url = (item.get("url") or "").strip()
+        if url:
+            urls.append(url)
+    return urls
+
+
 def _audience_text(brand_context: Dict[str, Any], topic: str) -> str:
     audience = brand_context.get("target_audience") or []
     if audience:
@@ -1368,6 +1400,11 @@ def _publish_ready_article_from_context(context: Dict[str, Any], asset: Dict[str
     profile = _market_profile(prompt_text_value, topic, brand_context)
     reader_topic = _reader_topic_phrase(prompt_text_value, topic, brand_context)
     if profile == "consumer_travel":
+        citation_urls = _top_citation_urls(context.get("citations", []), limit=5)
+        crawled_pages = crawl_citation_pages(citation_urls, limit=5)
+        citation_patterns = analyze_citation_patterns(crawled_pages)
+        references = _reference_lines_from_crawled_pages(crawled_pages, limit=5)
+        brand_name = brand_context.get("brand_name") or brand_context.get("name") or "the brand"
         intro = (
             f"If you are trying to book flights, hotels, and maybe even trains or cars without bouncing between five different apps, the real question is not which app is most famous. "
             f"The real question is which one actually makes trip planning simpler, clearer, and easier to trust. This article is for {audience_text}, and it will help you compare {reader_topic} in a way that feels useful before you commit to one."
@@ -1417,6 +1454,18 @@ def _publish_ready_article_from_context(context: Dict[str, Any], asset: Dict[str
             "Assuming the most downloaded app will automatically be the best fit for your trip.",
         )
         table_lines = _consumer_comparison_table_lines()
+        shortlist_lines = [
+            "## What the Most-Cited Pages Are Actually Doing",
+            "",
+            f"Across the citation pages we could fetch successfully, the dominant pattern is `{citation_patterns.get('dominant_title_pattern', 'recommendation')}`. Most of them start with a direct recommendation, quickly explain what to compare, and then move into a shortlist of apps or websites instead of spending too much time on abstract category explanation.",
+            "",
+            "## Which Options Usually Make the Shortlist",
+            "",
+            f"The names that show up most often in the cited material include {top_entities_text}. That does not automatically make them the best fit for every traveler, but it does tell us which products people are most likely to compare before they book.",
+            "",
+            f"Where {brand_name} fits: if the reader wants one place to compare and book major parts of a trip, {brand_name} should be treated as a serious shortlist option rather than a side mention.",
+            "",
+        ]
     else:
         intro = _blog_intro(reader_topic, prompt_text_value, audience_text)
         section_one = _section_block(
@@ -1487,6 +1536,7 @@ def _publish_ready_article_from_context(context: Dict[str, Any], asset: Dict[str
             f"Teams evaluating {reader_topic} should prioritize clear category understanding, verifiable evidence, and a workflow that connects insight to action. The goal is not only to monitor how AI systems talk about the category, but to create content that helps buyers make better decisions and gives the brand a credible place in those answers over time."
         )
         takeaway_text = _publish_cta_text(asset)
+        crawled_pages = []
 
     lines = [
         f"# {title}",
@@ -1509,6 +1559,8 @@ def _publish_ready_article_from_context(context: Dict[str, Any], asset: Dict[str
     lines.extend(["## Decision Table", ""])
     lines.extend(table_lines)
     lines.extend([""])
+    if profile == "consumer_travel":
+        lines.extend(shortlist_lines)
     lines.extend(section_three)
     lines.extend(section_four)
     lines.extend(["## FAQ", ""])
