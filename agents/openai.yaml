@@ -1,3 +1,3 @@
 display_name: GEO Content Writer
-short_description: Turn Dageno GEO opportunities into reusable content packs and drafts.
-default_prompt: Use this content writer skill to first check for a brand knowledge base at knowledge/brand/brand-knowledge-base.json, warn the user if it is missing, then classify Dageno opportunities into High, Medium, and Low tiers, analyze one selected prompt with response and citation evidence, run fanout and SEO enrichment, and output a reusable GEO-first content pack or draft backed by CLI execution.
+short_description: Turn Dageno prompt opportunities into a real-fanout backlog and publish-ready GEO articles.
+default_prompt: Use this content writer skill to first check for a brand knowledge base at knowledge/brand/brand-knowledge-base.json, then discover high-value prompts, extract real fanout only, save fanout into a backlog, detect overlap and duplicate rows, select one backlog item, analyze citation patterns, and draft one publish-ready article for distribution.

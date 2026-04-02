@@ -1,0 +1,3946 @@
+{
+  "generated_at": "2026-04-02T11:59:49Z",
+  "time_window_days": 1,
+  "brand_knowledge_base": {
+    "path": "/Users/timlin/Documents/New project 2/geo-content-opportunity-engine/examples/trip-brand-knowledge-base.json",
+    "loaded": true,
+    "message": "Brand knowledge base loaded from the standard project location.",
+    "matches_remote_brand": true
+  },
+  "brand_context_summary": {
+    "brand_name": "Trip",
+    "domain": "trip.com",
+    "category": "Online travel booking platform",
+    "one_liner": "Trip.com helps travelers compare and book flights, hotels, trains, and travel packages in one place.",
+    "differentiators": [
+      "One-stop travel booking across flights, hotels, and transport",
+      "Strong mobile booking experience",
+      "Broad international travel inventory"
+    ],
+    "preferred_cta": "Encourage readers to compare their current booking workflow, shortlist the apps that best fit their trip style, and then test the one that saves them the most friction."
+  },
+  "prompt_candidates": [
+    {
+      "prompt_id": "3fe6144c-0949-4ffa-9be9-ad2e0f10a73b",
+      "prompt_text": "how to book vacation packages",
+      "topic": "Travel Planning Guides",
+      "tier": "Medium",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 22,
+      "source_count": 13,
+      "funnel": "TOFU",
+      "primary_intention": "Informational",
+      "score": 67.89999999999999
+    },
+    {
+      "prompt_id": "5039336e-8efe-4fa0-89ff-d0114e3e18d4",
+      "prompt_text": "best app for travel bookings in one place",
+      "topic": "Top Rated Travel Apps",
+      "tier": "Medium",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 23,
+      "source_count": 2,
+      "funnel": "MOFU",
+      "primary_intention": "Commercial",
+      "score": 67.10000000000001
+    },
+    {
+      "prompt_id": "e4e0e02f-2f16-4b0b-8437-a9eee8e14f1f",
+      "prompt_text": "how to find last minute travel deals",
+      "topic": "Travel Planning Guides",
+      "tier": "Medium",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 21,
+      "source_count": 7,
+      "funnel": "TOFU",
+      "primary_intention": "Informational",
+      "score": 67.0
+    },
+    {
+      "prompt_id": "de7511c3-130e-4148-8339-624de24fba35",
+      "prompt_text": "is booking hotels via app cheaper",
+      "topic": "Platform Comparison Guide",
+      "tier": "Medium",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 22,
+      "source_count": 1,
+      "funnel": "MOFU",
+      "primary_intention": "Commercial",
+      "score": 66.69999999999999
+    },
+    {
+      "prompt_id": "3b15d2bf-df33-43f2-b058-488b7d644327",
+      "prompt_text": "app for booking hotels with discounts",
+      "topic": "Mobile Travel Tools",
+      "tier": "Medium",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 22,
+      "source_count": 1,
+      "funnel": "BOFU",
+      "primary_intention": "Transactional",
+      "score": 66.69999999999999
+    },
+    {
+      "prompt_id": "8cc9e30c-dd2f-49f2-9024-f1346e2c877d",
+      "prompt_text": "how to book travel on the go",
+      "topic": "Travel Planning Guides",
+      "tier": "Medium",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 20,
+      "source_count": 6,
+      "funnel": "TOFU",
+      "primary_intention": "Informational",
+      "score": 66.6
+    },
+    {
+      "prompt_id": "7dcde1da-979d-4a58-a3d2-f09e208b2001",
+      "prompt_text": "app for booking travel deals",
+      "topic": "Mobile Travel Tools",
+      "tier": "Medium",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 21,
+      "source_count": 2,
+      "funnel": "BOFU",
+      "primary_intention": "Transactional",
+      "score": 66.5
+    },
+    {
+      "prompt_id": "ebea3104-d9e3-4533-8316-3d81b594bf93",
+      "prompt_text": "best app for travel planning and booking",
+      "topic": "Top Rated Travel Apps",
+      "tier": "Medium",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 20,
+      "source_count": 5,
+      "funnel": "MOFU",
+      "primary_intention": "Commercial",
+      "score": 66.5
+    }
+  ],
+  "fanout_backlog": [
+    {
+      "backlog_id": "app-for-booking-travel-deals-app-for-booking-travel-deals-best-travel-apps-to-fi",
+      "fanout_text": "app for booking travel deals best travel apps to find deals flights hotels",
+      "source_prompt_ids": [
+        "7dcde1da-979d-4a58-a3d2-f09e208b2001"
+      ],
+      "source_prompts": [
+        "app for booking travel deals"
+      ],
+      "source_topic": "Mobile Travel Tools",
+      "market_profile": "consumer_travel",
+      "article_type": "recommendation",
+      "normalized_title": "App for booking travel deals best travel apps to find deals flights hotels",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 21,
+      "funnel": "BOFU",
+      "primary_intention": "Transactional",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:48Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "app-for-booking-hotels-with-discounts-apps-for-booking-hotels-with-discounts",
+      "fanout_text": "apps for booking hotels with discounts",
+      "source_prompt_ids": [
+        "3b15d2bf-df33-43f2-b058-488b7d644327"
+      ],
+      "source_prompts": [
+        "app for booking hotels with discounts"
+      ],
+      "source_topic": "Mobile Travel Tools",
+      "market_profile": "consumer_travel",
+      "article_type": "explainer",
+      "normalized_title": "Apps for booking hotels with discounts",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 22,
+      "funnel": "BOFU",
+      "primary_intention": "Transactional",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:46Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "app-for-booking-travel-deals-apps-for-booking-travel-deals-best-travel-booking-a",
+      "fanout_text": "apps for booking travel deals best travel booking apps",
+      "source_prompt_ids": [
+        "7dcde1da-979d-4a58-a3d2-f09e208b2001"
+      ],
+      "source_prompts": [
+        "app for booking travel deals"
+      ],
+      "source_topic": "Mobile Travel Tools",
+      "market_profile": "consumer_travel",
+      "article_type": "recommendation",
+      "normalized_title": "Apps for booking travel deals best travel booking apps",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 21,
+      "funnel": "BOFU",
+      "primary_intention": "Transactional",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:48Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "app-for-booking-hotels-with-discounts-apps-for-discounted-hotel-stays",
+      "fanout_text": "apps for discounted hotel stays",
+      "source_prompt_ids": [
+        "3b15d2bf-df33-43f2-b058-488b7d644327"
+      ],
+      "source_prompts": [
+        "app for booking hotels with discounts"
+      ],
+      "source_topic": "Mobile Travel Tools",
+      "market_profile": "consumer_travel",
+      "article_type": "explainer",
+      "normalized_title": "Apps for discounted hotel stays",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 22,
+      "funnel": "BOFU",
+      "primary_intention": "Transactional",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:46Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "app-for-booking-travel-deals-apps-like-hopper-kayak-skyscanner-for-travel-deals",
+      "fanout_text": "apps like Hopper Kayak Skyscanner for travel deals",
+      "source_prompt_ids": [
+        "7dcde1da-979d-4a58-a3d2-f09e208b2001"
+      ],
+      "source_prompts": [
+        "app for booking travel deals"
+      ],
+      "source_topic": "Mobile Travel Tools",
+      "market_profile": "consumer_travel",
+      "article_type": "explainer",
+      "normalized_title": "Apps like Hopper Kayak Skyscanner for travel deals",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 21,
+      "funnel": "BOFU",
+      "primary_intention": "Transactional",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:48Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "app-for-booking-travel-deals-apps-like-hopper-skyscanner-kayak-for-travel-deals",
+      "fanout_text": "apps like Hopper Skyscanner Kayak for travel deals",
+      "source_prompt_ids": [
+        "7dcde1da-979d-4a58-a3d2-f09e208b2001"
+      ],
+      "source_prompts": [
+        "app for booking travel deals"
+      ],
+      "source_topic": "Mobile Travel Tools",
+      "market_profile": "consumer_travel",
+      "article_type": "explainer",
+      "normalized_title": "Apps like Hopper Skyscanner Kayak for travel deals",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 21,
+      "funnel": "BOFU",
+      "primary_intention": "Transactional",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:48Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "app-for-booking-travel-deals-apps-that-find-cheapest-flights-hotels",
+      "fanout_text": "apps that find cheapest flights hotels",
+      "source_prompt_ids": [
+        "7dcde1da-979d-4a58-a3d2-f09e208b2001"
+      ],
+      "source_prompts": [
+        "app for booking travel deals"
+      ],
+      "source_topic": "Mobile Travel Tools",
+      "market_profile": "consumer_travel",
+      "article_type": "explainer",
+      "normalized_title": "Apps that find cheapest flights hotels",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 21,
+      "funnel": "BOFU",
+      "primary_intention": "Transactional",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:48Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "is-booking-hotels-via-app-cheaper-do-hotel-apps-offer-better-deals-or-discounts-",
+      "fanout_text": "do hotel apps offer better deals or discounts than desktop booking",
+      "source_prompt_ids": [
+        "de7511c3-130e-4148-8339-624de24fba35"
+      ],
+      "source_prompts": [
+        "is booking hotels via app cheaper"
+      ],
+      "source_topic": "Platform Comparison Guide",
+      "market_profile": "consumer_travel",
+      "article_type": "recommendation",
+      "normalized_title": "Best Do hotel apps offer better deals or discounts than desktop booking",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 22,
+      "funnel": "MOFU",
+      "primary_intention": "Commercial",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:45Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "is-booking-hotels-via-app-cheaper-do-hotel-apps-offer-better-deals-than-desktop-",
+      "fanout_text": "do hotel apps offer better deals than desktop booking",
+      "source_prompt_ids": [
+        "de7511c3-130e-4148-8339-624de24fba35"
+      ],
+      "source_prompts": [
+        "is booking hotels via app cheaper"
+      ],
+      "source_topic": "Platform Comparison Guide",
+      "market_profile": "consumer_travel",
+      "article_type": "recommendation",
+      "normalized_title": "Best Do hotel apps offer better deals than desktop booking",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 22,
+      "funnel": "MOFU",
+      "primary_intention": "Commercial",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:45Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "app-for-booking-travel-deals-top-apps-for-finding-cheap-flights-hotels-vacation-",
+      "fanout_text": "top apps for finding cheap flights hotels vacation packages",
+      "source_prompt_ids": [
+        "7dcde1da-979d-4a58-a3d2-f09e208b2001"
+      ],
+      "source_prompts": [
+        "app for booking travel deals"
+      ],
+      "source_topic": "Mobile Travel Tools",
+      "market_profile": "consumer_travel",
+      "article_type": "recommendation",
+      "normalized_title": "Best Top apps for finding cheap flights hotels vacation packages",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 21,
+      "funnel": "BOFU",
+      "primary_intention": "Transactional",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:48Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "app-for-booking-hotels-with-discounts-top-hotel-discount-apps-like-hoteltonight-",
+      "fanout_text": "top hotel discount apps like HotelTonight Priceline",
+      "source_prompt_ids": [
+        "3b15d2bf-df33-43f2-b058-488b7d644327"
+      ],
+      "source_prompts": [
+        "app for booking hotels with discounts"
+      ],
+      "source_topic": "Mobile Travel Tools",
+      "market_profile": "consumer_travel",
+      "article_type": "recommendation",
+      "normalized_title": "Best Top hotel discount apps like HotelTonight Priceline",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 22,
+      "funnel": "BOFU",
+      "primary_intention": "Transactional",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:46Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "app-for-booking-hotels-with-discounts-top-hotel-discount-apps-like-hoteltonight-",
+      "fanout_text": "top hotel discount apps like HotelTonight Priceline Booking.com",
+      "source_prompt_ids": [
+        "3b15d2bf-df33-43f2-b058-488b7d644327"
+      ],
+      "source_prompts": [
+        "app for booking hotels with discounts"
+      ],
+      "source_topic": "Mobile Travel Tools",
+      "market_profile": "consumer_travel",
+      "article_type": "recommendation",
+      "normalized_title": "Best Top hotel discount apps like HotelTonight Priceline Booking.com",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 22,
+      "funnel": "BOFU",
+      "primary_intention": "Transactional",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:46Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "app-for-booking-hotels-with-discounts-top-hotel-discount-apps-like-hoteltonight-",
+      "fanout_text": "top hotel discount apps like HotelTonight Priceline Hotwire",
+      "source_prompt_ids": [
+        "3b15d2bf-df33-43f2-b058-488b7d644327"
+      ],
+      "source_prompts": [
+        "app for booking hotels with discounts"
+      ],
+      "source_topic": "Mobile Travel Tools",
+      "market_profile": "consumer_travel",
+      "article_type": "recommendation",
+      "normalized_title": "Best Top hotel discount apps like HotelTonight Priceline Hotwire",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 22,
+      "funnel": "BOFU",
+      "primary_intention": "Transactional",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:46Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "best-app-for-travel-bookings-in-one-place-top-meta-search-travel-apps-for-multip",
+      "fanout_text": "top meta-search travel apps for multiple bookings",
+      "source_prompt_ids": [
+        "5039336e-8efe-4fa0-89ff-d0114e3e18d4"
+      ],
+      "source_prompts": [
+        "best app for travel bookings in one place"
+      ],
+      "source_topic": "Top Rated Travel Apps",
+      "market_profile": "consumer_travel",
+      "article_type": "recommendation",
+      "normalized_title": "Best Top meta-search travel apps for multiple bookings",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 23,
+      "funnel": "MOFU",
+      "primary_intention": "Commercial",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:43Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "best-app-for-travel-planning-and-booking-top-rated-travel-planner-apps-2026",
+      "fanout_text": "top rated travel planner apps 2026",
+      "source_prompt_ids": [
+        "ebea3104-d9e3-4533-8316-3d81b594bf93"
+      ],
+      "source_prompts": [
+        "best app for travel planning and booking"
+      ],
+      "source_topic": "Top Rated Travel Apps",
+      "market_profile": "consumer_travel",
+      "article_type": "recommendation",
+      "normalized_title": "Best Top rated travel planner apps 2026",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 20,
+      "funnel": "MOFU",
+      "primary_intention": "Commercial",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:49Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "best-app-for-travel-bookings-in-one-place-top-travel-aggregator-apps-for-multipl",
+      "fanout_text": "top travel aggregator apps for multiple bookings",
+      "source_prompt_ids": [
+        "5039336e-8efe-4fa0-89ff-d0114e3e18d4"
+      ],
+      "source_prompts": [
+        "best app for travel bookings in one place"
+      ],
+      "source_topic": "Top Rated Travel Apps",
+      "market_profile": "consumer_travel",
+      "article_type": "recommendation",
+      "normalized_title": "Best Top travel aggregator apps for multiple bookings",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 23,
+      "funnel": "MOFU",
+      "primary_intention": "Commercial",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:43Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "best-app-for-travel-planning-and-booking-top-travel-apps-for-itinerary-planning-",
+      "fanout_text": "top travel apps for itinerary planning and reservations 2026",
+      "source_prompt_ids": [
+        "ebea3104-d9e3-4533-8316-3d81b594bf93"
+      ],
+      "source_prompts": [
+        "best app for travel planning and booking"
+      ],
+      "source_topic": "Top Rated Travel Apps",
+      "market_profile": "consumer_travel",
+      "article_type": "recommendation",
+      "normalized_title": "Best Top travel apps for itinerary planning and reservations 2026",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 20,
+      "funnel": "MOFU",
+      "primary_intention": "Commercial",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:49Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "app-for-booking-travel-deals-top-travel-deal-booking-apps",
+      "fanout_text": "top travel deal booking apps",
+      "source_prompt_ids": [
+        "7dcde1da-979d-4a58-a3d2-f09e208b2001"
+      ],
+      "source_prompts": [
+        "app for booking travel deals"
+      ],
+      "source_topic": "Mobile Travel Tools",
+      "market_profile": "consumer_travel",
+      "article_type": "recommendation",
+      "normalized_title": "Best Top travel deal booking apps",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 21,
+      "funnel": "BOFU",
+      "primary_intention": "Transactional",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:48Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "best-app-for-travel-planning-and-booking-top-travel-itinerary-planner-apps-2026",
+      "fanout_text": "top travel itinerary planner apps 2026",
+      "source_prompt_ids": [
+        "ebea3104-d9e3-4533-8316-3d81b594bf93"
+      ],
+      "source_prompts": [
+        "best app for travel planning and booking"
+      ],
+      "source_topic": "Top Rated Travel Apps",
+      "market_profile": "consumer_travel",
+      "article_type": "recommendation",
+      "normalized_title": "Best Top travel itinerary planner apps 2026",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 20,
+      "funnel": "MOFU",
+      "primary_intention": "Commercial",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:49Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "best-app-for-travel-planning-and-booking-best-all-in-one-travel-app-for-planning",
+      "fanout_text": "best all-in-one travel app for planning and booking",
+      "source_prompt_ids": [
+        "ebea3104-d9e3-4533-8316-3d81b594bf93"
+      ],
+      "source_prompts": [
+        "best app for travel planning and booking"
+      ],
+      "source_topic": "Top Rated Travel Apps",
+      "market_profile": "consumer_travel",
+      "article_type": "recommendation",
+      "normalized_title": "Best all-in-one travel app for planning and booking",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 20,
+      "funnel": "MOFU",
+      "primary_intention": "Commercial",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:49Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "best-app-for-travel-bookings-in-one-place-best-all-in-one-travel-booking-app-202",
+      "fanout_text": "best all-in-one travel booking app 2026",
+      "source_prompt_ids": [
+        "5039336e-8efe-4fa0-89ff-d0114e3e18d4"
+      ],
+      "source_prompts": [
+        "best app for travel bookings in one place"
+      ],
+      "source_topic": "Top Rated Travel Apps",
+      "market_profile": "consumer_travel",
+      "article_type": "recommendation",
+      "normalized_title": "Best all-in-one travel booking app 2026",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 23,
+      "funnel": "MOFU",
+      "primary_intention": "Commercial",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:43Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "best-app-for-travel-bookings-in-one-place-best-all-in-one-travel-booking-apps-20",
+      "fanout_text": "best all-in-one travel booking apps 2026",
+      "source_prompt_ids": [
+        "5039336e-8efe-4fa0-89ff-d0114e3e18d4"
+      ],
+      "source_prompts": [
+        "best app for travel bookings in one place"
+      ],
+      "source_topic": "Top Rated Travel Apps",
+      "market_profile": "consumer_travel",
+      "article_type": "recommendation",
+      "normalized_title": "Best all-in-one travel booking apps 2026",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 23,
+      "funnel": "MOFU",
+      "primary_intention": "Commercial",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:43Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "best-app-for-travel-bookings-in-one-place-best-app-for-travel-bookings-in-one-pl",
+      "fanout_text": "best app for travel bookings in one place",
+      "source_prompt_ids": [
+        "5039336e-8efe-4fa0-89ff-d0114e3e18d4"
+      ],
+      "source_prompts": [
+        "best app for travel bookings in one place"
+      ],
+      "source_topic": "Top Rated Travel Apps",
+      "market_profile": "consumer_travel",
+      "article_type": "recommendation",
+      "normalized_title": "Best app for travel bookings in one place",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 23,
+      "funnel": "MOFU",
+      "primary_intention": "Commercial",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:43Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "best-app-for-travel-planning-and-booking-best-app-for-travel-planning-and-bookin",
+      "fanout_text": "best app for travel planning and booking",
+      "source_prompt_ids": [
+        "ebea3104-d9e3-4533-8316-3d81b594bf93"
+      ],
+      "source_prompts": [
+        "best app for travel planning and booking"
+      ],
+      "source_topic": "Top Rated Travel Apps",
+      "market_profile": "consumer_travel",
+      "article_type": "recommendation",
+      "normalized_title": "Best app for travel planning and booking",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 20,
+      "funnel": "MOFU",
+      "primary_intention": "Commercial",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:49Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "best-app-for-travel-bookings-in-one-place-best-apps-for-booking-flights-hotels-c",
+      "fanout_text": "best apps for booking flights hotels cars in one place",
+      "source_prompt_ids": [
+        "5039336e-8efe-4fa0-89ff-d0114e3e18d4"
+      ],
+      "source_prompts": [
+        "best app for travel bookings in one place"
+      ],
+      "source_topic": "Top Rated Travel Apps",
+      "market_profile": "consumer_travel",
+      "article_type": "recommendation",
+      "normalized_title": "Best apps for booking flights hotels cars in one place",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 23,
+      "funnel": "MOFU",
+      "primary_intention": "Commercial",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:43Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "best-app-for-travel-bookings-in-one-place-best-apps-for-booking-flights-hotels-c",
+      "fanout_text": "best apps for booking flights hotels cars in one place 2026",
+      "source_prompt_ids": [
+        "5039336e-8efe-4fa0-89ff-d0114e3e18d4"
+      ],
+      "source_prompts": [
+        "best app for travel bookings in one place"
+      ],
+      "source_topic": "Top Rated Travel Apps",
+      "market_profile": "consumer_travel",
+      "article_type": "recommendation",
+      "normalized_title": "Best apps for booking flights hotels cars in one place 2026",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 23,
+      "funnel": "MOFU",
+      "primary_intention": "Commercial",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:43Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "best-app-for-travel-planning-and-booking-best-apps-for-booking-flights-hotels-tr",
+      "fanout_text": "best apps for booking flights hotels trips 2026",
+      "source_prompt_ids": [
+        "ebea3104-d9e3-4533-8316-3d81b594bf93"
+      ],
+      "source_prompts": [
+        "best app for travel planning and booking"
+      ],
+      "source_topic": "Top Rated Travel Apps",
+      "market_profile": "consumer_travel",
+      "article_type": "recommendation",
+      "normalized_title": "Best apps for booking flights hotels trips 2026",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 20,
+      "funnel": "MOFU",
+      "primary_intention": "Commercial",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:49Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "app-for-booking-hotels-with-discounts-best-apps-for-booking-hotels-with-discount",
+      "fanout_text": "best apps for booking hotels with discounts",
+      "source_prompt_ids": [
+        "3b15d2bf-df33-43f2-b058-488b7d644327"
+      ],
+      "source_prompts": [
+        "app for booking hotels with discounts"
+      ],
+      "source_topic": "Mobile Travel Tools",
+      "market_profile": "consumer_travel",
+      "article_type": "recommendation",
+      "normalized_title": "Best apps for booking hotels with discounts",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 22,
+      "funnel": "BOFU",
+      "primary_intention": "Transactional",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:46Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "app-for-booking-hotels-with-discounts-best-apps-for-booking-hotels-with-discount",
+      "fanout_text": "best apps for booking hotels with discounts 2026",
+      "source_prompt_ids": [
+        "3b15d2bf-df33-43f2-b058-488b7d644327"
+      ],
+      "source_prompts": [
+        "app for booking hotels with discounts"
+      ],
+      "source_topic": "Mobile Travel Tools",
+      "market_profile": "consumer_travel",
+      "article_type": "recommendation",
+      "normalized_title": "Best apps for booking hotels with discounts 2026",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 22,
+      "funnel": "BOFU",
+      "primary_intention": "Transactional",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:46Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "app-for-booking-travel-deals-best-apps-for-booking-travel-deals",
+      "fanout_text": "best apps for booking travel deals",
+      "source_prompt_ids": [
+        "7dcde1da-979d-4a58-a3d2-f09e208b2001"
+      ],
+      "source_prompts": [
+        "app for booking travel deals"
+      ],
+      "source_topic": "Mobile Travel Tools",
+      "market_profile": "consumer_travel",
+      "article_type": "recommendation",
+      "normalized_title": "Best apps for booking travel deals",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 21,
+      "funnel": "BOFU",
+      "primary_intention": "Transactional",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:48Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "app-for-booking-travel-deals-best-apps-for-booking-travel-deals-2026",
+      "fanout_text": "best apps for booking travel deals 2026",
+      "source_prompt_ids": [
+        "7dcde1da-979d-4a58-a3d2-f09e208b2001"
+      ],
+      "source_prompts": [
+        "app for booking travel deals"
+      ],
+      "source_topic": "Mobile Travel Tools",
+      "market_profile": "consumer_travel",
+      "article_type": "recommendation",
+      "normalized_title": "Best apps for booking travel deals 2026",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 21,
+      "funnel": "BOFU",
+      "primary_intention": "Transactional",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:48Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "how-to-book-travel-on-the-go-best-apps-for-booking-travel-while-traveling-2026",
+      "fanout_text": "best apps for booking travel while traveling 2026",
+      "source_prompt_ids": [
+        "8cc9e30c-dd2f-49f2-9024-f1346e2c877d"
+      ],
+      "source_prompts": [
+        "how to book travel on the go"
+      ],
+      "source_topic": "Travel Planning Guides",
+      "market_profile": "consumer_travel",
+      "article_type": "recommendation",
+      "normalized_title": "Best apps for booking travel while traveling 2026",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 20,
+      "funnel": "TOFU",
+      "primary_intention": "Informational",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:47Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "app-for-booking-travel-deals-best-apps-for-cheap-flights-hotels-travel-deals",
+      "fanout_text": "best apps for cheap flights hotels travel deals",
+      "source_prompt_ids": [
+        "7dcde1da-979d-4a58-a3d2-f09e208b2001"
+      ],
+      "source_prompts": [
+        "app for booking travel deals"
+      ],
+      "source_topic": "Mobile Travel Tools",
+      "market_profile": "consumer_travel",
+      "article_type": "recommendation",
+      "normalized_title": "Best apps for cheap flights hotels travel deals",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 21,
+      "funnel": "BOFU",
+      "primary_intention": "Transactional",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:48Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "app-for-booking-travel-deals-best-apps-for-cheap-flights-hotels-vacation-package",
+      "fanout_text": "best apps for cheap flights hotels vacation packages deals",
+      "source_prompt_ids": [
+        "7dcde1da-979d-4a58-a3d2-f09e208b2001"
+      ],
+      "source_prompts": [
+        "app for booking travel deals"
+      ],
+      "source_topic": "Mobile Travel Tools",
+      "market_profile": "consumer_travel",
+      "article_type": "recommendation",
+      "normalized_title": "Best apps for cheap flights hotels vacation packages deals",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 21,
+      "funnel": "BOFU",
+      "primary_intention": "Transactional",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:48Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "app-for-booking-hotels-with-discounts-best-apps-for-cheap-hotel-bookings-discoun",
+      "fanout_text": "best apps for cheap hotel bookings discounts",
+      "source_prompt_ids": [
+        "3b15d2bf-df33-43f2-b058-488b7d644327"
+      ],
+      "source_prompts": [
+        "app for booking hotels with discounts"
+      ],
+      "source_topic": "Mobile Travel Tools",
+      "market_profile": "consumer_travel",
+      "article_type": "recommendation",
+      "normalized_title": "Best apps for cheap hotel bookings discounts",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 22,
+      "funnel": "BOFU",
+      "primary_intention": "Transactional",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:46Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "best-app-for-travel-planning-and-booking-best-apps-for-travel-planning-and-booki",
+      "fanout_text": "best apps for travel planning and booking 2026",
+      "source_prompt_ids": [
+        "ebea3104-d9e3-4533-8316-3d81b594bf93"
+      ],
+      "source_prompts": [
+        "best app for travel planning and booking"
+      ],
+      "source_topic": "Top Rated Travel Apps",
+      "market_profile": "consumer_travel",
+      "article_type": "recommendation",
+      "normalized_title": "Best apps for travel planning and booking 2026",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 20,
+      "funnel": "MOFU",
+      "primary_intention": "Commercial",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:49Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "best-app-for-travel-planning-and-booking-best-apps-for-travel-planning-and-booki",
+      "fanout_text": "best apps for travel planning and booking apps 2026",
+      "source_prompt_ids": [
+        "ebea3104-d9e3-4533-8316-3d81b594bf93"
+      ],
+      "source_prompts": [
+        "best app for travel planning and booking"
+      ],
+      "source_topic": "Top Rated Travel Apps",
+      "market_profile": "consumer_travel",
+      "article_type": "recommendation",
+      "normalized_title": "Best apps for travel planning and booking apps 2026",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 20,
+      "funnel": "MOFU",
+      "primary_intention": "Commercial",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:49Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "best-app-for-travel-planning-and-booking-best-apps-for-travel-planning-and-booki",
+      "fanout_text": "best apps for travel planning and booking travel planning and booking apps",
+      "source_prompt_ids": [
+        "ebea3104-d9e3-4533-8316-3d81b594bf93"
+      ],
+      "source_prompts": [
+        "best app for travel planning and booking"
+      ],
+      "source_topic": "Top Rated Travel Apps",
+      "market_profile": "consumer_travel",
+      "article_type": "recommendation",
+      "normalized_title": "Best apps for travel planning and booking travel planning and booking apps",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 20,
+      "funnel": "MOFU",
+      "primary_intention": "Commercial",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:49Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "best-app-for-travel-planning-and-booking-best-apps-for-trip-planning-and-booking",
+      "fanout_text": "best apps for trip planning and booking comparison",
+      "source_prompt_ids": [
+        "ebea3104-d9e3-4533-8316-3d81b594bf93"
+      ],
+      "source_prompts": [
+        "best app for travel planning and booking"
+      ],
+      "source_topic": "Top Rated Travel Apps",
+      "market_profile": "consumer_travel",
+      "article_type": "comparison",
+      "normalized_title": "Best apps for trip planning and booking comparison",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 20,
+      "funnel": "MOFU",
+      "primary_intention": "Commercial",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:49Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "app-for-booking-hotels-with-discounts-best-apps-like-hoteltonight-or-hotwire-for",
+      "fanout_text": "best apps like HotelTonight or Hotwire for last minute hotel deals",
+      "source_prompt_ids": [
+        "3b15d2bf-df33-43f2-b058-488b7d644327"
+      ],
+      "source_prompts": [
+        "app for booking hotels with discounts"
+      ],
+      "source_topic": "Mobile Travel Tools",
+      "market_profile": "consumer_travel",
+      "article_type": "recommendation",
+      "normalized_title": "Best apps like HotelTonight or Hotwire for last minute hotel deals",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 22,
+      "funnel": "BOFU",
+      "primary_intention": "Transactional",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:46Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "app-for-booking-hotels-with-discounts-best-hotel-booking-apps-discount-deals-hot",
+      "fanout_text": "best hotel booking apps discount deals hotels",
+      "source_prompt_ids": [
+        "3b15d2bf-df33-43f2-b058-488b7d644327"
+      ],
+      "source_prompts": [
+        "app for booking hotels with discounts"
+      ],
+      "source_topic": "Mobile Travel Tools",
+      "market_profile": "consumer_travel",
+      "article_type": "recommendation",
+      "normalized_title": "Best hotel booking apps discount deals hotels",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 22,
+      "funnel": "BOFU",
+      "primary_intention": "Transactional",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:46Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "app-for-booking-hotels-with-discounts-best-hotel-booking-apps-discounts",
+      "fanout_text": "best hotel booking apps discounts",
+      "source_prompt_ids": [
+        "3b15d2bf-df33-43f2-b058-488b7d644327"
+      ],
+      "source_prompts": [
+        "app for booking hotels with discounts"
+      ],
+      "source_topic": "Mobile Travel Tools",
+      "market_profile": "consumer_travel",
+      "article_type": "recommendation",
+      "normalized_title": "Best hotel booking apps discounts",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 22,
+      "funnel": "BOFU",
+      "primary_intention": "Transactional",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:46Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "app-for-booking-hotels-with-discounts-best-hotel-booking-apps-with-best-discount",
+      "fanout_text": "best hotel booking apps with best discounts and deals",
+      "source_prompt_ids": [
+        "3b15d2bf-df33-43f2-b058-488b7d644327"
+      ],
+      "source_prompts": [
+        "app for booking hotels with discounts"
+      ],
+      "source_topic": "Mobile Travel Tools",
+      "market_profile": "consumer_travel",
+      "article_type": "recommendation",
+      "normalized_title": "Best hotel booking apps with best discounts and deals",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 22,
+      "funnel": "BOFU",
+      "primary_intention": "Transactional",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:46Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "app-for-booking-hotels-with-discounts-best-hotel-booking-apps-with-deals-and-dis",
+      "fanout_text": "best hotel booking apps with deals and discounts",
+      "source_prompt_ids": [
+        "3b15d2bf-df33-43f2-b058-488b7d644327"
+      ],
+      "source_prompts": [
+        "app for booking hotels with discounts"
+      ],
+      "source_topic": "Mobile Travel Tools",
+      "market_profile": "consumer_travel",
+      "article_type": "recommendation",
+      "normalized_title": "Best hotel booking apps with deals and discounts",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 22,
+      "funnel": "BOFU",
+      "primary_intention": "Transactional",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:46Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "app-for-booking-hotels-with-discounts-best-hotel-booking-apps-with-discounts-202",
+      "fanout_text": "best hotel booking apps with discounts 2026",
+      "source_prompt_ids": [
+        "3b15d2bf-df33-43f2-b058-488b7d644327"
+      ],
+      "source_prompts": [
+        "app for booking hotels with discounts"
+      ],
+      "source_topic": "Mobile Travel Tools",
+      "market_profile": "consumer_travel",
+      "article_type": "recommendation",
+      "normalized_title": "Best hotel booking apps with discounts 2026",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 22,
+      "funnel": "BOFU",
+      "primary_intention": "Transactional",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:46Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "best-app-for-travel-bookings-in-one-place-best-meta-search-engine-travel-app-202",
+      "fanout_text": "best meta search engine travel app 2026",
+      "source_prompt_ids": [
+        "5039336e-8efe-4fa0-89ff-d0114e3e18d4"
+      ],
+      "source_prompts": [
+        "best app for travel bookings in one place"
+      ],
+      "source_topic": "Top Rated Travel Apps",
+      "market_profile": "consumer_travel",
+      "article_type": "recommendation",
+      "normalized_title": "Best meta search engine travel app 2026",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 23,
+      "funnel": "MOFU",
+      "primary_intention": "Commercial",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:43Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "how-to-book-travel-on-the-go-best-mobile-apps-for-booking-flights-hotels-trains-",
+      "fanout_text": "best mobile apps for booking flights hotels trains last minute travel",
+      "source_prompt_ids": [
+        "8cc9e30c-dd2f-49f2-9024-f1346e2c877d"
+      ],
+      "source_prompts": [
+        "how to book travel on the go"
+      ],
+      "source_topic": "Travel Planning Guides",
+      "market_profile": "consumer_travel",
+      "article_type": "recommendation",
+      "normalized_title": "Best mobile apps for booking flights hotels trains last minute travel",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 20,
+      "funnel": "TOFU",
+      "primary_intention": "Informational",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:47Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "best-app-for-travel-bookings-in-one-place-best-one-stop-travel-booking-app",
+      "fanout_text": "best one-stop travel booking app",
+      "source_prompt_ids": [
+        "5039336e-8efe-4fa0-89ff-d0114e3e18d4"
+      ],
+      "source_prompts": [
+        "best app for travel bookings in one place"
+      ],
+      "source_topic": "Top Rated Travel Apps",
+      "market_profile": "consumer_travel",
+      "article_type": "recommendation",
+      "normalized_title": "Best one-stop travel booking app",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 23,
+      "funnel": "MOFU",
+      "primary_intention": "Commercial",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:43Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "how-to-find-last-minute-travel-deals-best-time-to-book-last-minute-flights-hotel",
+      "fanout_text": "best time to book last minute flights hotels",
+      "source_prompt_ids": [
+        "e4e0e02f-2f16-4b0b-8437-a9eee8e14f1f"
+      ],
+      "source_prompts": [
+        "how to find last minute travel deals"
+      ],
+      "source_topic": "Travel Planning Guides",
+      "market_profile": "consumer_travel",
+      "article_type": "recommendation",
+      "normalized_title": "Best time to book last minute flights hotels",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 21,
+      "funnel": "TOFU",
+      "primary_intention": "Informational",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:44Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "how-to-book-travel-on-the-go-best-travel-booking-apps-2026",
+      "fanout_text": "best travel booking apps 2026",
+      "source_prompt_ids": [
+        "8cc9e30c-dd2f-49f2-9024-f1346e2c877d"
+      ],
+      "source_prompts": [
+        "how to book travel on the go"
+      ],
+      "source_topic": "Travel Planning Guides",
+      "market_profile": "consumer_travel",
+      "article_type": "recommendation",
+      "normalized_title": "Best travel booking apps 2026",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 20,
+      "funnel": "TOFU",
+      "primary_intention": "Informational",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:47Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "best-app-for-travel-bookings-in-one-place-best-travel-booking-apps-all-in-one-fl",
+      "fanout_text": "best travel booking apps all in one flights hotels car rental travel app",
+      "source_prompt_ids": [
+        "5039336e-8efe-4fa0-89ff-d0114e3e18d4"
+      ],
+      "source_prompts": [
+        "best app for travel bookings in one place"
+      ],
+      "source_topic": "Top Rated Travel Apps",
+      "market_profile": "consumer_travel",
+      "article_type": "recommendation",
+      "normalized_title": "Best travel booking apps all in one flights hotels car rental travel app",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 23,
+      "funnel": "MOFU",
+      "primary_intention": "Commercial",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:43Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "best-app-for-travel-bookings-in-one-place-best-travel-booking-apps-all-in-one-tr",
+      "fanout_text": "best travel booking apps all in one travel bookings flights hotels car activities",
+      "source_prompt_ids": [
+        "5039336e-8efe-4fa0-89ff-d0114e3e18d4"
+      ],
+      "source_prompts": [
+        "best app for travel bookings in one place"
+      ],
+      "source_topic": "Top Rated Travel Apps",
+      "market_profile": "consumer_travel",
+      "article_type": "recommendation",
+      "normalized_title": "Best travel booking apps all in one travel bookings flights hotels car activities",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 23,
+      "funnel": "MOFU",
+      "primary_intention": "Commercial",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:43Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "how-to-book-travel-on-the-go-best-travel-booking-apps-for-mobile-2026",
+      "fanout_text": "best travel booking apps for mobile 2026",
+      "source_prompt_ids": [
+        "8cc9e30c-dd2f-49f2-9024-f1346e2c877d"
+      ],
+      "source_prompts": [
+        "how to book travel on the go"
+      ],
+      "source_topic": "Travel Planning Guides",
+      "market_profile": "consumer_travel",
+      "article_type": "recommendation",
+      "normalized_title": "Best travel booking apps for mobile 2026",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 20,
+      "funnel": "TOFU",
+      "primary_intention": "Informational",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:47Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "best-app-for-travel-bookings-in-one-place-best-travel-booking-apps-that-combine-",
+      "fanout_text": "best travel booking apps that combine flights hotels car rentals reviews 2026",
+      "source_prompt_ids": [
+        "5039336e-8efe-4fa0-89ff-d0114e3e18d4"
+      ],
+      "source_prompts": [
+        "best app for travel bookings in one place"
+      ],
+      "source_topic": "Top Rated Travel Apps",
+      "market_profile": "consumer_travel",
+      "article_type": "recommendation",
+      "normalized_title": "Best travel booking apps that combine flights hotels car rentals reviews 2026",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 23,
+      "funnel": "MOFU",
+      "primary_intention": "Commercial",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:43Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "best-app-for-travel-bookings-in-one-place-best-travel-booking-apps-that-combine-",
+      "fanout_text": "best travel booking apps that combine flights hotels rental cars activities reviews",
+      "source_prompt_ids": [
+        "5039336e-8efe-4fa0-89ff-d0114e3e18d4"
+      ],
+      "source_prompts": [
+        "best app for travel bookings in one place"
+      ],
+      "source_topic": "Top Rated Travel Apps",
+      "market_profile": "consumer_travel",
+      "article_type": "recommendation",
+      "normalized_title": "Best travel booking apps that combine flights hotels rental cars activities reviews",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 23,
+      "funnel": "MOFU",
+      "primary_intention": "Commercial",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:43Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "app-for-booking-travel-deals-best-travel-booking-apps-with-alerts-and-deals-2026",
+      "fanout_text": "best travel booking apps with alerts and deals 2026",
+      "source_prompt_ids": [
+        "7dcde1da-979d-4a58-a3d2-f09e208b2001"
+      ],
+      "source_prompts": [
+        "app for booking travel deals"
+      ],
+      "source_topic": "Mobile Travel Tools",
+      "market_profile": "consumer_travel",
+      "article_type": "recommendation",
+      "normalized_title": "Best travel booking apps with alerts and deals 2026",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 21,
+      "funnel": "BOFU",
+      "primary_intention": "Transactional",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:48Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "app-for-booking-travel-deals-best-travel-booking-apps-with-deals-and-alerts",
+      "fanout_text": "best travel booking apps with deals and alerts",
+      "source_prompt_ids": [
+        "7dcde1da-979d-4a58-a3d2-f09e208b2001"
+      ],
+      "source_prompts": [
+        "app for booking travel deals"
+      ],
+      "source_topic": "Mobile Travel Tools",
+      "market_profile": "consumer_travel",
+      "article_type": "recommendation",
+      "normalized_title": "Best travel booking apps with deals and alerts",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 21,
+      "funnel": "BOFU",
+      "primary_intention": "Transactional",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:48Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "app-for-booking-travel-deals-best-travel-deal-booking-apps",
+      "fanout_text": "best travel deal booking apps",
+      "source_prompt_ids": [
+        "7dcde1da-979d-4a58-a3d2-f09e208b2001"
+      ],
+      "source_prompts": [
+        "app for booking travel deals"
+      ],
+      "source_topic": "Mobile Travel Tools",
+      "market_profile": "consumer_travel",
+      "article_type": "recommendation",
+      "normalized_title": "Best travel deal booking apps",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 21,
+      "funnel": "BOFU",
+      "primary_intention": "Transactional",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:48Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "best-app-for-travel-planning-and-booking-best-travel-planning-and-booking-apps-2",
+      "fanout_text": "best travel planning and booking apps 2025 2026",
+      "source_prompt_ids": [
+        "ebea3104-d9e3-4533-8316-3d81b594bf93"
+      ],
+      "source_prompts": [
+        "best app for travel planning and booking"
+      ],
+      "source_topic": "Top Rated Travel Apps",
+      "market_profile": "consumer_travel",
+      "article_type": "recommendation",
+      "normalized_title": "Best travel planning and booking apps 2025 2026",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 20,
+      "funnel": "MOFU",
+      "primary_intention": "Commercial",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:49Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "best-app-for-travel-planning-and-booking-best-travel-planning-apps-2025-2026-com",
+      "fanout_text": "best travel planning apps 2025 2026 comparison",
+      "source_prompt_ids": [
+        "ebea3104-d9e3-4533-8316-3d81b594bf93"
+      ],
+      "source_prompts": [
+        "best app for travel planning and booking"
+      ],
+      "source_topic": "Top Rated Travel Apps",
+      "market_profile": "consumer_travel",
+      "article_type": "comparison",
+      "normalized_title": "Best travel planning apps 2025 2026 comparison",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 20,
+      "funnel": "MOFU",
+      "primary_intention": "Commercial",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:49Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "best-app-for-travel-bookings-in-one-place-best-travel-super-app-2026",
+      "fanout_text": "best travel super app 2026",
+      "source_prompt_ids": [
+        "5039336e-8efe-4fa0-89ff-d0114e3e18d4"
+      ],
+      "source_prompts": [
+        "best app for travel bookings in one place"
+      ],
+      "source_topic": "Top Rated Travel Apps",
+      "market_profile": "consumer_travel",
+      "article_type": "recommendation",
+      "normalized_title": "Best travel super app 2026",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 23,
+      "funnel": "MOFU",
+      "primary_intention": "Commercial",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:43Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "how-to-find-last-minute-travel-deals-best-websites-and-apps-for-last-minute-flig",
+      "fanout_text": "best websites and apps for last minute flight hotel deals 2026",
+      "source_prompt_ids": [
+        "e4e0e02f-2f16-4b0b-8437-a9eee8e14f1f"
+      ],
+      "source_prompts": [
+        "how to find last minute travel deals"
+      ],
+      "source_topic": "Travel Planning Guides",
+      "market_profile": "consumer_travel",
+      "article_type": "recommendation",
+      "normalized_title": "Best websites and apps for last minute flight hotel deals 2026",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 21,
+      "funnel": "TOFU",
+      "primary_intention": "Informational",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:44Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "how-to-book-vacation-packages-best-websites-and-apps-to-book-vacation-packages-2",
+      "fanout_text": "best websites and apps to book vacation packages 2026",
+      "source_prompt_ids": [
+        "3fe6144c-0949-4ffa-9be9-ad2e0f10a73b"
+      ],
+      "source_prompts": [
+        "how to book vacation packages"
+      ],
+      "source_topic": "Travel Planning Guides",
+      "market_profile": "consumer_travel",
+      "article_type": "recommendation",
+      "normalized_title": "Best websites and apps to book vacation packages 2026",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 22,
+      "funnel": "TOFU",
+      "primary_intention": "Informational",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:42Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "how-to-find-last-minute-travel-deals-best-websites-or-apps-for-last-minute-trave",
+      "fanout_text": "best websites or apps for last minute travel deals flights hotels vacation packages",
+      "source_prompt_ids": [
+        "e4e0e02f-2f16-4b0b-8437-a9eee8e14f1f"
+      ],
+      "source_prompts": [
+        "how to find last minute travel deals"
+      ],
+      "source_topic": "Travel Planning Guides",
+      "market_profile": "consumer_travel",
+      "article_type": "recommendation",
+      "normalized_title": "Best websites or apps for last minute travel deals flights hotels vacation packages",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 21,
+      "funnel": "TOFU",
+      "primary_intention": "Informational",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:44Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "how-to-book-vacation-packages-best-websites-to-book-vacation-packages-2026",
+      "fanout_text": "best websites to book vacation packages 2026",
+      "source_prompt_ids": [
+        "3fe6144c-0949-4ffa-9be9-ad2e0f10a73b"
+      ],
+      "source_prompts": [
+        "how to book vacation packages"
+      ],
+      "source_topic": "Travel Planning Guides",
+      "market_profile": "consumer_travel",
+      "article_type": "recommendation",
+      "normalized_title": "Best websites to book vacation packages 2026",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 22,
+      "funnel": "TOFU",
+      "primary_intention": "Informational",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:42Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "is-booking-hotels-via-app-cheaper-booking-hotels-via-app-vs-web-cheaper-hotel-bo",
+      "fanout_text": "booking hotels via app vs web cheaper hotel booking prices advantages",
+      "source_prompt_ids": [
+        "de7511c3-130e-4148-8339-624de24fba35"
+      ],
+      "source_prompts": [
+        "is booking hotels via app cheaper"
+      ],
+      "source_topic": "Platform Comparison Guide",
+      "market_profile": "consumer_travel",
+      "article_type": "comparison",
+      "normalized_title": "Booking hotels via app vs web cheaper hotel booking prices advantages",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 22,
+      "funnel": "MOFU",
+      "primary_intention": "Commercial",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:45Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "is-booking-hotels-via-app-cheaper-booking-com-app-vs-website-price-difference",
+      "fanout_text": "Booking.com app vs website price difference",
+      "source_prompt_ids": [
+        "de7511c3-130e-4148-8339-624de24fba35"
+      ],
+      "source_prompts": [
+        "is booking hotels via app cheaper"
+      ],
+      "source_topic": "Platform Comparison Guide",
+      "market_profile": "consumer_travel",
+      "article_type": "comparison",
+      "normalized_title": "Booking.com app vs website price difference",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 22,
+      "funnel": "MOFU",
+      "primary_intention": "Commercial",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:45Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "is-booking-hotels-via-app-cheaper-booking-com-app-vs-website-price-differences",
+      "fanout_text": "Booking.com app vs website price differences",
+      "source_prompt_ids": [
+        "de7511c3-130e-4148-8339-624de24fba35"
+      ],
+      "source_prompts": [
+        "is booking hotels via app cheaper"
+      ],
+      "source_topic": "Platform Comparison Guide",
+      "market_profile": "consumer_travel",
+      "article_type": "comparison",
+      "normalized_title": "Booking.com app vs website price differences",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 22,
+      "funnel": "MOFU",
+      "primary_intention": "Commercial",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:45Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "is-booking-hotels-via-app-cheaper-booking-com-app-vs-website-prices",
+      "fanout_text": "Booking.com app vs website prices",
+      "source_prompt_ids": [
+        "de7511c3-130e-4148-8339-624de24fba35"
+      ],
+      "source_prompts": [
+        "is booking hotels via app cheaper"
+      ],
+      "source_topic": "Platform Comparison Guide",
+      "market_profile": "consumer_travel",
+      "article_type": "comparison",
+      "normalized_title": "Booking.com app vs website prices",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 22,
+      "funnel": "MOFU",
+      "primary_intention": "Commercial",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:45Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "how-to-find-last-minute-travel-deals-current-best-last-minute-travel-deals-april",
+      "fanout_text": "current best last minute travel deals April 2026",
+      "source_prompt_ids": [
+        "e4e0e02f-2f16-4b0b-8437-a9eee8e14f1f"
+      ],
+      "source_prompts": [
+        "how to find last minute travel deals"
+      ],
+      "source_topic": "Travel Planning Guides",
+      "market_profile": "consumer_travel",
+      "article_type": "recommendation",
+      "normalized_title": "Current best last minute travel deals April 2026",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 21,
+      "funnel": "TOFU",
+      "primary_intention": "Informational",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:44Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "how-to-book-vacation-packages-difference-between-booking-flights-hotels-separate",
+      "fanout_text": "difference between booking flights hotels separately vs package deals",
+      "source_prompt_ids": [
+        "3fe6144c-0949-4ffa-9be9-ad2e0f10a73b"
+      ],
+      "source_prompts": [
+        "how to book vacation packages"
+      ],
+      "source_topic": "Travel Planning Guides",
+      "market_profile": "consumer_travel",
+      "article_type": "comparison",
+      "normalized_title": "Difference between booking flights hotels separately vs package deals",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 22,
+      "funnel": "TOFU",
+      "primary_intention": "Informational",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:42Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "how-to-book-vacation-packages-difference-between-booking-flights-hotels-separate",
+      "fanout_text": "difference between booking flights hotels separately vs vacation package",
+      "source_prompt_ids": [
+        "3fe6144c-0949-4ffa-9be9-ad2e0f10a73b"
+      ],
+      "source_prompts": [
+        "how to book vacation packages"
+      ],
+      "source_topic": "Travel Planning Guides",
+      "market_profile": "consumer_travel",
+      "article_type": "comparison",
+      "normalized_title": "Difference between booking flights hotels separately vs vacation package",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 22,
+      "funnel": "TOFU",
+      "primary_intention": "Informational",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:42Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "is-booking-hotels-via-app-cheaper-do-hotel-apps-offer-better-deals-or-discounts-",
+      "fanout_text": "do hotel apps offer better deals or discounts than websites",
+      "source_prompt_ids": [
+        "de7511c3-130e-4148-8339-624de24fba35"
+      ],
+      "source_prompts": [
+        "is booking hotels via app cheaper"
+      ],
+      "source_topic": "Platform Comparison Guide",
+      "market_profile": "consumer_travel",
+      "article_type": "explainer",
+      "normalized_title": "Do hotel apps offer better deals or discounts than websites",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 22,
+      "funnel": "MOFU",
+      "primary_intention": "Commercial",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:45Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "is-booking-hotels-via-app-cheaper-expedia-app-vs-website-cheaper",
+      "fanout_text": "Expedia app vs website cheaper",
+      "source_prompt_ids": [
+        "de7511c3-130e-4148-8339-624de24fba35"
+      ],
+      "source_prompts": [
+        "is booking hotels via app cheaper"
+      ],
+      "source_topic": "Platform Comparison Guide",
+      "market_profile": "consumer_travel",
+      "article_type": "comparison",
+      "normalized_title": "Expedia app vs website cheaper",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 22,
+      "funnel": "MOFU",
+      "primary_intention": "Commercial",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:45Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "is-booking-hotels-via-app-cheaper-expedia-app-vs-website-cheaper-hotels",
+      "fanout_text": "Expedia app vs website cheaper hotels",
+      "source_prompt_ids": [
+        "de7511c3-130e-4148-8339-624de24fba35"
+      ],
+      "source_prompts": [
+        "is booking hotels via app cheaper"
+      ],
+      "source_topic": "Platform Comparison Guide",
+      "market_profile": "consumer_travel",
+      "article_type": "comparison",
+      "normalized_title": "Expedia app vs website cheaper hotels",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 22,
+      "funnel": "MOFU",
+      "primary_intention": "Commercial",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:45Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "how-to-book-travel-on-the-go-google-flights-kayak-expedia-booking-com-apps-for-o",
+      "fanout_text": "Google Flights Kayak Expedia Booking.com apps for on the go booking",
+      "source_prompt_ids": [
+        "8cc9e30c-dd2f-49f2-9024-f1346e2c877d"
+      ],
+      "source_prompts": [
+        "how to book travel on the go"
+      ],
+      "source_topic": "Travel Planning Guides",
+      "market_profile": "consumer_travel",
+      "article_type": "explainer",
+      "normalized_title": "Google Flights Kayak Expedia Booking.com apps for on the go booking",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 20,
+      "funnel": "TOFU",
+      "primary_intention": "Informational",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:47Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "how-to-book-travel-on-the-go-google-flights-kayak-expedia-booking-com-mobile-app",
+      "fanout_text": "Google Flights Kayak Expedia Booking.com mobile app features",
+      "source_prompt_ids": [
+        "8cc9e30c-dd2f-49f2-9024-f1346e2c877d"
+      ],
+      "source_prompts": [
+        "how to book travel on the go"
+      ],
+      "source_topic": "Travel Planning Guides",
+      "market_profile": "consumer_travel",
+      "article_type": "explainer",
+      "normalized_title": "Google Flights Kayak Expedia Booking.com mobile app features",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 20,
+      "funnel": "TOFU",
+      "primary_intention": "Informational",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:47Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "how-to-book-travel-on-the-go-google-flights-app-kayak-expedia-hopper-skyscanner-",
+      "fanout_text": "Google Flights app Kayak Expedia Hopper Skyscanner mobile booking",
+      "source_prompt_ids": [
+        "8cc9e30c-dd2f-49f2-9024-f1346e2c877d"
+      ],
+      "source_prompts": [
+        "how to book travel on the go"
+      ],
+      "source_topic": "Travel Planning Guides",
+      "market_profile": "consumer_travel",
+      "article_type": "explainer",
+      "normalized_title": "Google Flights app Kayak Expedia Hopper Skyscanner mobile booking",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 20,
+      "funnel": "TOFU",
+      "primary_intention": "Informational",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:47Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "is-booking-hotels-via-app-cheaper-hilton-marriott-app-exclusive-discounts",
+      "fanout_text": "Hilton Marriott app exclusive discounts",
+      "source_prompt_ids": [
+        "de7511c3-130e-4148-8339-624de24fba35"
+      ],
+      "source_prompts": [
+        "is booking hotels via app cheaper"
+      ],
+      "source_topic": "Platform Comparison Guide",
+      "market_profile": "consumer_travel",
+      "article_type": "explainer",
+      "normalized_title": "Hilton Marriott app exclusive discounts",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 22,
+      "funnel": "MOFU",
+      "primary_intention": "Commercial",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:45Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "app-for-booking-travel-deals-hopper-vs-kayak-vs-skyscanner-vs-google-flights-app",
+      "fanout_text": "Hopper vs Kayak vs Skyscanner vs Google Flights app for deals",
+      "source_prompt_ids": [
+        "7dcde1da-979d-4a58-a3d2-f09e208b2001"
+      ],
+      "source_prompts": [
+        "app for booking travel deals"
+      ],
+      "source_topic": "Mobile Travel Tools",
+      "market_profile": "consumer_travel",
+      "article_type": "comparison",
+      "normalized_title": "Hopper vs Kayak vs Skyscanner vs Google Flights app for deals",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 21,
+      "funnel": "BOFU",
+      "primary_intention": "Transactional",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:48Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "app-for-booking-hotels-with-discounts-hotel-apps-with-discounts-2026",
+      "fanout_text": "hotel apps with discounts 2026",
+      "source_prompt_ids": [
+        "3b15d2bf-df33-43f2-b058-488b7d644327"
+      ],
+      "source_prompts": [
+        "app for booking hotels with discounts"
+      ],
+      "source_topic": "Mobile Travel Tools",
+      "market_profile": "consumer_travel",
+      "article_type": "explainer",
+      "normalized_title": "Hotel apps with discounts 2026",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 22,
+      "funnel": "BOFU",
+      "primary_intention": "Transactional",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:46Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "is-booking-hotels-via-app-cheaper-hotel-booking-app-vs-website-price-comparison-",
+      "fanout_text": "hotel booking app vs website price comparison 2025 2026",
+      "source_prompt_ids": [
+        "de7511c3-130e-4148-8339-624de24fba35"
+      ],
+      "source_prompts": [
+        "is booking hotels via app cheaper"
+      ],
+      "source_topic": "Platform Comparison Guide",
+      "market_profile": "consumer_travel",
+      "article_type": "comparison",
+      "normalized_title": "Hotel booking app vs website price comparison 2025 2026",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 22,
+      "funnel": "MOFU",
+      "primary_intention": "Commercial",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:45Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "is-booking-hotels-via-app-cheaper-hotel-booking-app-vs-website-prices-comparison",
+      "fanout_text": "hotel booking app vs website prices comparison 2025 2026",
+      "source_prompt_ids": [
+        "de7511c3-130e-4148-8339-624de24fba35"
+      ],
+      "source_prompts": [
+        "is booking hotels via app cheaper"
+      ],
+      "source_topic": "Platform Comparison Guide",
+      "market_profile": "consumer_travel",
+      "article_type": "comparison",
+      "normalized_title": "Hotel booking app vs website prices comparison 2025 2026",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 22,
+      "funnel": "MOFU",
+      "primary_intention": "Commercial",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:45Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "app-for-booking-hotels-with-discounts-hotel-booking-apps-discounts",
+      "fanout_text": "hotel booking apps discounts",
+      "source_prompt_ids": [
+        "3b15d2bf-df33-43f2-b058-488b7d644327"
+      ],
+      "source_prompts": [
+        "app for booking hotels with discounts"
+      ],
+      "source_topic": "Mobile Travel Tools",
+      "market_profile": "consumer_travel",
+      "article_type": "explainer",
+      "normalized_title": "Hotel booking apps discounts",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 22,
+      "funnel": "BOFU",
+      "primary_intention": "Transactional",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:46Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "app-for-booking-hotels-with-discounts-hotel-booking-apps-discounts-stroudsburg-p",
+      "fanout_text": "hotel booking apps discounts Stroudsburg PA",
+      "source_prompt_ids": [
+        "3b15d2bf-df33-43f2-b058-488b7d644327"
+      ],
+      "source_prompts": [
+        "app for booking hotels with discounts"
+      ],
+      "source_topic": "Mobile Travel Tools",
+      "market_profile": "consumer_travel",
+      "article_type": "explainer",
+      "normalized_title": "Hotel booking apps discounts Stroudsburg PA",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 22,
+      "funnel": "BOFU",
+      "primary_intention": "Transactional",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:46Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "is-booking-hotels-via-app-cheaper-hotel-booking-apps-vs-website-prices-compariso",
+      "fanout_text": "hotel booking apps vs website prices comparison 2025 2026",
+      "source_prompt_ids": [
+        "de7511c3-130e-4148-8339-624de24fba35"
+      ],
+      "source_prompts": [
+        "is booking hotels via app cheaper"
+      ],
+      "source_topic": "Platform Comparison Guide",
+      "market_profile": "consumer_travel",
+      "article_type": "comparison",
+      "normalized_title": "Hotel booking apps vs website prices comparison 2025 2026",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 22,
+      "funnel": "MOFU",
+      "primary_intention": "Commercial",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:45Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "app-for-booking-hotels-with-discounts-hotel-booking-apps-with-best-deals-coupons",
+      "fanout_text": "hotel booking apps with best deals coupons",
+      "source_prompt_ids": [
+        "3b15d2bf-df33-43f2-b058-488b7d644327"
+      ],
+      "source_prompts": [
+        "app for booking hotels with discounts"
+      ],
+      "source_topic": "Mobile Travel Tools",
+      "market_profile": "consumer_travel",
+      "article_type": "recommendation",
+      "normalized_title": "Hotel booking apps with best deals coupons",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 22,
+      "funnel": "BOFU",
+      "primary_intention": "Transactional",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:46Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "app-for-booking-hotels-with-discounts-hotel-booking-apps-with-best-discounts-com",
+      "fanout_text": "hotel booking apps with best discounts comparison",
+      "source_prompt_ids": [
+        "3b15d2bf-df33-43f2-b058-488b7d644327"
+      ],
+      "source_prompts": [
+        "app for booking hotels with discounts"
+      ],
+      "source_topic": "Mobile Travel Tools",
+      "market_profile": "consumer_travel",
+      "article_type": "comparison",
+      "normalized_title": "Hotel booking apps with best discounts comparison",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 22,
+      "funnel": "BOFU",
+      "primary_intention": "Transactional",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:46Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "app-for-booking-hotels-with-discounts-hotel-booking-apps-with-exclusive-discount",
+      "fanout_text": "hotel booking apps with exclusive discounts for members",
+      "source_prompt_ids": [
+        "3b15d2bf-df33-43f2-b058-488b7d644327"
+      ],
+      "source_prompts": [
+        "app for booking hotels with discounts"
+      ],
+      "source_topic": "Mobile Travel Tools",
+      "market_profile": "consumer_travel",
+      "article_type": "explainer",
+      "normalized_title": "Hotel booking apps with exclusive discounts for members",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 22,
+      "funnel": "BOFU",
+      "primary_intention": "Transactional",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:46Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "app-for-booking-travel-deals-hotels-and-flights-app-discounts",
+      "fanout_text": "hotels and flights app discounts",
+      "source_prompt_ids": [
+        "7dcde1da-979d-4a58-a3d2-f09e208b2001"
+      ],
+      "source_prompts": [
+        "app for booking travel deals"
+      ],
+      "source_topic": "Mobile Travel Tools",
+      "market_profile": "consumer_travel",
+      "article_type": "explainer",
+      "normalized_title": "Hotels and flights app discounts",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 21,
+      "funnel": "BOFU",
+      "primary_intention": "Transactional",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:48Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "app-for-booking-hotels-with-discounts-hotels-discount-app-price-comparison",
+      "fanout_text": "hotels discount app price comparison",
+      "source_prompt_ids": [
+        "3b15d2bf-df33-43f2-b058-488b7d644327"
+      ],
+      "source_prompts": [
+        "app for booking hotels with discounts"
+      ],
+      "source_topic": "Mobile Travel Tools",
+      "market_profile": "consumer_travel",
+      "article_type": "comparison",
+      "normalized_title": "Hotels discount app price comparison",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 22,
+      "funnel": "BOFU",
+      "primary_intention": "Transactional",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:46Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "is-booking-hotels-via-app-cheaper-hotels-com-app-exclusive-deals",
+      "fanout_text": "Hotels.com app exclusive deals",
+      "source_prompt_ids": [
+        "de7511c3-130e-4148-8339-624de24fba35"
+      ],
+      "source_prompts": [
+        "is booking hotels via app cheaper"
+      ],
+      "source_topic": "Platform Comparison Guide",
+      "market_profile": "consumer_travel",
+      "article_type": "explainer",
+      "normalized_title": "Hotels.com app exclusive deals",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 22,
+      "funnel": "MOFU",
+      "primary_intention": "Commercial",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:45Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "is-booking-hotels-via-app-cheaper-hotels-com-app-exclusive-deals-vs-desktop",
+      "fanout_text": "Hotels.com app exclusive deals vs desktop",
+      "source_prompt_ids": [
+        "de7511c3-130e-4148-8339-624de24fba35"
+      ],
+      "source_prompts": [
+        "is booking hotels via app cheaper"
+      ],
+      "source_topic": "Platform Comparison Guide",
+      "market_profile": "consumer_travel",
+      "article_type": "comparison",
+      "normalized_title": "Hotels.com app exclusive deals vs desktop",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 22,
+      "funnel": "MOFU",
+      "primary_intention": "Commercial",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:45Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "is-booking-hotels-via-app-cheaper-hotels-com-app-vs-desktop-prices",
+      "fanout_text": "Hotels.com app vs desktop prices",
+      "source_prompt_ids": [
+        "de7511c3-130e-4148-8339-624de24fba35"
+      ],
+      "source_prompts": [
+        "is booking hotels via app cheaper"
+      ],
+      "source_topic": "Platform Comparison Guide",
+      "market_profile": "consumer_travel",
+      "article_type": "comparison",
+      "normalized_title": "Hotels.com app vs desktop prices",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 22,
+      "funnel": "MOFU",
+      "primary_intention": "Commercial",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:45Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "how-to-book-vacation-packages-vacation-packages-booking-guide-what-to-know-how-t",
+      "fanout_text": "vacation packages booking guide what to know how to book travel packages",
+      "source_prompt_ids": [
+        "3fe6144c-0949-4ffa-9be9-ad2e0f10a73b"
+      ],
+      "source_prompts": [
+        "how to book vacation packages"
+      ],
+      "source_topic": "Travel Planning Guides",
+      "market_profile": "consumer_travel",
+      "article_type": "guide",
+      "normalized_title": "How to Vacation packages booking guide what to know how to book travel packages",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 22,
+      "funnel": "TOFU",
+      "primary_intention": "Informational",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:42Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "how-to-book-vacation-packages-how-to-book-all-inclusive-vacation-packages",
+      "fanout_text": "how to book all-inclusive vacation packages",
+      "source_prompt_ids": [
+        "3fe6144c-0949-4ffa-9be9-ad2e0f10a73b"
+      ],
+      "source_prompts": [
+        "how to book vacation packages"
+      ],
+      "source_topic": "Travel Planning Guides",
+      "market_profile": "consumer_travel",
+      "article_type": "guide",
+      "normalized_title": "How to book all-inclusive vacation packages",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 22,
+      "funnel": "TOFU",
+      "primary_intention": "Informational",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:42Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "how-to-book-travel-on-the-go-how-to-book-travel-on-the-go",
+      "fanout_text": "how to book travel on the go",
+      "source_prompt_ids": [
+        "8cc9e30c-dd2f-49f2-9024-f1346e2c877d"
+      ],
+      "source_prompts": [
+        "how to book travel on the go"
+      ],
+      "source_topic": "Travel Planning Guides",
+      "market_profile": "consumer_travel",
+      "article_type": "guide",
+      "normalized_title": "How to book travel on the go",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 20,
+      "funnel": "TOFU",
+      "primary_intention": "Informational",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:47Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "how-to-book-travel-on-the-go-how-to-book-travel-on-the-go-apps-tips-2026",
+      "fanout_text": "how to book travel on the go apps tips 2026",
+      "source_prompt_ids": [
+        "8cc9e30c-dd2f-49f2-9024-f1346e2c877d"
+      ],
+      "source_prompts": [
+        "how to book travel on the go"
+      ],
+      "source_topic": "Travel Planning Guides",
+      "market_profile": "consumer_travel",
+      "article_type": "guide",
+      "normalized_title": "How to book travel on the go apps tips 2026",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 20,
+      "funnel": "TOFU",
+      "primary_intention": "Informational",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:47Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "how-to-book-travel-on-the-go-how-to-book-travel-on-the-go-best-apps-and-tips-202",
+      "fanout_text": "how to book travel on the go best apps and tips 2026",
+      "source_prompt_ids": [
+        "8cc9e30c-dd2f-49f2-9024-f1346e2c877d"
+      ],
+      "source_prompts": [
+        "how to book travel on the go"
+      ],
+      "source_topic": "Travel Planning Guides",
+      "market_profile": "consumer_travel",
+      "article_type": "recommendation",
+      "normalized_title": "How to book travel on the go best apps and tips 2026",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 20,
+      "funnel": "TOFU",
+      "primary_intention": "Informational",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:47Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "how-to-book-travel-on-the-go-how-to-book-travel-on-the-go-tips-booking-flights-h",
+      "fanout_text": "how to book travel on the go tips booking flights hotels mobile apps travel on the go",
+      "source_prompt_ids": [
+        "8cc9e30c-dd2f-49f2-9024-f1346e2c877d"
+      ],
+      "source_prompts": [
+        "how to book travel on the go"
+      ],
+      "source_topic": "Travel Planning Guides",
+      "market_profile": "consumer_travel",
+      "article_type": "guide",
+      "normalized_title": "How to book travel on the go tips booking flights hotels mobile apps travel on the go",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 20,
+      "funnel": "TOFU",
+      "primary_intention": "Informational",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:47Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "how-to-book-travel-on-the-go-how-to-book-travel-on-the-go-tips-mobile-booking-fl",
+      "fanout_text": "how to book travel on the go tips mobile booking flights hotels travel apps",
+      "source_prompt_ids": [
+        "8cc9e30c-dd2f-49f2-9024-f1346e2c877d"
+      ],
+      "source_prompts": [
+        "how to book travel on the go"
+      ],
+      "source_topic": "Travel Planning Guides",
+      "market_profile": "consumer_travel",
+      "article_type": "guide",
+      "normalized_title": "How to book travel on the go tips mobile booking flights hotels travel apps",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 20,
+      "funnel": "TOFU",
+      "primary_intention": "Informational",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:47Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "how-to-book-travel-on-the-go-how-to-book-travel-on-the-go-tips-travel-booking-ap",
+      "fanout_text": "how to book travel on the go tips travel booking apps mobile booking flights hotels",
+      "source_prompt_ids": [
+        "8cc9e30c-dd2f-49f2-9024-f1346e2c877d"
+      ],
+      "source_prompts": [
+        "how to book travel on the go"
+      ],
+      "source_topic": "Travel Planning Guides",
+      "market_profile": "consumer_travel",
+      "article_type": "guide",
+      "normalized_title": "How to book travel on the go tips travel booking apps mobile booking flights hotels",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 20,
+      "funnel": "TOFU",
+      "primary_intention": "Informational",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:47Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "how-to-book-travel-on-the-go-how-to-book-travel-on-the-go-tips-what-apps-how-to-",
+      "fanout_text": "how to book travel on the go tips what apps how to book flights hotels travel booking mobile",
+      "source_prompt_ids": [
+        "8cc9e30c-dd2f-49f2-9024-f1346e2c877d"
+      ],
+      "source_prompts": [
+        "how to book travel on the go"
+      ],
+      "source_topic": "Travel Planning Guides",
+      "market_profile": "consumer_travel",
+      "article_type": "guide",
+      "normalized_title": "How to book travel on the go tips what apps how to book flights hotels travel booking mobile",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 20,
+      "funnel": "TOFU",
+      "primary_intention": "Informational",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:47Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "how-to-book-vacation-packages-how-to-book-vacation-packages",
+      "fanout_text": "how to book vacation packages",
+      "source_prompt_ids": [
+        "3fe6144c-0949-4ffa-9be9-ad2e0f10a73b"
+      ],
+      "source_prompts": [
+        "how to book vacation packages"
+      ],
+      "source_topic": "Travel Planning Guides",
+      "market_profile": "consumer_travel",
+      "article_type": "guide",
+      "normalized_title": "How to book vacation packages",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 22,
+      "funnel": "TOFU",
+      "primary_intention": "Informational",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:42Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "how-to-book-vacation-packages-how-to-book-vacation-packages-directly-with-airlin",
+      "fanout_text": "how to book vacation packages directly with airlines hotels vs packages",
+      "source_prompt_ids": [
+        "3fe6144c-0949-4ffa-9be9-ad2e0f10a73b"
+      ],
+      "source_prompts": [
+        "how to book vacation packages"
+      ],
+      "source_topic": "Travel Planning Guides",
+      "market_profile": "consumer_travel",
+      "article_type": "comparison",
+      "normalized_title": "How to book vacation packages directly with airlines hotels vs packages",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 22,
+      "funnel": "TOFU",
+      "primary_intention": "Informational",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:42Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "how-to-book-vacation-packages-how-to-book-vacation-packages-step-by-step",
+      "fanout_text": "how to book vacation packages step by step",
+      "source_prompt_ids": [
+        "3fe6144c-0949-4ffa-9be9-ad2e0f10a73b"
+      ],
+      "source_prompts": [
+        "how to book vacation packages"
+      ],
+      "source_topic": "Travel Planning Guides",
+      "market_profile": "consumer_travel",
+      "article_type": "guide",
+      "normalized_title": "How to book vacation packages step by step",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 22,
+      "funnel": "TOFU",
+      "primary_intention": "Informational",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:42Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "how-to-book-vacation-packages-how-to-book-vacation-packages-step-by-step-guide",
+      "fanout_text": "how to book vacation packages step by step guide",
+      "source_prompt_ids": [
+        "3fe6144c-0949-4ffa-9be9-ad2e0f10a73b"
+      ],
+      "source_prompts": [
+        "how to book vacation packages"
+      ],
+      "source_topic": "Travel Planning Guides",
+      "market_profile": "consumer_travel",
+      "article_type": "guide",
+      "normalized_title": "How to book vacation packages step by step guide",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 22,
+      "funnel": "TOFU",
+      "primary_intention": "Informational",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:42Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "how-to-book-vacation-packages-how-to-book-vacation-packages-steps-tips-how-to-bo",
+      "fanout_text": "how to book vacation packages steps tips how to book vacation packages",
+      "source_prompt_ids": [
+        "3fe6144c-0949-4ffa-9be9-ad2e0f10a73b"
+      ],
+      "source_prompts": [
+        "how to book vacation packages"
+      ],
+      "source_topic": "Travel Planning Guides",
+      "market_profile": "consumer_travel",
+      "article_type": "guide",
+      "normalized_title": "How to book vacation packages steps tips how to book vacation packages",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 22,
+      "funnel": "TOFU",
+      "primary_intention": "Informational",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:42Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "how-to-book-vacation-packages-how-to-book-vacation-packages-tips-steps-booking-v",
+      "fanout_text": "how to book vacation packages tips steps booking vacation packages",
+      "source_prompt_ids": [
+        "3fe6144c-0949-4ffa-9be9-ad2e0f10a73b"
+      ],
+      "source_prompts": [
+        "how to book vacation packages"
+      ],
+      "source_topic": "Travel Planning Guides",
+      "market_profile": "consumer_travel",
+      "article_type": "guide",
+      "normalized_title": "How to book vacation packages tips steps booking vacation packages",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 22,
+      "funnel": "TOFU",
+      "primary_intention": "Informational",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:42Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "how-to-find-last-minute-travel-deals-how-to-find-last-minute-travel-deals",
+      "fanout_text": "how to find last minute travel deals",
+      "source_prompt_ids": [
+        "e4e0e02f-2f16-4b0b-8437-a9eee8e14f1f"
+      ],
+      "source_prompts": [
+        "how to find last minute travel deals"
+      ],
+      "source_topic": "Travel Planning Guides",
+      "market_profile": "consumer_travel",
+      "article_type": "guide",
+      "normalized_title": "How to find last minute travel deals",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 21,
+      "funnel": "TOFU",
+      "primary_intention": "Informational",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:44Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "how-to-find-last-minute-travel-deals-how-to-find-last-minute-travel-deals-tips",
+      "fanout_text": "how to find last minute travel deals tips",
+      "source_prompt_ids": [
+        "e4e0e02f-2f16-4b0b-8437-a9eee8e14f1f"
+      ],
+      "source_prompts": [
+        "how to find last minute travel deals"
+      ],
+      "source_topic": "Travel Planning Guides",
+      "market_profile": "consumer_travel",
+      "article_type": "guide",
+      "normalized_title": "How to find last minute travel deals tips",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 21,
+      "funnel": "TOFU",
+      "primary_intention": "Informational",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:44Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "app-for-booking-travel-deals-how-to-find-travel-deals-app",
+      "fanout_text": "how to find travel deals app",
+      "source_prompt_ids": [
+        "7dcde1da-979d-4a58-a3d2-f09e208b2001"
+      ],
+      "source_prompts": [
+        "app for booking travel deals"
+      ],
+      "source_topic": "Mobile Travel Tools",
+      "market_profile": "consumer_travel",
+      "article_type": "guide",
+      "normalized_title": "How to find travel deals app",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 21,
+      "funnel": "BOFU",
+      "primary_intention": "Transactional",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:48Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "how-to-book-travel-on-the-go-how-to-use-mobile-apps-to-book-travel-quickly",
+      "fanout_text": "How to use mobile apps to book travel quickly",
+      "source_prompt_ids": [
+        "8cc9e30c-dd2f-49f2-9024-f1346e2c877d"
+      ],
+      "source_prompts": [
+        "how to book travel on the go"
+      ],
+      "source_topic": "Travel Planning Guides",
+      "market_profile": "consumer_travel",
+      "article_type": "guide",
+      "normalized_title": "How to use mobile apps to book travel quickly",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 20,
+      "funnel": "TOFU",
+      "primary_intention": "Informational",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:47Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "is-booking-hotels-via-app-cheaper-is-booking-hotels-via-app-cheaper",
+      "fanout_text": "is booking hotels via app cheaper",
+      "source_prompt_ids": [
+        "de7511c3-130e-4148-8339-624de24fba35"
+      ],
+      "source_prompts": [
+        "is booking hotels via app cheaper"
+      ],
+      "source_topic": "Platform Comparison Guide",
+      "market_profile": "consumer_travel",
+      "article_type": "explainer",
+      "normalized_title": "Is booking hotels via app cheaper",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 22,
+      "funnel": "MOFU",
+      "primary_intention": "Commercial",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:45Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "is-booking-hotels-via-app-cheaper-is-booking-hotels-via-app-cheaper-than-booking",
+      "fanout_text": "Is booking hotels via app cheaper than booking on website or other ways",
+      "source_prompt_ids": [
+        "de7511c3-130e-4148-8339-624de24fba35"
+      ],
+      "source_prompts": [
+        "is booking hotels via app cheaper"
+      ],
+      "source_topic": "Platform Comparison Guide",
+      "market_profile": "consumer_travel",
+      "article_type": "explainer",
+      "normalized_title": "Is booking hotels via app cheaper than booking on website or other ways",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 22,
+      "funnel": "MOFU",
+      "primary_intention": "Commercial",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:45Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "is-booking-hotels-via-app-cheaper-is-booking-hotels-via-app-cheaper-than-website",
+      "fanout_text": "is booking hotels via app cheaper than website",
+      "source_prompt_ids": [
+        "de7511c3-130e-4148-8339-624de24fba35"
+      ],
+      "source_prompts": [
+        "is booking hotels via app cheaper"
+      ],
+      "source_topic": "Platform Comparison Guide",
+      "market_profile": "consumer_travel",
+      "article_type": "explainer",
+      "normalized_title": "Is booking hotels via app cheaper than website",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 22,
+      "funnel": "MOFU",
+      "primary_intention": "Commercial",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:45Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "is-booking-hotels-via-app-cheaper-is-booking-hotels-via-app-cheaper-than-website",
+      "fanout_text": "is booking hotels via app cheaper than website or in person",
+      "source_prompt_ids": [
+        "de7511c3-130e-4148-8339-624de24fba35"
+      ],
+      "source_prompts": [
+        "is booking hotels via app cheaper"
+      ],
+      "source_topic": "Platform Comparison Guide",
+      "market_profile": "consumer_travel",
+      "article_type": "explainer",
+      "normalized_title": "Is booking hotels via app cheaper than website or in person",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 22,
+      "funnel": "MOFU",
+      "primary_intention": "Commercial",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:45Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "is-booking-hotels-via-app-cheaper-is-it-cheaper-to-book-hotel-through-app-or-bro",
+      "fanout_text": "is it cheaper to book hotel through app or browser",
+      "source_prompt_ids": [
+        "de7511c3-130e-4148-8339-624de24fba35"
+      ],
+      "source_prompts": [
+        "is booking hotels via app cheaper"
+      ],
+      "source_topic": "Platform Comparison Guide",
+      "market_profile": "consumer_travel",
+      "article_type": "explainer",
+      "normalized_title": "Is it cheaper to book hotel through app or browser",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 22,
+      "funnel": "MOFU",
+      "primary_intention": "Commercial",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:45Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "best-app-for-travel-bookings-in-one-place-kayak-vs-booking-com-vs-expedia-vs-goo",
+      "fanout_text": "Kayak vs Booking.com vs Expedia vs Google Flights vs Hopper 2026 comparison",
+      "source_prompt_ids": [
+        "5039336e-8efe-4fa0-89ff-d0114e3e18d4"
+      ],
+      "source_prompts": [
+        "best app for travel bookings in one place"
+      ],
+      "source_topic": "Top Rated Travel Apps",
+      "market_profile": "consumer_travel",
+      "article_type": "comparison",
+      "normalized_title": "Kayak vs Booking.com vs Expedia vs Google Flights vs Hopper 2026 comparison",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 23,
+      "funnel": "MOFU",
+      "primary_intention": "Commercial",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:43Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "best-app-for-travel-bookings-in-one-place-kayak-vs-expedia-vs-booking-com-vs-goo",
+      "fanout_text": "Kayak vs Expedia vs Booking.com vs Google Flights vs Trip.com all-in-one comparison",
+      "source_prompt_ids": [
+        "5039336e-8efe-4fa0-89ff-d0114e3e18d4"
+      ],
+      "source_prompts": [
+        "best app for travel bookings in one place"
+      ],
+      "source_topic": "Top Rated Travel Apps",
+      "market_profile": "consumer_travel",
+      "article_type": "comparison",
+      "normalized_title": "Kayak vs Expedia vs Booking.com vs Google Flights vs Trip.com all-in-one comparison",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 23,
+      "funnel": "MOFU",
+      "primary_intention": "Commercial",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:43Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "app-for-booking-travel-deals-kayak-vs-hopper-vs-skyscanner-vs-google-flights-for",
+      "fanout_text": "Kayak vs Hopper vs Skyscanner vs Google Flights for deals",
+      "source_prompt_ids": [
+        "7dcde1da-979d-4a58-a3d2-f09e208b2001"
+      ],
+      "source_prompts": [
+        "app for booking travel deals"
+      ],
+      "source_topic": "Mobile Travel Tools",
+      "market_profile": "consumer_travel",
+      "article_type": "comparison",
+      "normalized_title": "Kayak vs Hopper vs Skyscanner vs Google Flights for deals",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 21,
+      "funnel": "BOFU",
+      "primary_intention": "Transactional",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:48Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "best-app-for-travel-bookings-in-one-place-kayak-vs-skyscanner-vs-google-flights-",
+      "fanout_text": "Kayak vs Skyscanner vs Google Flights vs Expedia vs Booking.com comparison 2025 2026",
+      "source_prompt_ids": [
+        "5039336e-8efe-4fa0-89ff-d0114e3e18d4"
+      ],
+      "source_prompts": [
+        "best app for travel bookings in one place"
+      ],
+      "source_topic": "Top Rated Travel Apps",
+      "market_profile": "consumer_travel",
+      "article_type": "comparison",
+      "normalized_title": "Kayak vs Skyscanner vs Google Flights vs Expedia vs Booking.com comparison 2025 2026",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 23,
+      "funnel": "MOFU",
+      "primary_intention": "Commercial",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:43Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "best-app-for-travel-bookings-in-one-place-kayak-vs-skyscanner-vs-google-flights-",
+      "fanout_text": "Kayak vs Skyscanner vs Google Flights vs Tripadvisor vs Expedia for all-in-one bookings",
+      "source_prompt_ids": [
+        "5039336e-8efe-4fa0-89ff-d0114e3e18d4"
+      ],
+      "source_prompts": [
+        "best app for travel bookings in one place"
+      ],
+      "source_topic": "Top Rated Travel Apps",
+      "market_profile": "consumer_travel",
+      "article_type": "comparison",
+      "normalized_title": "Kayak vs Skyscanner vs Google Flights vs Tripadvisor vs Expedia for all-in-one bookings",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 23,
+      "funnel": "MOFU",
+      "primary_intention": "Commercial",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:43Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "how-to-find-last-minute-travel-deals-last-minute-travel-deal-alerts-apps",
+      "fanout_text": "last minute travel deal alerts apps",
+      "source_prompt_ids": [
+        "e4e0e02f-2f16-4b0b-8437-a9eee8e14f1f"
+      ],
+      "source_prompts": [
+        "how to find last minute travel deals"
+      ],
+      "source_topic": "Travel Planning Guides",
+      "market_profile": "consumer_travel",
+      "article_type": "explainer",
+      "normalized_title": "Last minute travel deal alerts apps",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 21,
+      "funnel": "TOFU",
+      "primary_intention": "Informational",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:44Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "how-to-find-last-minute-travel-deals-last-minute-travel-deal-alerts-tools",
+      "fanout_text": "last minute travel deal alerts tools",
+      "source_prompt_ids": [
+        "e4e0e02f-2f16-4b0b-8437-a9eee8e14f1f"
+      ],
+      "source_prompts": [
+        "how to find last minute travel deals"
+      ],
+      "source_topic": "Travel Planning Guides",
+      "market_profile": "consumer_travel",
+      "article_type": "explainer",
+      "normalized_title": "Last minute travel deal alerts tools",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 21,
+      "funnel": "TOFU",
+      "primary_intention": "Informational",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:44Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "how-to-find-last-minute-travel-deals-last-minute-travel-deals-strategies-booking",
+      "fanout_text": "last minute travel deals strategies booking cheap flights last minute",
+      "source_prompt_ids": [
+        "e4e0e02f-2f16-4b0b-8437-a9eee8e14f1f"
+      ],
+      "source_prompts": [
+        "how to find last minute travel deals"
+      ],
+      "source_topic": "Travel Planning Guides",
+      "market_profile": "consumer_travel",
+      "article_type": "explainer",
+      "normalized_title": "Last minute travel deals strategies booking cheap flights last minute",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 21,
+      "funnel": "TOFU",
+      "primary_intention": "Informational",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:44Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "how-to-find-last-minute-travel-deals-last-minute-travel-deals-strategies-flexibl",
+      "fanout_text": "last minute travel deals strategies flexible dates destinations",
+      "source_prompt_ids": [
+        "e4e0e02f-2f16-4b0b-8437-a9eee8e14f1f"
+      ],
+      "source_prompts": [
+        "how to find last minute travel deals"
+      ],
+      "source_topic": "Travel Planning Guides",
+      "market_profile": "consumer_travel",
+      "article_type": "explainer",
+      "normalized_title": "Last minute travel deals strategies flexible dates destinations",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 21,
+      "funnel": "TOFU",
+      "primary_intention": "Informational",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:44Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "how-to-book-vacation-packages-popular-vacation-package-providers-expedia-booking",
+      "fanout_text": "popular vacation package providers Expedia Booking Tripadvisor Apple Vacations",
+      "source_prompt_ids": [
+        "3fe6144c-0949-4ffa-9be9-ad2e0f10a73b"
+      ],
+      "source_prompts": [
+        "how to book vacation packages"
+      ],
+      "source_topic": "Travel Planning Guides",
+      "market_profile": "consumer_travel",
+      "article_type": "explainer",
+      "normalized_title": "Popular vacation package providers Expedia Booking Tripadvisor Apple Vacations",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 22,
+      "funnel": "TOFU",
+      "primary_intention": "Informational",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:42Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "how-to-book-vacation-packages-popular-vacation-package-providers-expedia-booking",
+      "fanout_text": "popular vacation package providers Expedia Booking Vacations.com Apple Vacations",
+      "source_prompt_ids": [
+        "3fe6144c-0949-4ffa-9be9-ad2e0f10a73b"
+      ],
+      "source_prompts": [
+        "how to book vacation packages"
+      ],
+      "source_topic": "Travel Planning Guides",
+      "market_profile": "consumer_travel",
+      "article_type": "explainer",
+      "normalized_title": "Popular vacation package providers Expedia Booking Vacations.com Apple Vacations",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 22,
+      "funnel": "TOFU",
+      "primary_intention": "Informational",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:42Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "how-to-book-vacation-packages-tips-for-booking-cheap-vacation-packages",
+      "fanout_text": "tips for booking cheap vacation packages",
+      "source_prompt_ids": [
+        "3fe6144c-0949-4ffa-9be9-ad2e0f10a73b"
+      ],
+      "source_prompts": [
+        "how to book vacation packages"
+      ],
+      "source_topic": "Travel Planning Guides",
+      "market_profile": "consumer_travel",
+      "article_type": "explainer",
+      "normalized_title": "Tips for booking cheap vacation packages",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 22,
+      "funnel": "TOFU",
+      "primary_intention": "Informational",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:42Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "how-to-book-travel-on-the-go-tips-for-booking-flights-hotels-last-minute-on-phon",
+      "fanout_text": "tips for booking flights hotels last minute on phone",
+      "source_prompt_ids": [
+        "8cc9e30c-dd2f-49f2-9024-f1346e2c877d"
+      ],
+      "source_prompts": [
+        "how to book travel on the go"
+      ],
+      "source_topic": "Travel Planning Guides",
+      "market_profile": "consumer_travel",
+      "article_type": "explainer",
+      "normalized_title": "Tips for booking flights hotels last minute on phone",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 20,
+      "funnel": "TOFU",
+      "primary_intention": "Informational",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:47Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "how-to-book-travel-on-the-go-tips-for-booking-travel-while-traveling-using-phone",
+      "fanout_text": "tips for booking travel while traveling using phone",
+      "source_prompt_ids": [
+        "8cc9e30c-dd2f-49f2-9024-f1346e2c877d"
+      ],
+      "source_prompts": [
+        "how to book travel on the go"
+      ],
+      "source_topic": "Travel Planning Guides",
+      "market_profile": "consumer_travel",
+      "article_type": "explainer",
+      "normalized_title": "Tips for booking travel while traveling using phone",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 20,
+      "funnel": "TOFU",
+      "primary_intention": "Informational",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:47Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "how-to-book-travel-on-the-go-tips-for-booking-travel-while-traveling-using-smart",
+      "fanout_text": "tips for booking travel while traveling using smartphone",
+      "source_prompt_ids": [
+        "8cc9e30c-dd2f-49f2-9024-f1346e2c877d"
+      ],
+      "source_prompts": [
+        "how to book travel on the go"
+      ],
+      "source_topic": "Travel Planning Guides",
+      "market_profile": "consumer_travel",
+      "article_type": "explainer",
+      "normalized_title": "Tips for booking travel while traveling using smartphone",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 20,
+      "funnel": "TOFU",
+      "primary_intention": "Informational",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:47Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "how-to-book-vacation-packages-tips-for-booking-vacation-packages-cheaply-and-saf",
+      "fanout_text": "tips for booking vacation packages cheaply and safely",
+      "source_prompt_ids": [
+        "3fe6144c-0949-4ffa-9be9-ad2e0f10a73b"
+      ],
+      "source_prompts": [
+        "how to book vacation packages"
+      ],
+      "source_topic": "Travel Planning Guides",
+      "market_profile": "consumer_travel",
+      "article_type": "explainer",
+      "normalized_title": "Tips for booking vacation packages cheaply and safely",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 22,
+      "funnel": "TOFU",
+      "primary_intention": "Informational",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:42Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "how-to-book-vacation-packages-tips-for-booking-vacation-packages-deals-tips",
+      "fanout_text": "tips for booking vacation packages deals tips",
+      "source_prompt_ids": [
+        "3fe6144c-0949-4ffa-9be9-ad2e0f10a73b"
+      ],
+      "source_prompts": [
+        "how to book vacation packages"
+      ],
+      "source_topic": "Travel Planning Guides",
+      "market_profile": "consumer_travel",
+      "article_type": "explainer",
+      "normalized_title": "Tips for booking vacation packages deals tips",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 22,
+      "funnel": "TOFU",
+      "primary_intention": "Informational",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:42Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "how-to-find-last-minute-travel-deals-tips-for-scoring-last-minute-travel-deals",
+      "fanout_text": "tips for scoring last minute travel deals",
+      "source_prompt_ids": [
+        "e4e0e02f-2f16-4b0b-8437-a9eee8e14f1f"
+      ],
+      "source_prompts": [
+        "how to find last minute travel deals"
+      ],
+      "source_topic": "Travel Planning Guides",
+      "market_profile": "consumer_travel",
+      "article_type": "explainer",
+      "normalized_title": "Tips for scoring last minute travel deals",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 21,
+      "funnel": "TOFU",
+      "primary_intention": "Informational",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:44Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "app-for-booking-hotels-with-discounts-top-hotel-booking-apps-with-best-discounts",
+      "fanout_text": "top hotel booking apps with best discounts and deals",
+      "source_prompt_ids": [
+        "3b15d2bf-df33-43f2-b058-488b7d644327"
+      ],
+      "source_prompts": [
+        "app for booking hotels with discounts"
+      ],
+      "source_topic": "Mobile Travel Tools",
+      "market_profile": "consumer_travel",
+      "article_type": "recommendation",
+      "normalized_title": "Top hotel booking apps with best discounts and deals",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 22,
+      "funnel": "BOFU",
+      "primary_intention": "Transactional",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:46Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "best-app-for-travel-bookings-in-one-place-top-travel-booking-apps-comparison-202",
+      "fanout_text": "top travel booking apps comparison 2025 2026",
+      "source_prompt_ids": [
+        "5039336e-8efe-4fa0-89ff-d0114e3e18d4"
+      ],
+      "source_prompts": [
+        "best app for travel bookings in one place"
+      ],
+      "source_topic": "Top Rated Travel Apps",
+      "market_profile": "consumer_travel",
+      "article_type": "comparison",
+      "normalized_title": "Top travel booking apps comparison 2025 2026",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 23,
+      "funnel": "MOFU",
+      "primary_intention": "Commercial",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:43Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "best-app-for-travel-bookings-in-one-place-top-travel-booking-apps-with-price-com",
+      "fanout_text": "top travel booking apps with price comparison and multi-modal bookings",
+      "source_prompt_ids": [
+        "5039336e-8efe-4fa0-89ff-d0114e3e18d4"
+      ],
+      "source_prompts": [
+        "best app for travel bookings in one place"
+      ],
+      "source_topic": "Top Rated Travel Apps",
+      "market_profile": "consumer_travel",
+      "article_type": "comparison",
+      "normalized_title": "Top travel booking apps with price comparison and multi-modal bookings",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 23,
+      "funnel": "MOFU",
+      "primary_intention": "Commercial",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:43Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "app-for-booking-hotels-with-discounts-travel-app-hotel-deals",
+      "fanout_text": "travel app hotel deals",
+      "source_prompt_ids": [
+        "3b15d2bf-df33-43f2-b058-488b7d644327"
+      ],
+      "source_prompts": [
+        "app for booking hotels with discounts"
+      ],
+      "source_topic": "Mobile Travel Tools",
+      "market_profile": "consumer_travel",
+      "article_type": "explainer",
+      "normalized_title": "Travel app hotel deals",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 22,
+      "funnel": "BOFU",
+      "primary_intention": "Transactional",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:46Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "best-app-for-travel-bookings-in-one-place-travel-booking-in-one-place-app-recomm",
+      "fanout_text": "travel booking in one place app recommendations travel aggregator app booking flights hotels packages",
+      "source_prompt_ids": [
+        "5039336e-8efe-4fa0-89ff-d0114e3e18d4"
+      ],
+      "source_prompts": [
+        "best app for travel bookings in one place"
+      ],
+      "source_topic": "Top Rated Travel Apps",
+      "market_profile": "consumer_travel",
+      "article_type": "explainer",
+      "normalized_title": "Travel booking in one place app recommendations travel aggregator app booking flights hotels packages",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 23,
+      "funnel": "MOFU",
+      "primary_intention": "Commercial",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:43Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "how-to-book-travel-on-the-go-travel-booking-mobile-apps-and-tips-for-booking-tra",
+      "fanout_text": "travel booking mobile apps and tips for booking travel while traveling",
+      "source_prompt_ids": [
+        "8cc9e30c-dd2f-49f2-9024-f1346e2c877d"
+      ],
+      "source_prompts": [
+        "how to book travel on the go"
+      ],
+      "source_topic": "Travel Planning Guides",
+      "market_profile": "consumer_travel",
+      "article_type": "explainer",
+      "normalized_title": "Travel booking mobile apps and tips for booking travel while traveling",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 20,
+      "funnel": "TOFU",
+      "primary_intention": "Informational",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:47Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "app-for-booking-travel-deals-travel-deal-apps-2026",
+      "fanout_text": "travel deal apps 2026",
+      "source_prompt_ids": [
+        "7dcde1da-979d-4a58-a3d2-f09e208b2001"
+      ],
+      "source_prompts": [
+        "app for booking travel deals"
+      ],
+      "source_topic": "Mobile Travel Tools",
+      "market_profile": "consumer_travel",
+      "article_type": "explainer",
+      "normalized_title": "Travel deal apps 2026",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 21,
+      "funnel": "BOFU",
+      "primary_intention": "Transactional",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:48Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "app-for-booking-travel-deals-travel-deal-apps-comparison",
+      "fanout_text": "travel deal apps comparison",
+      "source_prompt_ids": [
+        "7dcde1da-979d-4a58-a3d2-f09e208b2001"
+      ],
+      "source_prompts": [
+        "app for booking travel deals"
+      ],
+      "source_topic": "Mobile Travel Tools",
+      "market_profile": "consumer_travel",
+      "article_type": "comparison",
+      "normalized_title": "Travel deal apps comparison",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 21,
+      "funnel": "BOFU",
+      "primary_intention": "Transactional",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:48Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "app-for-booking-travel-deals-travel-deals-app-for-flights-and-hotels",
+      "fanout_text": "travel deals app for flights and hotels",
+      "source_prompt_ids": [
+        "7dcde1da-979d-4a58-a3d2-f09e208b2001"
+      ],
+      "source_prompts": [
+        "app for booking travel deals"
+      ],
+      "source_topic": "Mobile Travel Tools",
+      "market_profile": "consumer_travel",
+      "article_type": "explainer",
+      "normalized_title": "Travel deals app for flights and hotels",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 21,
+      "funnel": "BOFU",
+      "primary_intention": "Transactional",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:48Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "best-app-for-travel-planning-and-booking-travel-planning-booking-apps-comparison",
+      "fanout_text": "travel planning & booking apps comparison features price 2026",
+      "source_prompt_ids": [
+        "ebea3104-d9e3-4533-8316-3d81b594bf93"
+      ],
+      "source_prompts": [
+        "best app for travel planning and booking"
+      ],
+      "source_topic": "Top Rated Travel Apps",
+      "market_profile": "consumer_travel",
+      "article_type": "comparison",
+      "normalized_title": "Travel planning & booking apps comparison features price 2026",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 20,
+      "funnel": "MOFU",
+      "primary_intention": "Commercial",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:49Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "best-app-for-travel-planning-and-booking-travel-planning-and-booking-mobile-apps",
+      "fanout_text": "travel planning and booking mobile apps recommendations travel planning booking",
+      "source_prompt_ids": [
+        "ebea3104-d9e3-4533-8316-3d81b594bf93"
+      ],
+      "source_prompts": [
+        "best app for travel planning and booking"
+      ],
+      "source_topic": "Top Rated Travel Apps",
+      "market_profile": "consumer_travel",
+      "article_type": "explainer",
+      "normalized_title": "Travel planning and booking mobile apps recommendations travel planning booking",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 20,
+      "funnel": "MOFU",
+      "primary_intention": "Commercial",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:49Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "best-app-for-travel-planning-and-booking-tripit-vs-google-trips-vs-kayak-vs-book",
+      "fanout_text": "TripIt vs Google Trips vs Kayak vs Booking.com vs Expedia app",
+      "source_prompt_ids": [
+        "ebea3104-d9e3-4533-8316-3d81b594bf93"
+      ],
+      "source_prompts": [
+        "best app for travel planning and booking"
+      ],
+      "source_topic": "Top Rated Travel Apps",
+      "market_profile": "consumer_travel",
+      "article_type": "comparison",
+      "normalized_title": "TripIt vs Google Trips vs Kayak vs Booking.com vs Expedia app",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 20,
+      "funnel": "MOFU",
+      "primary_intention": "Commercial",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:49Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "best-app-for-travel-planning-and-booking-tripit-vs-google-trips-vs-wanderlog-vs-",
+      "fanout_text": "TripIt vs Google Trips vs Wanderlog vs Kayak vs Booking.com app",
+      "source_prompt_ids": [
+        "ebea3104-d9e3-4533-8316-3d81b594bf93"
+      ],
+      "source_prompts": [
+        "best app for travel planning and booking"
+      ],
+      "source_topic": "Top Rated Travel Apps",
+      "market_profile": "consumer_travel",
+      "article_type": "comparison",
+      "normalized_title": "TripIt vs Google Trips vs Wanderlog vs Kayak vs Booking.com app",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 20,
+      "funnel": "MOFU",
+      "primary_intention": "Commercial",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:49Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "best-app-for-travel-planning-and-booking-tripit-vs-wanderlog-vs-google-trips-vs-",
+      "fanout_text": "TripIt vs Wanderlog vs Google Trips vs Kayak vs Booking.com app",
+      "source_prompt_ids": [
+        "ebea3104-d9e3-4533-8316-3d81b594bf93"
+      ],
+      "source_prompts": [
+        "best app for travel planning and booking"
+      ],
+      "source_topic": "Top Rated Travel Apps",
+      "market_profile": "consumer_travel",
+      "article_type": "comparison",
+      "normalized_title": "TripIt vs Wanderlog vs Google Trips vs Kayak vs Booking.com app",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 20,
+      "funnel": "MOFU",
+      "primary_intention": "Commercial",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:49Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "how-to-book-vacation-packages-vacation-package-booking-process-expedia-booking-k",
+      "fanout_text": "vacation package booking process Expedia Booking Kayak",
+      "source_prompt_ids": [
+        "3fe6144c-0949-4ffa-9be9-ad2e0f10a73b"
+      ],
+      "source_prompts": [
+        "how to book vacation packages"
+      ],
+      "source_topic": "Travel Planning Guides",
+      "market_profile": "consumer_travel",
+      "article_type": "explainer",
+      "normalized_title": "Vacation package booking process Expedia Booking Kayak",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 22,
+      "funnel": "TOFU",
+      "primary_intention": "Informational",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:42Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "how-to-book-vacation-packages-vacation-package-booking-process-expedia-booking-c",
+      "fanout_text": "vacation package booking process Expedia Booking.com Tripadvisor",
+      "source_prompt_ids": [
+        "3fe6144c-0949-4ffa-9be9-ad2e0f10a73b"
+      ],
+      "source_prompts": [
+        "how to book vacation packages"
+      ],
+      "source_topic": "Travel Planning Guides",
+      "market_profile": "consumer_travel",
+      "article_type": "explainer",
+      "normalized_title": "Vacation package booking process Expedia Booking.com Tripadvisor",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 22,
+      "funnel": "TOFU",
+      "primary_intention": "Informational",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:42Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "best-app-for-travel-bookings-in-one-place-what-travel-apps-let-you-book-flights-",
+      "fanout_text": "what travel apps let you book flights hotels and more all in one",
+      "source_prompt_ids": [
+        "5039336e-8efe-4fa0-89ff-d0114e3e18d4"
+      ],
+      "source_prompts": [
+        "best app for travel bookings in one place"
+      ],
+      "source_topic": "Top Rated Travel Apps",
+      "market_profile": "consumer_travel",
+      "article_type": "explainer",
+      "normalized_title": "What travel apps let you book flights hotels and more all in one",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 23,
+      "funnel": "MOFU",
+      "primary_intention": "Commercial",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:43Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "app-for-booking-travel-deals-deals-booking-travel-app",
+      "fanout_text": "アプリ 旅行 予約 お得 観 光 旅行 deals booking travel app",
+      "source_prompt_ids": [
+        "7dcde1da-979d-4a58-a3d2-f09e208b2001"
+      ],
+      "source_prompts": [
+        "app for booking travel deals"
+      ],
+      "source_topic": "Mobile Travel Tools",
+      "market_profile": "consumer_travel",
+      "article_type": "explainer",
+      "normalized_title": "アプリ 旅行 予約 お得 観 光 旅行 deals booking travel app",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 21,
+      "funnel": "BOFU",
+      "primary_intention": "Transactional",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:48Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "app-for-booking-travel-deals",
+      "fanout_text": "アプリ 旅行 割引 航空券 ホテル お得 予約 アプリ",
+      "source_prompt_ids": [
+        "7dcde1da-979d-4a58-a3d2-f09e208b2001"
+      ],
+      "source_prompts": [
+        "app for booking travel deals"
+      ],
+      "source_topic": "Mobile Travel Tools",
+      "market_profile": "consumer_travel",
+      "article_type": "explainer",
+      "normalized_title": "アプリ 旅行 割引 航空券 ホテル お得 予約 アプリ",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 21,
+      "funnel": "BOFU",
+      "primary_intention": "Transactional",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:48Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "how-to-book-travel-on-the-go",
+      "fanout_text": "スマホで旅行を予約する方法 旅行予約 モバイル アプリ",
+      "source_prompt_ids": [
+        "8cc9e30c-dd2f-49f2-9024-f1346e2c877d"
+      ],
+      "source_prompts": [
+        "how to book travel on the go"
+      ],
+      "source_topic": "Travel Planning Guides",
+      "market_profile": "consumer_travel",
+      "article_type": "explainer",
+      "normalized_title": "スマホで旅行を予約する方法 旅行予約 モバイル アプリ",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 20,
+      "funnel": "TOFU",
+      "primary_intention": "Informational",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:47Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "is-booking-hotels-via-app-cheaper-booking-via-app-cheaper-hotel-booking-app-chea",
+      "fanout_text": "ホテル 予約 アプリ 料金 安い ホテル booking via app cheaper hotel booking app cheaper",
+      "source_prompt_ids": [
+        "de7511c3-130e-4148-8339-624de24fba35"
+      ],
+      "source_prompts": [
+        "is booking hotels via app cheaper"
+      ],
+      "source_topic": "Platform Comparison Guide",
+      "market_profile": "consumer_travel",
+      "article_type": "explainer",
+      "normalized_title": "ホテル 予約 アプリ 料金 安い ホテル booking via app cheaper hotel booking app cheaper",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 22,
+      "funnel": "MOFU",
+      "primary_intention": "Commercial",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:45Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "how-to-book-travel-on-the-go",
+      "fanout_text": "予約 旅行 モバイル 旅 予約 方法 モバイル アプリ",
+      "source_prompt_ids": [
+        "8cc9e30c-dd2f-49f2-9024-f1346e2c877d"
+      ],
+      "source_prompts": [
+        "how to book travel on the go"
+      ],
+      "source_topic": "Travel Planning Guides",
+      "market_profile": "consumer_travel",
+      "article_type": "explainer",
+      "normalized_title": "予約 旅行 モバイル 旅 予約 方法 モバイル アプリ",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 20,
+      "funnel": "TOFU",
+      "primary_intention": "Informational",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:47Z",
+      "notes": "",
+      "source_count": 1
+    },
+    {
+      "backlog_id": "how-to-book-vacation-packages",
+      "fanout_text": "旅行 パッケージ 予約 方法 バケーション パッケージ 予約 するには",
+      "source_prompt_ids": [
+        "3fe6144c-0949-4ffa-9be9-ad2e0f10a73b"
+      ],
+      "source_prompts": [
+        "how to book vacation packages"
+      ],
+      "source_topic": "Travel Planning Guides",
+      "market_profile": "consumer_travel",
+      "article_type": "explainer",
+      "normalized_title": "旅行 パッケージ 予約 方法 バケーション パッケージ 予約 するには",
+      "brand_gap": "100%",
+      "source_gap": "100%",
+      "response_count": 22,
+      "funnel": "TOFU",
+      "primary_intention": "Informational",
+      "status": "pending",
+      "overlap_status": "new",
+      "first_seen_at": "2026-04-02T11:59:42Z",
+      "notes": "",
+      "source_count": 1
+    }
+  ]
+}

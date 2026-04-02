@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/GEO-SEO/geo-content-writer/schemas/fanout_backlog_schema.json",
+  "title": "Fanout Backlog Schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "generated_at",
+    "time_window_days",
+    "brand_knowledge_base",
+    "brand_context_summary",
+    "prompt_candidates",
+    "fanout_backlog"
+  ],
+  "properties": {
+    "generated_at": {
+      "type": "string"
+    },
+    "time_window_days": {
+      "type": "integer"
+    },
+    "brand_knowledge_base": {
+      "type": "object"
+    },
+    "brand_context_summary": {
+      "type": "object"
+    },
+    "prompt_candidates": {
+      "type": "array"
+    },
+    "fanout_backlog": {
+      "type": "array"
+    }
+  }
+}

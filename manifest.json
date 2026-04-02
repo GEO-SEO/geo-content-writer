@@ -1,8 +1,8 @@
 {
   "name": "geo-content-writer",
-  "version": "0.4.0",
+  "version": "0.6.0",
   "display_name": "GEO Content Writer",
-  "description": "A lightweight content workflow that turns Dageno GEO opportunities into content packs and first-asset drafts.",
+  "description": "A fanout-backlog-first GEO writing workflow that turns Dageno prompt opportunities into backlog rows and then into publish-ready articles.",
   "author": {
     "name": "GEO-SEO",
     "website": "https://github.com/GEO-SEO/geo-content-writer"
@@ -15,11 +15,10 @@
     "content-strategy",
     "response-gap",
     "prompt-fanout",
-    "content-pack",
+    "fanout-backlog",
     "citation-intelligence",
-    "keyword-research",
-    "prompt-research",
-    "content-briefs"
+    "content-briefs",
+    "wordpress-publishing"
   ],
   "license": "MIT",
   "repository": {
@@ -55,9 +54,9 @@
     }
   },
   "metadata": {
-    "skill_type": "content-workflow",
+    "skill_type": "fanout-backlog-workflow",
     "network_access": "optional",
-    "minimum_permissions": "Dageno API access required; SEO metrics, page fetch, and SERP enrichment are optional connectors.",
-    "data_access_policy": "This skill reads Dageno opportunity data and optionally a project-level brand knowledge base from knowledge/brand/brand-knowledge-base.json. Do not assume hidden access to private search APIs or crawlers."
+    "minimum_permissions": "Dageno API access required; citation crawling and WordPress publishing are optional but recommended connectors.",
+    "data_access_policy": "This skill discovers prompt opportunities, extracts real fanout, stores fanout backlog locally, and drafts articles from selected backlog items. Do not use guessed fanout and do not write directly from topic labels."
   }
 }

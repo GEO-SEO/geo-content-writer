@@ -18,6 +18,10 @@ from .workflows import (
     content_pack_compact_json,
     content_pack_json,
     default_brand_kb_path,
+    default_fanout_backlog_path,
+    discover_prompt_candidates,
+    build_fanout_backlog,
+    save_fanout_backlog,
     daily_publish_ready_package,
     first_asset_draft,
     new_content_brief,
@@ -36,6 +40,10 @@ def _default_output_schema_path() -> Path:
 
 def _default_brand_kb_schema_path() -> Path:
     return Path(__file__).resolve().parents[2] / "schemas" / "brand_knowledge_base_schema.json"
+
+
+def _default_fanout_backlog_path() -> Path:
+    return default_fanout_backlog_path()
 
 
 def _parse_taxonomy_ids(raw: str | None) -> list[int]:
@@ -92,6 +100,28 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers.add_parser("backlink-opportunities", parents=[common], help="List top backlink opportunities")
     subparsers.add_parser("community-opportunities", parents=[common], help="List top community opportunities")
     subparsers.add_parser("weekly-brief", parents=[common], help="Generate a combined executive brief")
+    discover_prompts_parser = subparsers.add_parser(
+        "discover-prompts",
+        parents=[common],
+        help="List high-value prompt candidates for fanout extraction",
+    )
+    discover_prompts_parser.add_argument("--max-prompts", type=int, default=20, help="How many prompt candidates to return")
+    backlog_parser = subparsers.add_parser(
+        "build-fanout-backlog",
+        parents=[common],
+        help="Extract real fanout from high-value prompts and save a backlog file",
+    )
+    backlog_parser.add_argument(
+        "--brand-kb-file",
+        default=str(default_brand_kb_path()),
+        help="Brand knowledge base JSON file. Default project path: knowledge/brand/brand-knowledge-base.json",
+    )
+    backlog_parser.add_argument("--max-prompts", type=int, default=20, help="How many prompt candidates to inspect")
+    backlog_parser.add_argument(
+        "--output-file",
+        default=str(_default_fanout_backlog_path()),
+        help="Where to write the fanout backlog JSON",
+    )
     content_pack_parser = subparsers.add_parser(
         "content-pack",
         aliases=["pack"],
@@ -271,6 +301,29 @@ def main() -> None:
         except ValidationError as exc:
             parser.exit(1, f"Brand knowledge base validation failed: {exc.message}\n")
         print(f"Brand knowledge base validation passed: {input_path}")
+        return
+
+    if args.command == "discover-prompts":
+        client = DagenoClient(api_key=args.api_key, base_url=args.base_url)
+        print(
+            json.dumps(
+                discover_prompt_candidates(client, days=args.days, max_prompts=args.max_prompts),
+                ensure_ascii=False,
+                indent=2,
+            )
+        )
+        return
+
+    if args.command == "build-fanout-backlog":
+        client = DagenoClient(api_key=args.api_key, base_url=args.base_url)
+        backlog = build_fanout_backlog(
+            client,
+            days=args.days,
+            brand_kb_file=args.brand_kb_file,
+            max_prompts=args.max_prompts,
+        )
+        save_fanout_backlog(backlog, args.output_file)
+        print(json.dumps(backlog, ensure_ascii=False, indent=2))
         return
 
     if args.command == "publish-wordpress":

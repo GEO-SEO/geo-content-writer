@@ -1,112 +1,73 @@
 ---
 name: content-writer
 description: >
-  Use when the user wants to turn Dageno GEO opportunities into a content plan or a first article.
-  This skill classifies opportunities into High, Medium, and Low, analyzes response and citation
-  evidence, expands the topic with fanout and SEO data, and outputs a content plan that can be
-  executed by a writing agent.
+  Use when the user wants to turn Dageno GEO opportunities into a real-fanout backlog and then
+  write one publish-ready article from one selected fanout item.
 metadata:
   author: GEO-SEO
-  version: "0.4.0"
+  version: "0.5.0"
   homepage: https://github.com/GEO-SEO/geo-content-writer
   primaryEnv: DAGENO_API_KEY
   tags:
     - dageno
     - geo
-    - seo
+    - fanout
+    - backlog
     - content-writer
-    - content-plan
-    - prompt-fanout
-    - citation-intelligence
-  triggers:
-    - "content writer"
-    - "geo content"
-    - "content plan"
-    - "response detail"
-    - "citation URLs"
-    - "prompt fanout"
+    - citation-analysis
   requires:
     env:
       - DAGENO_API_KEY
-      - SEO_METRICS_API_URL
-      - SEO_METRICS_API_KEY
-      - JINA_API_KEY
       - FIRECRAWL_API_KEY
-      - SERPAPI_API_KEY
+      - WORDPRESS_SITE_URL
+      - WORDPRESS_USERNAME
+      - WORDPRESS_APP_PASSWORD
     bins:
       - python3
 ---
 
 # Content Writer
 
-Use this skill to turn one Dageno GEO opportunity into a usable content plan and first draft.
+Use this skill to turn Dageno prompt opportunities into a real-fanout backlog and then produce one publish-ready article from one selected fanout item.
 
-Before running the main workflow, check for a brand knowledge base at:
+## Fixed Workflow
+
+### A. Opportunity Layer
+
+1. discover high-value prompts
+2. extract real fanout for each prompt
+3. store all fanout in one backlog
+
+### B. Backlog Layer
+
+4. mark overlap / merge / duplicate items
+5. keep one prioritized backlog with statuses
+6. choose which fanout item to write next
+
+### C. Writing Layer
+
+7. crawl top citation pages for the selected fanout
+8. analyze citation patterns
+9. choose article type
+10. rewrite the title into reader language
+11. generate one publish-ready article
+
+### D. Distribution Layer
+
+12. publish to WordPress draft or publish status
+
+## Non-Negotiable Rules
+
+- only use real Dageno fanout
+- do not generate guessed fanout
+- do not write directly from Dageno `topic`
+- one selected fanout should map to one article
+- if local brand knowledge base and Dageno brand snapshot do not match, block publish-ready output
+
+## Required Local Files
 
 - `knowledge/brand/brand-knowledge-base.json`
-
-If the file is missing, warn the user that the workflow can still run, but brand positioning, proof points, and CTA language may become inconsistent across outputs.
-
-If an external agent is calling this skill, that agent should assume this skill reads from that standard path unless the user explicitly supplies another file location.
-
-## Workflow
-
-### 0. Load the brand knowledge base
-
-Read the brand knowledge base from:
-
-- `knowledge/brand/brand-knowledge-base.json`
-
-Use it to keep these things consistent across the content plan and future drafts:
-
-- brand positioning
-- differentiators
-- proof points
-- claims to avoid
-- CTA direction
-
-### 1. Build the content pack
-
-The skill should:
-
-- classify opportunities into `High`, `Medium`, and `Low`
-- inspect response and citation evidence
-- expand the topic with fanout and keyword signals
-- output a lightweight content pack with a unified asset table
-
-### 2. Generate the first asset draft
-
-After the content pack is ready, the skill can draft the top asset.
-
-### 3. Generate a publish-ready article
-
-Before distribution, convert the internal draft into a publish-ready article.
-
-That article should follow the project's fixed writing policy.
-
-At minimum, enforce:
-
-- direct answer early
-- definition first
-- audience statement
-- scope statement
-- heading hierarchy
-- TL;DR
-- comparison or decision framework
-- FAQ
-- references
-- conclusion and next step
-
-## GEO Writing Rules
-
-1. Start with a direct answer or definition.
-2. Make each H2 understandable on its own.
-3. Put the answer before the explanation.
-4. Keep one main idea per paragraph.
-5. Use lists, tables, steps, and comparisons when helpful.
-6. Name entities and capabilities explicitly.
-7. Use FAQ as an extraction layer.
-8. Write so sections can stand alone as AI-friendly chunks.
+- `knowledge/backlog/fanout-backlog.json`
 
 ## Reference
 

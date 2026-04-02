@@ -24,6 +24,10 @@ def default_brand_kb_path() -> Path:
     return Path(__file__).resolve().parents[2] / "knowledge" / "brand" / "brand-knowledge-base.json"
 
 
+def default_fanout_backlog_path() -> Path:
+    return Path(__file__).resolve().parents[2] / "knowledge" / "backlog" / "fanout-backlog.json"
+
+
 def _fmt_number(value: Any, digits: int = 2) -> str:
     if value is None:
         return "-"
@@ -180,6 +184,35 @@ def _market_profile(prompt_text: str, topic: str, brand_context: Dict[str, Any] 
     return "generic"
 
 
+def _article_archetype(prompt_text: str, dominant_page_type: str, primary_intent: str, brand_context: Dict[str, Any] | None = None) -> str:
+    haystack = prompt_text.lower()
+    profile = _market_profile(prompt_text, "", brand_context)
+    if "best" in haystack or dominant_page_type in {"Listicle", "Comparison"}:
+        return "recommendation"
+    if any(token in haystack for token in ["vs", "compare", "comparison"]):
+        return "comparison"
+    if any(token in haystack for token in ["how to", "guide", "buying guide"]):
+        return "guide"
+    if profile == "b2b_software" and primary_intent in {"Commercial", "Transactional"}:
+        return "solution"
+    return "explainer"
+
+
+def _reader_topic_phrase(prompt_text: str, topic: str, brand_context: Dict[str, Any] | None = None) -> str:
+    prompt = " ".join((prompt_text or "").strip().split())
+    topic_clean = " ".join((topic or "").strip().split())
+    profile = _market_profile(prompt_text, topic, brand_context)
+    if profile == "consumer_travel":
+        if "travel booking" in prompt.lower():
+            return "travel booking apps"
+        return prompt or "travel apps"
+    if profile == "consumer_general":
+        return prompt or topic_clean or "apps"
+    if profile == "b2b_software":
+        return topic_clean or prompt or "solution"
+    return prompt or topic_clean or "topic"
+
+
 def _fanout_prompt_guesses(prompt_text: str, topic: str, primary_intent: str, brand_context: Dict[str, Any] | None = None) -> List[str]:
     base = prompt_text.strip()
     topic_part = topic.strip() if topic else "the topic"
@@ -276,6 +309,62 @@ def _dedupe_keep_order(values: List[str]) -> List[str]:
     return output
 
 
+def _dedupe_rows_by_text(rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    grouped: Dict[str, Dict[str, Any]] = {}
+    for row in rows:
+        key = _normalize_text(row.get("fanout_text", ""))
+        if not key:
+            continue
+        if key not in grouped:
+            grouped[key] = dict(row)
+            grouped[key]["source_prompt_ids"] = list(row.get("source_prompt_ids", []))
+            grouped[key]["source_prompts"] = list(row.get("source_prompts", []))
+            continue
+        grouped[key]["source_prompt_ids"] = _dedupe_keep_order(
+            grouped[key]["source_prompt_ids"] + row.get("source_prompt_ids", [])
+        )
+        grouped[key]["source_prompts"] = _dedupe_keep_order(
+            grouped[key]["source_prompts"] + row.get("source_prompts", [])
+        )
+        grouped[key]["source_count"] = len(grouped[key]["source_prompt_ids"])
+    return list(grouped.values())
+
+
+def _article_type_from_fanout(fanout_text: str, dominant_page_type: str) -> str:
+    text = fanout_text.lower()
+    if any(token in text for token in ["vs", "compare", "comparison"]):
+        return "comparison"
+    if any(token in text for token in ["best", "top", "options", "alternatives"]) or dominant_page_type == "Listicle":
+        return "recommendation"
+    if any(token in text for token in ["how to", "guide", "checklist", "steps"]):
+        return "guide"
+    if any(token in text for token in ["review", "worth it", "pricing"]):
+        return "review"
+    return "explainer"
+
+
+def _rewrite_fanout_title(fanout_text: str, article_type: str, brand_context: Dict[str, Any] | None = None) -> str:
+    text = " ".join(fanout_text.strip().split())
+    if not text:
+        return "Untitled Article"
+    profile = _market_profile(fanout_text, fanout_text, brand_context)
+    if article_type == "comparison":
+        return text[0].upper() + text[1:]
+    if article_type == "recommendation":
+        if profile == "consumer_travel" and "best" not in text.lower():
+            return f"Best {text[0].upper() + text[1:]}"
+        return text[0].upper() + text[1:]
+    if article_type == "guide":
+        if text.lower().startswith("how to "):
+            return text[0].upper() + text[1:]
+        return f"How to {text[0].upper() + text[1:]}"
+    if article_type == "review":
+        return text[0].upper() + text[1:]
+    if profile == "b2b_software":
+        return f"What Is {text[0].upper() + text[1:]}?"
+    return text[0].upper() + text[1:]
+
+
 def _page_type_family(citations: List[Dict[str, Any]]) -> str:
     page_types = [c.get("pageType") or "Unknown" for c in citations]
     if not page_types:
@@ -345,22 +434,32 @@ def _cta_goal(asset_type: str, target_intent: str) -> str:
 
 def _asset_title_set(prompt_text: str, topic: str, primary_intent: str, dominant_page_type: str, brand_context: Dict[str, Any] | None = None) -> List[str]:
     profile = _market_profile(prompt_text, topic, brand_context)
+    reader_phrase = _reader_topic_phrase(prompt_text, topic, brand_context)
+    archetype = _article_archetype(prompt_text, dominant_page_type, primary_intent, brand_context)
     topic_l = topic or "topic"
     if profile == "consumer_travel":
+        if archetype == "comparison":
+            return [
+                "Travel Booking Apps Compared: Which One Fits Your Trip Style?",
+                "How to Compare Travel Booking Apps Without Wasting Time",
+                "Best Travel Booking Apps in One Place",
+                "Common Mistakes People Make When Choosing Travel Apps",
+                "Travel Booking App Buying Guide",
+            ]
         return [
             "Best Travel Booking Apps in One Place",
             "How to Choose a Travel Booking App That Actually Saves Time",
             "Travel Booking Apps Compared: Which One Fits Your Trip Style?",
-            "Common Mistakes People Make When Choosing Travel Booking Apps",
+            "Common Mistakes People Make When Choosing Travel Apps",
             "Travel Booking App Buying Guide",
         ]
     if profile == "consumer_general":
         return [
-            f"What {topic_l} Actually Helps You Do",
-            f"How to Choose the Best {topic_l}",
-            f"Best {topic_l} Options Right Now",
-            f"Common Mistakes People Make When Choosing {topic_l}",
-            f"{topic_l}: Buying Guide",
+            f"What {reader_phrase} Actually Helps You Do",
+            f"How to Choose the Best {reader_phrase}",
+            f"Best {reader_phrase} Options Right Now",
+            f"Common Mistakes People Make When Choosing {reader_phrase}",
+            f"{reader_phrase}: Buying Guide",
         ]
     if profile == "b2b_software":
         suffix = " Solution" if "solution" not in topic_l.lower() else ""
@@ -372,11 +471,11 @@ def _asset_title_set(prompt_text: str, topic: str, primary_intent: str, dominant
             f"Enterprise {topic_l} Platform for Brand Authority",
         ]
     return [
-        f"What Is {topic_l}?",
-        f"How to Evaluate {topic_l}",
-        f"Best {topic_l} Options Right Now",
-        f"Common Mistakes People Make With {topic_l}",
-        f"{topic_l}: Practical Guide",
+        f"What Is {reader_phrase}?",
+        f"How to Evaluate {reader_phrase}",
+        f"Best {reader_phrase} Options Right Now",
+        f"Common Mistakes People Make With {reader_phrase}",
+        f"{reader_phrase}: Practical Guide",
     ]
 
 
@@ -1127,10 +1226,11 @@ def _publish_ready_article_from_context(context: Dict[str, Any], asset: Dict[str
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     title = asset.get("asset_title", "Publish-Ready Article")
     profile = _market_profile(prompt_text_value, topic, brand_context)
+    reader_topic = _reader_topic_phrase(prompt_text_value, topic, brand_context)
     if profile == "consumer_travel":
         intro = (
             f"If you are trying to book flights, hotels, and maybe even trains or cars without bouncing between five different apps, the real question is not which app is most famous. "
-            f"The real question is which one actually makes trip planning simpler, clearer, and easier to trust. This article is for {audience_text}, and it will help you compare travel booking apps in a way that feels useful before you commit to one."
+            f"The real question is which one actually makes trip planning simpler, clearer, and easier to trust. This article is for {audience_text}, and it will help you compare {reader_topic} in a way that feels useful before you commit to one."
         )
         section_one = _section_block(
             "What Makes a Travel Booking App Actually Useful",
@@ -1178,10 +1278,10 @@ def _publish_ready_article_from_context(context: Dict[str, Any], asset: Dict[str
         )
         table_lines = _consumer_comparison_table_lines()
     else:
-        intro = _blog_intro(topic, prompt_text_value, audience_text)
+        intro = _blog_intro(reader_topic, prompt_text_value, audience_text)
         section_one = _section_block(
-        f"What {topic} Actually Means in Practice",
-        f"The most useful way to understand {topic} is to see it as a workflow for shaping how buyers encounter your brand in AI answers, not as a single reporting feature.",
+        f"What {reader_topic} Actually Means in Practice",
+        f"The most useful way to understand {reader_topic} is to see it as a workflow for shaping how buyers encounter your brand in AI answers, not as a single reporting feature.",
         [
             "List the prompts that influence category understanding or purchase intent.",
             "Review which sources and page types appear repeatedly in those answer spaces.",
@@ -1191,7 +1291,7 @@ def _publish_ready_article_from_context(context: Dict[str, Any], asset: Dict[str
         "Reducing the category to one metric and never connecting the insight back to content planning.",
         )
         section_two = _section_block(
-        f"How Teams Should Evaluate {topic} Solutions",
+        f"How Teams Should Evaluate {reader_topic}",
         f"The strongest evaluation process focuses on whether the solution produces usable evidence and practical next steps, not just a cleaner dashboard.",
         [
             "Check whether the workflow covers the prompts and platforms that matter commercially.",
@@ -1202,7 +1302,7 @@ def _publish_ready_article_from_context(context: Dict[str, Any], asset: Dict[str
         "Choosing based on UI polish while ignoring whether the workflow can support actual publishing decisions.",
         )
         section_three = _section_block(
-        f"What a Realistic {topic} Workflow Looks Like",
+        f"What a Realistic {reader_topic} Workflow Looks Like",
         f"A realistic workflow starts with category clarification, then moves into comparison content, and only later into stronger conversion assets.",
         [
             "Start with a category article that explains the problem in plain language.",
@@ -1213,7 +1313,7 @@ def _publish_ready_article_from_context(context: Dict[str, Any], asset: Dict[str
         "Trying to jump straight to a sales page before the category has been clearly explained to the market.",
         )
         section_four = _section_block(
-        f"The Mistakes That Make {topic} Content Weak",
+        f"The Mistakes That Make {reader_topic} Content Weak",
         f"The weakest articles usually explain the category without giving the reader any way to make a better decision.",
         [
             "Replace vague claims with concrete evaluation criteria.",
@@ -1223,7 +1323,7 @@ def _publish_ready_article_from_context(context: Dict[str, Any], asset: Dict[str
         f"An article that only says \"AI visibility matters\" is weaker than one that shows how a team should review prompts, citations, workflow fit, and publishing gaps.",
         "Stacking terminology without explaining what the reader should do next.",
         )
-        table_lines = _comparison_table_lines(topic)
+        table_lines = _comparison_table_lines(reader_topic)
 
     if profile == "consumer_travel":
         tldr_lines = [
@@ -1239,19 +1339,19 @@ def _publish_ready_article_from_context(context: Dict[str, Any], asset: Dict[str
         )
     else:
         tldr_lines = [
-            f"- {topic} should be treated as an operational workflow, not just a tooling label.",
+            f"- {reader_topic} should be treated as an operational workflow, not just a tooling label.",
             f"- Best fit: {audience_text}.",
             f"- The real decision comes down to evidence quality, workflow fit, and whether the team can turn insight into content action.",
         ]
         conclusion_text = (
-            f"Teams evaluating {topic} should prioritize clear category understanding, verifiable evidence, and a workflow that connects insight to action. The goal is not only to monitor how AI systems talk about the category, but to create content that helps buyers make better decisions and gives the brand a credible place in those answers over time."
+            f"Teams evaluating {reader_topic} should prioritize clear category understanding, verifiable evidence, and a workflow that connects insight to action. The goal is not only to monitor how AI systems talk about the category, but to create content that helps buyers make better decisions and gives the brand a credible place in those answers over time."
         )
         takeaway_text = _publish_cta_text(asset)
 
     lines = [
         f"# {title}",
         "",
-        *_article_outline_lines_for_profile(topic, profile),
+        *_article_outline_lines_for_profile(reader_topic, profile),
         "",
         "## Article",
         "",
@@ -1512,6 +1612,134 @@ def _build_content_pack_context(
         "brand_kb": brand_kb,
         "remote_brand": remote_brand,
     }
+
+
+def discover_prompt_candidates(
+    client: DagenoClient,
+    days: int = 1,
+    *,
+    max_prompts: int = 20,
+) -> List[Dict[str, Any]]:
+    start_at, end_at = date_window(days)
+    opportunities = _collect_all(
+        lambda **kwargs: client.content_opportunities(start_at, end_at, **kwargs),
+        page_size=100,
+    )
+    prompts = _collect_all(
+        lambda **kwargs: client.prompts(start_at, end_at, **kwargs),
+        page_size=100,
+    )
+    prompt_map = {_normalize_text(item.get("prompt", "")): item for item in prompts if item.get("prompt")}
+    rows: List[Dict[str, Any]] = []
+    for item in opportunities:
+        normalized = _normalize_text(item.get("prompt", ""))
+        prompt = prompt_map.get(normalized, {})
+        tier = _opportunity_tier(item)
+        if tier == "Low":
+            continue
+        rows.append(
+            {
+                "prompt_id": prompt.get("id"),
+                "prompt_text": item.get("prompt", ""),
+                "topic": item.get("topic", ""),
+                "tier": tier,
+                "brand_gap": _fmt_gap(item.get("brandGap")),
+                "source_gap": _fmt_gap(item.get("sourceGap")),
+                "response_count": item.get("totalResponseCount", 0),
+                "source_count": item.get("totalSourceCount", 0),
+                "funnel": prompt.get("funnel", "-"),
+                "primary_intention": _primary_intention((prompt or {}).get("intentions") or []),
+                "score": _opportunity_score(item),
+            }
+        )
+    rows = sorted(rows, key=lambda row: row["score"], reverse=True)
+    return rows[:max_prompts]
+
+
+def build_fanout_backlog(
+    client: DagenoClient,
+    days: int = 1,
+    *,
+    brand_kb_file: str | None = None,
+    max_prompts: int = 20,
+) -> Dict[str, Any]:
+    local_kb = _load_brand_kb(brand_kb_file)
+    remote_brand = _remote_brand_context(client)
+    brand_context = local_kb or remote_brand
+    brand_kb = _brand_alignment_status(local_kb, remote_brand, brand_kb_file)
+
+    prompt_candidates = discover_prompt_candidates(client, days, max_prompts=max_prompts)
+    start_at, end_at = date_window(days)
+    backlog_rows: List[Dict[str, Any]] = []
+    for prompt_row in prompt_candidates:
+        prompt_id = prompt_row.get("prompt_id")
+        if not prompt_id:
+            continue
+        try:
+            fanout_items = _collect_all(
+                lambda **kwargs: client.prompt_query_fanout(prompt_id, start_at, end_at, **kwargs),
+                page_size=100,
+            )
+        except Exception:
+            fanout_items = []
+        for item in fanout_items:
+            fanout_text = (item.get("name") or "").strip()
+            if not fanout_text:
+                continue
+            article_type = _article_type_from_fanout(
+                fanout_text,
+                "Listicle" if "best " in fanout_text.lower() or "compare" in fanout_text.lower() else "Article",
+            )
+            backlog_rows.append(
+                {
+                    "backlog_id": _slugify(f"{prompt_row.get('prompt_text', '')}-{fanout_text}")[:80],
+                    "fanout_text": fanout_text,
+                    "source_prompt_ids": [prompt_id],
+                    "source_prompts": [prompt_row.get("prompt_text", "")],
+                    "source_topic": prompt_row.get("topic", ""),
+                    "market_profile": _market_profile(fanout_text, prompt_row.get("topic", ""), brand_context),
+                    "article_type": article_type,
+                    "normalized_title": _rewrite_fanout_title(fanout_text, article_type, brand_context),
+                    "brand_gap": prompt_row.get("brand_gap", "-"),
+                    "source_gap": prompt_row.get("source_gap", "-"),
+                    "response_count": prompt_row.get("response_count", 0),
+                    "funnel": prompt_row.get("funnel", "-"),
+                    "primary_intention": prompt_row.get("primary_intention", "-"),
+                    "status": "pending",
+                    "overlap_status": "new",
+                    "first_seen_at": datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
+                    "notes": "",
+                }
+            )
+    deduped = _dedupe_rows_by_text(backlog_rows)
+    for row in deduped:
+        row["source_count"] = len(row.get("source_prompt_ids", []))
+        if row["source_count"] > 1:
+            row["overlap_status"] = "merge"
+            row["notes"] = "Shared across multiple source prompts."
+    ordered = sorted(
+        deduped,
+        key=lambda row: (
+            0 if row["overlap_status"] == "new" else 1,
+            -row.get("source_count", 1),
+            row.get("normalized_title", ""),
+        ),
+    )
+    return {
+        "generated_at": datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
+        "time_window_days": days,
+        "brand_knowledge_base": brand_kb,
+        "brand_context_summary": _brand_context_summary(brand_context),
+        "prompt_candidates": prompt_candidates,
+        "fanout_backlog": ordered,
+    }
+
+
+def save_fanout_backlog(backlog: Dict[str, Any], output_file: str | None = None) -> Path:
+    output_path = Path(output_file).expanduser() if output_file else default_fanout_backlog_path()
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(json.dumps(backlog, ensure_ascii=False, indent=2), encoding="utf-8")
+    return output_path
 
 
 def brand_snapshot(client: DagenoClient) -> str:
