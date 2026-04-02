@@ -2,7 +2,7 @@
   "name": "geo-content-writer",
   "version": "0.4.0",
   "display_name": "GEO Content Writer",
-  "description": "A Content Writer Skill backed by a CLI runtime. Turn Dageno GEO opportunity data into content packs and writing-ready assets by combining response evidence, citation evidence, prompt fanout, keyword demand, structured asset decisions, and a project-level brand knowledge base.",
+  "description": "A lightweight content workflow that turns Dageno GEO opportunities into content packs and first-asset drafts.",
   "author": {
     "name": "GEO-SEO",
     "website": "https://github.com/GEO-SEO/geo-content-writer"
@@ -58,6 +58,6 @@
     "skill_type": "content-workflow",
     "network_access": "optional",
     "minimum_permissions": "Dageno API access required; SEO metrics, page fetch, and SERP enrichment are optional connectors.",
-    "data_access_policy": "This skill is optimized for opportunity-driven content packs from Dageno opportunities. It also reads a project-level brand knowledge base from knowledge/brand/brand-knowledge-base.json unless the caller supplies another path. Do not assume hidden access to private search APIs, page crawlers, or Google scraping. Keep prompt fanout, SEO enrichment, and future landing-page branches visible even when their connectors are not yet supplied."
+    "data_access_policy": "This skill reads Dageno opportunity data and optionally a project-level brand knowledge base from knowledge/brand/brand-knowledge-base.json. Do not assume hidden access to private search APIs or crawlers."
   }
 }

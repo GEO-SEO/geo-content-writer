@@ -39,7 +39,7 @@ metadata:
 
 # Content Writer
 
-Use this skill to turn one Dageno GEO opportunity into a usable content plan.
+Use this skill to turn one Dageno GEO opportunity into a usable content plan and first draft.
 
 Before running the main workflow, check for a brand knowledge base at:
 
@@ -48,40 +48,6 @@ Before running the main workflow, check for a brand knowledge base at:
 If the file is missing, warn the user that the workflow can still run, but brand positioning, proof points, and CTA language may become inconsistent across outputs.
 
 If an external agent is calling this skill, that agent should assume this skill reads from that standard path unless the user explicitly supplies another file location.
-
-## Best Use Case
-
-Use this skill when a team wants to answer:
-
-- what should be written next
-- why that topic matters
-- which angle should come first
-
-This skill is not for generic article generation from scratch.
-It is for opportunity-driven writing based on Dageno evidence.
-
-By default, this workflow should start from **today's content opportunities**.
-
-If needed, the user can explicitly choose a different time window, such as:
-
-- last 7 days
-- last 30 days
-- another custom range supported by the execution layer
-
-## Core Principle
-
-Keep this principle central:
-
-**High-value GEO opportunities do not always have high prompt volume.**
-
-So the workflow should prioritize:
-
-- brand gap
-- source gap
-- response count
-- business relevance
-
-not just volume.
 
 ## Workflow
 
@@ -99,80 +65,20 @@ Use it to keep these things consistent across the content plan and future drafts
 - claims to avoid
 - CTA direction
 
-### 1. Classify opportunities
+### 1. Build the content pack
 
-Group prompts into:
+The skill should:
 
-- `High`
-- `Medium`
-- `Low`
+- classify opportunities into `High`, `Medium`, and `Low`
+- inspect response and citation evidence
+- expand the topic with fanout and keyword signals
+- output a lightweight content pack with a unified asset table
 
-Default to `High` first, unless the user picks a different prompt.
+### 2. Generate the first asset draft
 
-### 2. Build the evidence layer
-
-For the selected prompt, collect:
-
-- prompt profile
-- response list
-- response detail
-- citation URLs
-
-Summarize:
-
-- how AI is framing the topic
-- whether the brand is missing
-- which entities appear instead
-- which source types dominate
-
-### 3. Expand the topic
-
-Use:
-
-- prompt fanout
-- keyword extraction
-- keyword expansion
-- search volume from Dageno Open API (`Get keyword volume`)
-- intention mapping
-
-The goal is to turn one opportunity into multiple nearby writing directions.
-
-### 4. Output a content plan
-
-The content plan should include:
-
-- brand knowledge base status
-- brand context summary
-- selected prompt
-- evidence summary
-- fanout ideas
-- search-side context
-- recommended asset list
-- creation order
-
-### 5. Generate the next asset
-
-Only after the content plan is ready should the workflow choose:
-
-- the first article
-- a future landing page
-- or another supporting asset
-
-## Output Format
-
-Prefer this order:
-
-1. `Opportunity Tiers`
-2. `Selected Prompt`
-3. `Evidence Summary`
-4. `Fanout Summary`
-5. `SEO Summary`
-6. `Content Plan`
-7. `Next Asset`
+After the content pack is ready, the skill can draft the top asset.
 
 ## GEO Writing Rules
-
-When the content plan turns into a written asset:
 
 1. Start with a direct answer or definition.
 2. Make each H2 understandable on its own.
@@ -185,6 +91,4 @@ When the content plan turns into a written asset:
 
 ## Reference
 
-For detailed schema, data structures, and asset rules, see:
-
-- [`references/pipeline-spec.md`](references/pipeline-spec.md)
+See [`references/pipeline-spec.md`](references/pipeline-spec.md).
