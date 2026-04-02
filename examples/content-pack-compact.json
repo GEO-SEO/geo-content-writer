@@ -1,0 +1,109 @@
+{
+  "schema_version": "1.0.0-compact",
+  "generated_at": "2026-04-02T05:13:36Z",
+  "time_window_days": 1,
+  "selected_prompt": "Enterprise AEO solutions for brand authority",
+  "brand_knowledge_base": {
+    "path": "/Users/timlin/Documents/New project 2/geo-content-opportunity-engine/knowledge/brand/brand-knowledge-base.json",
+    "loaded": true,
+    "brand_context_summary": {
+      "brand_name": "Dageno",
+      "category": "Answer Engine Optimization and GEO platform",
+      "one_liner": "Dageno helps brands understand how AI systems talk about their business and turn that insight into content and growth execution.",
+      "differentiators": [
+        "Prompt-level brand and source gap visibility",
+        "Citation and response evidence instead of generic keyword-only planning",
+        "Clear path from insight to content execution"
+      ],
+      "preferred_cta": "Invite the reader to review their current AI visibility workflow and book a demo if they want a clearer path from visibility data to content execution."
+    }
+  },
+  "opportunity_summary": {
+    "high": 0,
+    "medium": 36,
+    "low": 2,
+    "selected_tier": "Medium",
+    "brand_gap": "100%",
+    "source_gap": "100%"
+  },
+  "evidence_summary": {
+    "response_count": 13,
+    "citation_url_count": 187,
+    "dominant_page_type": "Article",
+    "top_entities": [
+      "Google",
+      "Conductor",
+      "Profound",
+      "WikiData"
+    ]
+  },
+  "seo_summary": {
+    "primary_keyword_candidate": "enterprise aeo solutions for brand authority",
+    "keyword_cluster_preview": [
+      "enterprise aeo solutions for brand authority",
+      "enterprise answer engine optimization solutions",
+      "answer engine optimization platform",
+      "answer engine optimization software",
+      "answer engine optimization tools",
+      "answer engine optimization for enterprise brands"
+    ],
+    "primary_intention": "Transactional",
+    "fanout_preview": [
+      "Enterprise AEO solutions for brand authority",
+      "Enterprise AEO solutions for brand authority what is Enterprise AEO solutions brand authority",
+      "Enterprise AEO solutions AEO services enterprise SEO brand authority optimization",
+      "Best AEO tools platforms for enterprises 2025 2026",
+      "AEO strategies for building brand authority",
+      "Enterprise AEO solutions meaning AEO solutions for brands what products or platforms exist"
+    ]
+  },
+  "creation_order": [
+    "A1",
+    "A2",
+    "A3",
+    "A4",
+    "A5"
+  ],
+  "top_assets": [
+    {
+      "asset_id": "A1",
+      "asset_title": "What Is an Enterprise Answer Engine Optimization Solution?",
+      "asset_type": "article",
+      "publish_surface": "website_blog",
+      "target_intent": "Informational",
+      "priority": "high"
+    },
+    {
+      "asset_id": "A2",
+      "asset_title": "How to Evaluate Enterprise Answer Engine Optimization Platforms",
+      "asset_type": "article",
+      "publish_surface": "website_blog",
+      "target_intent": "Commercial",
+      "priority": "high"
+    },
+    {
+      "asset_id": "A3",
+      "asset_title": "Best Enterprise Answer Engine Optimization Solutions for Brand Authority",
+      "asset_type": "article",
+      "publish_surface": "website_blog",
+      "target_intent": "Transactional",
+      "priority": "high"
+    },
+    {
+      "asset_id": "A4",
+      "asset_title": "How to Measure Brand Authority in AI Answers",
+      "asset_type": "article",
+      "publish_surface": "website_blog",
+      "target_intent": "Commercial",
+      "priority": "medium"
+    },
+    {
+      "asset_id": "A5",
+      "asset_title": "Enterprise Answer Engine Optimization Platform for Brand Authority",
+      "asset_type": "landing_page",
+      "publish_surface": "landing_page",
+      "target_intent": "Transactional",
+      "priority": "medium"
+    }
+  ]
+}

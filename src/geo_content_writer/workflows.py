@@ -1575,3 +1575,84 @@ def content_pack_json(
         },
         "assets": asset_rows,
     }
+
+
+def content_pack_compact_json(
+    client: DagenoClient,
+    days: int = 30,
+    *,
+    prompt_id: str | None = None,
+    prompt_text: str | None = None,
+    brand_kb_file: str | None = None,
+) -> Dict[str, Any]:
+    context = _build_content_pack_context(
+        client,
+        days,
+        prompt_id=prompt_id,
+        prompt_text=prompt_text,
+        brand_kb_file=brand_kb_file,
+        detail_limit=1,
+    )
+    generated_at = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    if context["empty"]:
+        return {
+            "schema_version": "1.0.0-compact",
+            "generated_at": generated_at,
+            "time_window_days": days,
+            "selected_prompt": "-",
+            "brand_knowledge_base": context.get("brand_kb", {}),
+            "opportunity_summary": {"high": 0, "medium": 0, "low": 0},
+            "evidence_summary": {},
+            "seo_summary": {},
+            "creation_order": [],
+            "top_assets": [],
+        }
+
+    tier_buckets = context["tier_buckets"]
+    selected = context["selected_opportunity"]
+    compact_assets = []
+    for row in context["asset_rows"][:5]:
+        compact_assets.append(
+            {
+                "asset_id": row["asset_id"],
+                "asset_title": row["asset_title"],
+                "asset_type": row["asset_type"],
+                "publish_surface": row["recommended_publish_surface"],
+                "target_intent": row["target_intent"],
+                "priority": row["priority"],
+            }
+        )
+
+    return {
+        "schema_version": "1.0.0-compact",
+        "generated_at": generated_at,
+        "time_window_days": days,
+        "selected_prompt": selected.get("prompt", "-") or "-",
+        "brand_knowledge_base": {
+            "path": context["brand_kb"].get("path", ""),
+            "loaded": context["brand_kb"].get("loaded", False),
+            "brand_context_summary": _brand_context_summary(context.get("brand_context", {})),
+        },
+        "opportunity_summary": {
+            "high": len(tier_buckets["High"]),
+            "medium": len(tier_buckets["Medium"]),
+            "low": len(tier_buckets["Low"]),
+            "selected_tier": context["tier"],
+            "brand_gap": _fmt_gap(selected.get("brandGap")),
+            "source_gap": _fmt_gap(selected.get("sourceGap")),
+        },
+        "evidence_summary": {
+            "response_count": len(context["responses"]),
+            "citation_url_count": len(context["citations"]),
+            "dominant_page_type": context["dominant_page_type"],
+            "top_entities": [name for name, _ in context["mention_counter"].most_common(4)],
+        },
+        "seo_summary": {
+            "primary_keyword_candidate": context["keyword_cluster"][0] if context["keyword_cluster"] else "-",
+            "keyword_cluster_preview": context["keyword_cluster"][:6],
+            "primary_intention": context["primary_intent"],
+            "fanout_preview": context["fanout_prompts"][:6],
+        },
+        "creation_order": [row["asset_id"] for row in context["asset_rows"][:5]],
+        "top_assets": compact_assets,
+    }

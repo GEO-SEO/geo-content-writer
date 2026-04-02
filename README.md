@@ -131,6 +131,14 @@ PYTHONPATH=src python -m geo_content_writer.cli content-pack --compact
 PYTHONPATH=src python -m geo_content_writer.cli content-pack --output-json
 ```
 
+### Compact JSON summary
+
+Use this when an external agent needs a short structured summary before deciding whether to read the full pack.
+
+```bash
+PYTHONPATH=src python -m geo_content_writer.cli content-pack --compact-json
+```
+
 ### Standard brand knowledge base location
 
 ```bash
@@ -166,6 +174,7 @@ PYTHONPATH=src python -m geo_content_writer.cli first-asset-draft --output-file 
 ```bash
 PYTHONPATH=src python -m geo_content_writer.cli pack --compact
 PYTHONPATH=src python -m geo_content_writer.cli draft-first
+PYTHONPATH=src python -m geo_content_writer.cli pack --compact-json
 PYTHONPATH=src python -m geo_content_writer.cli validate-pack examples/content-pack.json
 PYTHONPATH=src python -m geo_content_writer.cli validate-kb knowledge/brand/brand-knowledge-base.json
 ```

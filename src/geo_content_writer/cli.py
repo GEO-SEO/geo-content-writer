@@ -14,6 +14,7 @@ from .workflows import (
     community_opportunity_brief,
     content_pack,
     content_opportunity_brief,
+    content_pack_compact_json,
     content_pack_json,
     default_brand_kb_path,
     first_asset_draft,
@@ -73,6 +74,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--compact",
         action="store_true",
         help="Use a shorter markdown format for lower token usage",
+    )
+    content_pack_parser.add_argument(
+        "--compact-json",
+        action="store_true",
+        help="Output a shorter JSON summary for lower token usage; use --output-json without this flag for the full schema payload",
     )
     content_pack_parser.add_argument(
         "--output-file",
@@ -146,7 +152,7 @@ def main() -> None:
             output_path.write_text(payload, encoding="utf-8")
         print(payload)
 
-    if args.command == "validate-output":
+    if args.command in {"validate-output", "validate-pack"}:
         input_path = Path(args.input_file).expanduser()
         schema_path = Path(args.schema_file).expanduser()
         schema = json.loads(schema_path.read_text(encoding="utf-8"))
@@ -158,7 +164,7 @@ def main() -> None:
         print(f"Schema validation passed: {input_path}")
         return
 
-    if args.command == "validate-brand-kb":
+    if args.command in {"validate-brand-kb", "validate-kb"}:
         input_path = Path(args.input_file).expanduser()
         schema_path = Path(args.schema_file).expanduser()
         schema = json.loads(schema_path.read_text(encoding="utf-8"))
@@ -186,8 +192,22 @@ def main() -> None:
         print(backlink_opportunity_brief(client, days=args.days, limit=args.limit))
     elif args.command == "community-opportunities":
         print(community_opportunity_brief(client, days=args.days, limit=args.limit))
-    elif args.command == "content-pack":
-        if args.output_json:
+    elif args.command in {"content-pack", "pack"}:
+        if args.compact_json:
+            emit_output(
+                json.dumps(
+                    content_pack_compact_json(
+                        client,
+                        days=args.days,
+                        prompt_id=args.prompt_id,
+                        prompt_text=args.prompt_text,
+                        brand_kb_file=args.brand_kb_file,
+                    ),
+                    ensure_ascii=False,
+                    indent=2,
+                )
+            )
+        elif args.output_json:
             emit_output(
                 json.dumps(
                     content_pack_json(
@@ -213,7 +233,7 @@ def main() -> None:
                     compact=args.compact,
                 )
             )
-    elif args.command == "first-asset-draft":
+    elif args.command in {"first-asset-draft", "draft-first"}:
         emit_output(
             first_asset_draft(
                 client,
