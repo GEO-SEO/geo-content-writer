@@ -199,6 +199,7 @@ def build_parser() -> argparse.ArgumentParser:
     wp_parser.add_argument("--client-id", default=None, help="WordPress.com OAuth client ID")
     wp_parser.add_argument("--client-secret", default=None, help="WordPress.com OAuth client secret")
     wp_parser.add_argument("--status", default="draft", choices=["draft", "publish", "private"], help="Post status")
+    wp_parser.add_argument("--post-id", type=int, default=None, help="Optional existing WordPress post ID to update instead of creating a new post")
     wp_parser.add_argument("--title", default=None, help="Optional title override")
     wp_parser.add_argument("--slug", default=None, help="Optional slug override")
     wp_parser.add_argument("--excerpt", default=None, help="Optional excerpt")
@@ -276,15 +277,28 @@ def main() -> None:
             client_id=args.client_id,
             client_secret=args.client_secret,
         )
-        result = client.create_post(
-            title=args.title or inferred_title,
-            content=markdown_to_basic_html(markdown_text),
-            status=args.status,
-            slug=args.slug or inferred_slug,
-            excerpt=args.excerpt,
-            categories=_parse_taxonomy_ids(args.categories),
-            tags=_parse_taxonomy_ids(args.tags),
-        )
+        html_content = markdown_to_basic_html(markdown_text)
+        if args.post_id:
+            result = client.update_post(
+                args.post_id,
+                title=args.title or inferred_title,
+                content=html_content,
+                status=args.status,
+                slug=args.slug or inferred_slug,
+                excerpt=args.excerpt,
+                categories=_parse_taxonomy_ids(args.categories),
+                tags=_parse_taxonomy_ids(args.tags),
+            )
+        else:
+            result = client.create_post(
+                title=args.title or inferred_title,
+                content=html_content,
+                status=args.status,
+                slug=args.slug or inferred_slug,
+                excerpt=args.excerpt,
+                categories=_parse_taxonomy_ids(args.categories),
+                tags=_parse_taxonomy_ids(args.tags),
+            )
         print(
             json.dumps(
                 {

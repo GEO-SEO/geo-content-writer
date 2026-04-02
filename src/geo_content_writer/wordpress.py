@@ -124,14 +124,47 @@ class WordPressClient:
             payload["tags"] = tags
         return self._request("POST", "/posts", json=payload)
 
+    def update_post(
+        self,
+        post_id: int,
+        *,
+        title: Optional[str] = None,
+        content: Optional[str] = None,
+        status: Optional[str] = None,
+        slug: Optional[str] = None,
+        excerpt: Optional[str] = None,
+        categories: Optional[List[int]] = None,
+        tags: Optional[List[int]] = None,
+    ) -> Dict[str, Any]:
+        payload: Dict[str, Any] = {}
+        if title is not None:
+            payload["title"] = title
+        if content is not None:
+            payload["content"] = content
+        if status is not None:
+            payload["status"] = status
+        if slug is not None:
+            payload["slug"] = slug
+        if excerpt is not None:
+            payload["excerpt"] = excerpt
+        if categories:
+            payload["categories"] = categories
+        if tags:
+            payload["tags"] = tags
+        return self._request("POST", f"/posts/{post_id}", json=payload)
+
 
 def markdown_to_basic_html(markdown_text: str) -> str:
     """Convert simple markdown-like draft output into WordPress-friendly HTML."""
 
     lines = markdown_text.splitlines()
+    if lines and lines[0].strip().startswith("# "):
+        lines = lines[1:]
+
     blocks: List[str] = []
     list_items: List[str] = []
     paragraph_lines: List[str] = []
+    table_lines: List[str] = []
 
     def flush_list() -> None:
         nonlocal list_items
@@ -146,18 +179,32 @@ def markdown_to_basic_html(markdown_text: str) -> str:
             blocks.append(f"<p>{_inline_markdown_to_html(text)}</p>")
             paragraph_lines = []
 
+    def flush_table() -> None:
+        nonlocal table_lines
+        if table_lines:
+            blocks.append(_table_markdown_to_html(table_lines))
+            table_lines = []
+
     for raw_line in lines:
         line = raw_line.rstrip()
         stripped = line.strip()
         if not stripped:
             flush_list()
             flush_paragraph()
+            flush_table()
+            continue
+
+        if stripped.startswith("|") and stripped.endswith("|"):
+            flush_list()
+            flush_paragraph()
+            table_lines.append(stripped)
             continue
 
         heading_match = re.match(r"^(#{1,6})\s+(.*)$", stripped)
         if heading_match:
             flush_list()
             flush_paragraph()
+            flush_table()
             level = len(heading_match.group(1))
             text = _inline_markdown_to_html(heading_match.group(2).strip())
             blocks.append(f"<h{level}>{text}</h{level}>")
@@ -165,15 +212,18 @@ def markdown_to_basic_html(markdown_text: str) -> str:
 
         if stripped.startswith("- "):
             flush_paragraph()
+            flush_table()
             item_text = _inline_markdown_to_html(stripped[2:].strip())
             list_items.append(f"<li>{item_text}</li>")
             continue
 
         flush_list()
+        flush_table()
         paragraph_lines.append(stripped)
 
     flush_list()
     flush_paragraph()
+    flush_table()
     return "\n".join(blocks)
 
 
@@ -182,4 +232,22 @@ def _inline_markdown_to_html(text: str) -> str:
     escaped = re.sub(r"`([^`]+)`", r"<code>\1</code>", escaped)
     escaped = re.sub(r"\*\*([^*]+)\*\*", r"<strong>\1</strong>", escaped)
     escaped = re.sub(r"\*([^*]+)\*", r"<em>\1</em>", escaped)
+    escaped = re.sub(r"\[([^\]]+)\]\(([^)]+)\)", r'<a href="\2">\1</a>', escaped)
     return escaped
+
+
+def _table_markdown_to_html(lines: List[str]) -> str:
+    rows = []
+    for line in lines:
+        cells = [cell.strip() for cell in line.strip("|").split("|")]
+        rows.append(cells)
+    if len(rows) < 2:
+        return ""
+    header = rows[0]
+    body = [row for row in rows[2:] if row]
+    thead = "<thead><tr>" + "".join(f"<th>{_inline_markdown_to_html(cell)}</th>" for cell in header) + "</tr></thead>"
+    tbody_rows = []
+    for row in body:
+        tbody_rows.append("<tr>" + "".join(f"<td>{_inline_markdown_to_html(cell)}</td>" for cell in row) + "</tr>")
+    tbody = "<tbody>" + "".join(tbody_rows) + "</tbody>"
+    return f"<table>{thead}{tbody}</table>"
