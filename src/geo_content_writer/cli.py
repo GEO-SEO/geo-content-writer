@@ -21,7 +21,9 @@ from .workflows import (
     default_fanout_backlog_path,
     discover_prompt_candidates,
     build_fanout_backlog,
+    load_fanout_backlog,
     save_fanout_backlog,
+    select_backlog_items,
     daily_publish_ready_package,
     first_asset_draft,
     new_content_brief,
@@ -122,6 +124,17 @@ def build_parser() -> argparse.ArgumentParser:
         default=str(_default_fanout_backlog_path()),
         help="Where to write the fanout backlog JSON",
     )
+    select_backlog_parser = subparsers.add_parser(
+        "select-backlog-items",
+        help="Select the next backlog items for drafting",
+    )
+    select_backlog_parser.add_argument(
+        "--input-file",
+        default=str(_default_fanout_backlog_path()),
+        help="Backlog JSON file to read; defaults to knowledge/backlog/fanout-backlog.json",
+    )
+    select_backlog_parser.add_argument("--status", default="write_now", help="Which backlog status to select from")
+    select_backlog_parser.add_argument("--top-n", type=int, default=10, help="How many items to return")
     content_pack_parser = subparsers.add_parser(
         "content-pack",
         aliases=["pack"],
@@ -324,6 +337,17 @@ def main() -> None:
         )
         save_fanout_backlog(backlog, args.output_file)
         print(json.dumps(backlog, ensure_ascii=False, indent=2))
+        return
+
+    if args.command == "select-backlog-items":
+        backlog = load_fanout_backlog(args.input_file)
+        print(
+            json.dumps(
+                select_backlog_items(backlog, limit=args.top_n, status=args.status),
+                ensure_ascii=False,
+                indent=2,
+            )
+        )
         return
 
     if args.command == "publish-wordpress":

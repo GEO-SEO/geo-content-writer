@@ -116,13 +116,19 @@ Suggested backlog statuses:
 - `needs_cleanup`
 - `skip`
 
-### 3. Generate one publish-ready article
+### 3. Select the next backlog items
+
+```bash
+PYTHONPATH=src python -m geo_content_writer.cli select-backlog-items --top-n 10
+```
+
+### 4. Generate one publish-ready article
 
 ```bash
 PYTHONPATH=src python -m geo_content_writer.cli publish-ready-article --output-file examples/publish-ready-article.md
 ```
 
-### 4. Publish to WordPress
+### 5. Publish to WordPress
 
 ```bash
 export WORDPRESS_SITE_URL="https://your-site.com"
@@ -143,6 +149,7 @@ export WORDPRESS_CLIENT_SECRET="your-client-secret"
 ```bash
 PYTHONPATH=src python -m geo_content_writer.cli discover-prompts
 PYTHONPATH=src python -m geo_content_writer.cli build-fanout-backlog
+PYTHONPATH=src python -m geo_content_writer.cli select-backlog-items --top-n 10
 PYTHONPATH=src python -m geo_content_writer.cli publish-ready-article
 PYTHONPATH=src python -m geo_content_writer.cli publish-wordpress examples/publish-ready-article.md --status draft
 ```

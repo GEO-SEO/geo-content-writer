@@ -1890,6 +1890,37 @@ def save_fanout_backlog(backlog: Dict[str, Any], output_file: str | None = None)
     return output_path
 
 
+def load_fanout_backlog(input_file: str | None = None) -> Dict[str, Any]:
+    input_path = Path(input_file).expanduser() if input_file else default_fanout_backlog_path()
+    return json.loads(input_path.read_text(encoding="utf-8"))
+
+
+def select_backlog_items(
+    backlog: Dict[str, Any],
+    *,
+    limit: int = 10,
+    status: str = "write_now",
+) -> Dict[str, Any]:
+    article_type_rank = {"comparison": 0, "recommendation": 1, "guide": 2, "review": 3, "explainer": 4}
+    rows = [row for row in backlog.get("fanout_backlog", []) if row.get("status") == status]
+    rows = sorted(
+        rows,
+        key=lambda row: (
+            article_type_rank.get(row.get("article_type", "explainer"), 9),
+            -row.get("source_count", 1),
+            row.get("normalized_title", ""),
+        ),
+    )
+    return {
+        "generated_at": backlog.get("generated_at"),
+        "time_window_days": backlog.get("time_window_days"),
+        "brand_context_summary": backlog.get("brand_context_summary", {}),
+        "selected_status": status,
+        "count": min(limit, len(rows)),
+        "items": rows[:limit],
+    }
+
+
 def brand_snapshot(client: DagenoClient) -> str:
     payload = client.brand_info()["data"]
     socials = ", ".join(social["url"] for social in payload.get("socials", [])[:3]) or "-"
