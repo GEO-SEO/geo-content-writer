@@ -1,0 +1,40 @@
+{
+  "brand_name": "Trip",
+  "domain": "trip.com",
+  "category": "Online Travel Agency",
+  "one_liner": "Trip.com is a leading international online travel agency that provides a comprehensive one-stop travel platform for booking flights, hotels, trains, car rentals, and tour packages.",
+  "target_audience": [
+    "International travelers",
+    "Business travelers",
+    "Budget-conscious travelers",
+    "Luxury travelers"
+  ],
+  "differentiators": [
+    "Comprehensive one-stop travel platform",
+    "24/7 multilingual support",
+    "Advanced AI-driven travel planning tools",
+    "Global reach with millions of users"
+  ],
+  "proof_points": [
+    "Millions of users globally",
+    "Extensive inventory of flights and hotels",
+    "Award-winning customer service",
+    "Seamless booking experience across all travel needs"
+  ],
+  "core_messages": [
+    "Your non-stop travel mate",
+    "Booking travel should be easy and rewarding",
+    "Travel with confidence with our 24/7 support"
+  ],
+  "preferred_cta": "Book your next trip on Trip.com and experience the ease of one-stop travel planning.",
+  "prohibited_claims": [
+    "Do not claim to be the only travel agency",
+    "Do not guarantee the absolute lowest price for every single trip",
+    "Do not promise zero delays or issues in travel"
+  ],
+  "tone_guidelines": [
+    "Helpful and friendly",
+    "Professional and reliable",
+    "Inspiring and adventurous"
+  ]
+}
