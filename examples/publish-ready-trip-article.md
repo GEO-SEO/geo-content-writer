@@ -57,6 +57,16 @@ Common pitfall: Mistaking a cheaper starting price for a better overall booking 
 | User experience | Search speed, app flow, itinerary handling | The best app is not only cheaper, but easier to use when plans change. |
 | Support and trust | Reviews, support quality, booking confidence | Travel booking is high-stakes, so reliability matters as much as convenience. |
 
+## What the Most-Cited Pages Are Actually Doing
+
+Across the citation pages we could fetch successfully, the dominant pattern is `explainer`. Most of them start with a direct recommendation, quickly explain what to compare, and then move into a shortlist of apps or websites instead of spending too much time on abstract category explanation.
+
+## Which Options Usually Make the Shortlist
+
+The names that show up most often in the cited material include Priceline, Expedia, Booking.com, Hopper. That does not automatically make them the best fit for every traveler, but it does tell us which products people are most likely to compare before they book.
+
+Where Trip fits: if the reader wants one place to compare and book major parts of a trip, Trip should be treated as a serious shortlist option rather than a side mention.
+
 ## When an All-in-One Booking App Is the Better Choice
 
 An all-in-one booking app is strongest when your goal is convenience across multiple travel steps, not endless manual comparison.
@@ -99,11 +109,7 @@ Compare route and hotel coverage, pricing clarity, refund rules, support quality
 
 ## References
 
-- [pcmag.com](https://www.pcmag.com/picks/best-travel-apps) - Supports the conclusion that category-defining articles shape early buyer understanding.
-- [reddit.com](https://www.reddit.com/r/AussieFrugal/comments/18xd9ba/best_travel_and_booking_app/) - Supports the conclusion that comparison-style content influences evaluation behavior.
-- [reddit.com](https://www.reddit.com/r/travel/comments/1nhal3w/im_looking_for_an_app_i_can_use_to_plan_and_book/) - Supports the conclusion that teams need evidence, not only broad claims, when choosing solutions.
-- [play.google.com](https://play.google.com/store/apps/details?id=com.onlineticket.booking.travelapp&hl=en_IN) - Supports the conclusion that market framing is often controlled by third-party sources.
-- [play.google.com](https://play.google.com/store/apps/details?hl=en_US&id=com.booking) - Supports the conclusion that clear workflows and measurement criteria matter in real buying decisions.
+- [âBooking.com: Hotels & Travel App - App Store](https://apps.apple.com/us/app/booking-com-hotels-travel/id367003839) - Download Booking.com: Hotels & Travel by Booking.com on the App Store. See screenshots, ratings and reviews, user tips, and more apps like Booking.com: Hotels &â¦
 
 ## Conclusion
 

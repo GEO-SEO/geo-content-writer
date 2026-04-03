@@ -3,6 +3,7 @@ from __future__ import annotations
 import html
 import os
 import re
+import time
 from typing import Any, Dict, List, Optional
 from urllib.parse import quote, urlparse
 
@@ -20,6 +21,7 @@ class WordPressClient:
         client_id: Optional[str] = None,
         client_secret: Optional[str] = None,
         timeout: int = 30,
+        max_retries: int = 3,
     ) -> None:
         self.site_url = (site_url or os.environ.get("WORDPRESS_SITE_URL") or "").rstrip("/")
         self.username = username or os.environ.get("WORDPRESS_USERNAME")
@@ -27,6 +29,7 @@ class WordPressClient:
         self.client_id = client_id or os.environ.get("WORDPRESS_CLIENT_ID")
         self.client_secret = client_secret or os.environ.get("WORDPRESS_CLIENT_SECRET")
         self.timeout = timeout
+        self.max_retries = max_retries
 
         if not self.site_url:
             raise ValueError("Missing WORDPRESS_SITE_URL. Pass site_url or set the environment variable.")
@@ -49,27 +52,38 @@ class WordPressClient:
         *,
         json: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
-        if self.is_wordpress_com:
-            response = requests.request(
-                method=method,
-                url=f"https://public-api.wordpress.com/wp/v2/sites/{self._site_identifier()}{path}",
-                headers={
-                    "Authorization": f"Bearer {self._wpcom_access_token()}",
-                    "Content-Type": "application/json",
-                },
-                json=json,
-                timeout=self.timeout,
-            )
-        else:
-            response = requests.request(
-                method=method,
-                url=f"{self.site_url}/wp-json/wp/v2{path}",
-                auth=(self.username, self.app_password),
-                json=json,
-                timeout=self.timeout,
-            )
-        response.raise_for_status()
-        return response.json()
+        last_error: Exception | None = None
+        for attempt in range(1, self.max_retries + 1):
+            try:
+                if self.is_wordpress_com:
+                    response = requests.request(
+                        method=method,
+                        url=f"https://public-api.wordpress.com/wp/v2/sites/{self._site_identifier()}{path}",
+                        headers={
+                            "Authorization": f"Bearer {self._wpcom_access_token()}",
+                            "Content-Type": "application/json",
+                        },
+                        json=json,
+                        timeout=self.timeout,
+                    )
+                else:
+                    response = requests.request(
+                        method=method,
+                        url=f"{self.site_url}/wp-json/wp/v2{path}",
+                        auth=(self.username, self.app_password),
+                        json=json,
+                        timeout=self.timeout,
+                    )
+                response.raise_for_status()
+                return response.json()
+            except requests.exceptions.RequestException as exc:
+                last_error = exc
+                if attempt == self.max_retries:
+                    break
+                time.sleep(0.8 * attempt)
+        if last_error:
+            raise last_error
+        raise RuntimeError("WordPress request failed without an exception.")
 
     def _site_identifier(self) -> str:
         host = urlparse(self.site_url).netloc or self.site_url

@@ -1613,6 +1613,112 @@ def publish_ready_article(
     return _publish_ready_article_from_context(context, asset)
 
 
+def article_generation_payload(
+    client: DagenoClient,
+    days: int = 30,
+    *,
+    prompt_id: str | None = None,
+    prompt_text: str | None = None,
+    asset_id: str | None = None,
+    brand_kb_file: str | None = None,
+    citation_limit: int = 5,
+) -> Dict[str, Any]:
+    context = _build_content_pack_context(
+        client,
+        days,
+        prompt_id=prompt_id,
+        prompt_text=prompt_text,
+        brand_kb_file=brand_kb_file,
+        detail_limit=1,
+    )
+    _assert_brand_alignment(context)
+    if context["empty"]:
+        return {
+            "generated_at": datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
+            "status": "empty",
+            "message": "No content opportunities were returned for the selected window.",
+        }
+
+    asset = _pick_publishable_article_asset(context["asset_rows"], asset_id=asset_id)
+    if not asset:
+        return {
+            "generated_at": datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
+            "status": "no_asset",
+            "message": "No publishable article asset was available for the selected window.",
+        }
+
+    selected = context["selected_opportunity"]
+    topic = selected.get("topic", "")
+    prompt_text_value = selected.get("prompt", "")
+    reader_topic = _reader_topic_phrase(prompt_text_value, topic, context.get("brand_context", {}))
+    profile = _market_profile(prompt_text_value, topic, context.get("brand_context", {}))
+    citation_urls = _top_citation_urls(context.get("citations", []), limit=citation_limit)
+    crawled_pages = crawl_citation_pages(citation_urls, limit=citation_limit)
+    patterns = analyze_citation_patterns(crawled_pages)
+    title_options = _dedupe_keep_order(
+        [
+            asset.get("asset_title", ""),
+            _rewrite_fanout_title(prompt_text_value, patterns.get("recommended_article_type", "explainer"), context.get("brand_context", {})),
+            _rewrite_fanout_title(reader_topic, patterns.get("recommended_article_type", "explainer"), context.get("brand_context", {})),
+        ]
+    )[:3]
+
+    brief = {
+        "reader_problem": f"Readers want help with {reader_topic} and need a clear way to compare options without wasting time.",
+        "must_cover": [
+            "what readers should compare first",
+            "how current cited pages structure the topic",
+            "which products or options usually appear in the shortlist",
+            "where the monitored brand naturally fits",
+        ],
+        "must_avoid": [
+            "template tone",
+            "internal topic labels as final titles",
+            "unsupported claims",
+            "brand mentions that feel like ads",
+        ],
+        "writing_goal": "Write a normal blog post that feels useful to human readers while preserving structure that AI systems can quote.",
+    }
+
+    return {
+        "generated_at": datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
+        "status": "ok",
+        "backlog_row": {
+            "asset_id": asset.get("asset_id"),
+            "asset_title": asset.get("asset_title"),
+            "article_type": patterns.get("recommended_article_type", "explainer"),
+            "source_prompt": prompt_text_value,
+            "source_topic": topic,
+            "target_query_cluster": asset.get("target_query_cluster"),
+            "primary_intention": context.get("primary_intent"),
+        },
+        "selected_fanout": {
+            "fanout_text": prompt_text_value,
+            "reader_topic": reader_topic,
+            "market_profile": profile,
+        },
+        "citation_pattern_summary": {
+            "dominant_page_type": context.get("dominant_page_type"),
+            "dominant_title_pattern": patterns.get("dominant_title_pattern"),
+            "recommended_article_type": patterns.get("recommended_article_type"),
+            "common_heading_patterns": patterns.get("common_heading_patterns", [])[:6],
+            "table_presence_rate": patterns.get("table_presence_rate"),
+            "list_presence_rate": patterns.get("list_presence_rate"),
+            "faq_presence_rate": patterns.get("faq_presence_rate"),
+            "top_entities": [name for name, _ in context.get("mention_counter", Counter()).most_common(6)],
+        },
+        "title_options": title_options,
+        "writing_brief": brief,
+        "crawled_citation_pages": crawled_pages,
+        "writing_rules": [
+            "Write like a blog editor, not a document generator.",
+            "Use the citation pages to learn structure, not to copy wording.",
+            "Mention the brand where it naturally belongs in the shortlist or comparison.",
+            "Prefer recommendation or comparison structure when citations show listicle behavior.",
+        ],
+    }
+
+
 def daily_publish_ready_package(
     client: DagenoClient,
     days: int = 1,

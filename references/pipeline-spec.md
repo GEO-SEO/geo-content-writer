@@ -40,6 +40,13 @@ Write only from:
 
 12. publish to WordPress
 
+## Citation Learning Policy
+
+- prioritize article-like pages
+- exclude app-store pages, forums, and similar non-article pages from primary structure learning
+- if article-like pages are fewer than 3, use `article_first_fallback`
+- in fallback mode, article pages remain primary and support pages remain secondary
+
 ## Data Objects
 
 ### Brand knowledge base

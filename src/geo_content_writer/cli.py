@@ -24,6 +24,7 @@ from .workflows import (
     load_fanout_backlog,
     save_fanout_backlog,
     select_backlog_items,
+    article_generation_payload,
     daily_publish_ready_package,
     first_asset_draft,
     new_content_brief,
@@ -206,6 +207,20 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Optional file path to write the publish-ready article output",
     )
+    payload_parser = subparsers.add_parser(
+        "article-generation-payload",
+        parents=[common],
+        help="Build a structured writing payload for one selected article item",
+    )
+    payload_parser.add_argument("--prompt-id", default=None, help="Optional prompt ID to target")
+    payload_parser.add_argument("--prompt-text", default=None, help="Optional prompt text to target")
+    payload_parser.add_argument("--asset-id", default=None, help="Optional asset row ID such as A1")
+    payload_parser.add_argument(
+        "--brand-kb-file",
+        default=str(default_brand_kb_path()),
+        help="Brand knowledge base JSON file. Default project path: knowledge/brand/brand-knowledge-base.json",
+    )
+    payload_parser.add_argument("--citation-limit", type=int, default=5, help="How many citation pages to inspect")
     new_content_parser = subparsers.add_parser(
         "new-content-brief",
         parents=[common],
@@ -375,6 +390,25 @@ def main() -> None:
         print(
             json.dumps(
                 select_backlog_items(backlog, limit=args.top_n, status=args.status),
+                ensure_ascii=False,
+                indent=2,
+            )
+        )
+        return
+
+    if args.command == "article-generation-payload":
+        client = DagenoClient(api_key=args.api_key, base_url=args.base_url)
+        print(
+            json.dumps(
+                article_generation_payload(
+                    client,
+                    days=args.days,
+                    prompt_id=args.prompt_id,
+                    prompt_text=args.prompt_text,
+                    asset_id=args.asset_id,
+                    brand_kb_file=args.brand_kb_file,
+                    citation_limit=args.citation_limit,
+                ),
                 ensure_ascii=False,
                 indent=2,
             )

@@ -21,9 +21,17 @@ The project does **not** yet perform full citation-page body crawling inside the
 Current behavior:
 
 - it uses Dageno citation URLs and citation metadata
-- it does **not** yet fetch and analyze the full HTML/body text of the top citation pages in the main workflow
+- it now performs lightweight article-first citation crawling
+- it does **not** yet perform full browser-rendered or Firecrawl-based extraction
 
 So the project has already shifted to a fanout-backlog-first architecture, but the citation crawl step is still a missing implementation in the writing layer.
+
+## Citation Learning Policy
+
+- prefer article-like pages first
+- ignore app-store, forum, and similar non-article pages for primary structure learning
+- if article-like pages are fewer than 3, switch to `article_first_fallback`
+- in fallback mode, keep article pages as the primary learning source and use support pages only as secondary context
 
 ## What This Project Is
 

@@ -2,14 +2,16 @@ from __future__ import annotations
 
 import re
 from typing import Any, Dict, List
+from urllib.parse import urlparse
 
 import requests
 from bs4 import BeautifulSoup
 
 
-def crawl_citation_pages(urls: List[str], *, limit: int = 5, timeout: int = 20) -> List[Dict[str, Any]]:
+def crawl_citation_pages(urls: List[str], *, limit: int = 5, timeout: int = 20, max_candidates: int = 15) -> List[Dict[str, Any]]:
     pages: List[Dict[str, Any]] = []
-    for url in urls[:limit]:
+    article_count = 0
+    for url in urls[:max_candidates]:
         try:
             response = requests.get(
                 url,
@@ -27,6 +29,10 @@ def crawl_citation_pages(urls: List[str], *, limit: int = 5, timeout: int = 20) 
                     **_extract_page_features(html),
                 }
             )
+            if pages[-1]["is_article_like"]:
+                article_count += 1
+                if article_count >= limit:
+                    break
         except Exception as exc:
             pages.append(
                 {
@@ -42,16 +48,22 @@ def crawl_citation_pages(urls: List[str], *, limit: int = 5, timeout: int = 20) 
                     "has_list": False,
                     "has_faq_signal": False,
                     "word_count": 0,
+                    "is_article_like": False,
+                    "page_kind": "error",
                 }
             )
     return pages
 
 
 def analyze_citation_patterns(pages: List[Dict[str, Any]]) -> Dict[str, Any]:
-    ok_pages = [page for page in pages if page.get("status") == "ok"]
-    if not ok_pages:
+    article_pages = [page for page in pages if page.get("status") == "ok" and page.get("is_article_like")]
+    support_pages = [page for page in pages if page.get("status") == "ok" and not page.get("is_article_like")]
+    if not article_pages:
         return {
             "page_count": 0,
+            "article_page_count": 0,
+            "support_page_count": len(support_pages),
+            "learning_mode": "fallback_support_only",
             "dominant_title_pattern": "unknown",
             "common_heading_patterns": [],
             "table_presence_rate": 0.0,
@@ -66,7 +78,7 @@ def analyze_citation_patterns(pages: List[Dict[str, Any]]) -> Dict[str, Any]:
     list_count = 0
     faq_count = 0
 
-    for page in ok_pages:
+    for page in article_pages:
         title = (page.get("title") or "").lower()
         if any(token in title for token in ["best", "top"]):
             title_patterns.append("recommendation")
@@ -89,13 +101,18 @@ def analyze_citation_patterns(pages: List[Dict[str, Any]]) -> Dict[str, Any]:
     recommended_article_type = max(set(title_patterns), key=title_patterns.count)
     common_headings = sorted(heading_terms.items(), key=lambda item: item[1], reverse=True)[:8]
 
+    learning_mode = "article_first" if len(article_pages) >= 3 else "article_first_fallback"
+
     return {
-        "page_count": len(ok_pages),
+        "page_count": len(article_pages),
+        "article_page_count": len(article_pages),
+        "support_page_count": len(support_pages),
+        "learning_mode": learning_mode,
         "dominant_title_pattern": recommended_article_type,
         "common_heading_patterns": [heading for heading, _ in common_headings],
-        "table_presence_rate": round(table_count / len(ok_pages), 2),
-        "list_presence_rate": round(list_count / len(ok_pages), 2),
-        "faq_presence_rate": round(faq_count / len(ok_pages), 2),
+        "table_presence_rate": round(table_count / len(article_pages), 2),
+        "list_presence_rate": round(list_count / len(article_pages), 2),
+        "faq_presence_rate": round(faq_count / len(article_pages), 2),
         "recommended_article_type": recommended_article_type,
     }
 
@@ -116,6 +133,8 @@ def _extract_page_features(html: str) -> Dict[str, Any]:
     paragraphs = [node.get_text(" ", strip=True) for node in soup.find_all("p") if node.get_text(" ", strip=True)]
     paragraph_preview = " ".join(paragraphs[:3])[:900]
     text = soup.get_text(" ", strip=True)
+    page_kind = _classify_page_kind(title, h1, headings, urlparse((soup.find("meta", property="og:url") or {}).get("content", "") if soup.find("meta", property="og:url") else "").netloc)
+    is_article_like = _is_article_like(title, h1, headings, paragraphs)
 
     return {
         "title": title,
@@ -127,6 +146,8 @@ def _extract_page_features(html: str) -> Dict[str, Any]:
         "has_list": bool(soup.find(["ul", "ol"])),
         "has_faq_signal": any("faq" in heading.lower() or "questions" in heading.lower() for heading in headings),
         "word_count": len(text.split()),
+        "page_kind": page_kind,
+        "is_article_like": is_article_like,
     }
 
 
@@ -134,3 +155,32 @@ def _normalize_heading(text: str) -> str:
     cleaned = re.sub(r"[^a-z0-9\s]", " ", text.lower())
     cleaned = re.sub(r"\s{2,}", " ", cleaned).strip()
     return cleaned
+
+
+def _classify_page_kind(title: str, h1: str, headings: List[str], domain: str) -> str:
+    haystack = " ".join([title, h1] + headings).lower()
+    if any(token in haystack for token in ["apps on google play", "app store", "about this app", "ratings and reviews"]):
+        return "app_listing"
+    if any(token in haystack for token in ["reddit", "community", "forum", "comments"]):
+        return "forum"
+    if any(token in haystack for token in ["best", "top", "guide", "how to", "comparison", "vs"]):
+        return "article"
+    return "unknown"
+
+
+def _is_article_like(title: str, h1: str, headings: List[str], paragraphs: List[str]) -> bool:
+    if not title or not h1:
+        return False
+    if len(paragraphs) < 4:
+        return False
+    if len(" ".join(paragraphs[:8]).split()) < 350:
+        return False
+    heading_count = len([heading for heading in headings if heading.strip()])
+    if heading_count < 3:
+        return False
+    haystack = " ".join([title, h1] + headings).lower()
+    if any(token in haystack for token in ["apps on google play", "app store", "ratings and reviews", "similar apps"]):
+        return False
+    if any(token in haystack for token in ["reddit", "community", "comments", "leave a reply"]):
+        return False
+    return True
