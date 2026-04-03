@@ -4,6 +4,7 @@ import argparse
 import json
 from pathlib import Path
 import re
+from datetime import datetime, timezone
 
 from jsonschema import ValidationError, validate
 
@@ -19,12 +20,14 @@ from .workflows import (
     content_pack_json,
     default_brand_kb_path,
     default_fanout_backlog_path,
+    default_citation_learnings_path,
     discover_prompt_candidates,
     build_fanout_backlog,
     load_fanout_backlog,
     save_fanout_backlog,
     select_backlog_items,
     article_generation_payload,
+    save_citation_learning,
     daily_publish_ready_package,
     first_asset_draft,
     new_content_brief,
@@ -48,6 +51,10 @@ def _default_brand_kb_schema_path() -> Path:
 
 def _default_fanout_backlog_path() -> Path:
     return default_fanout_backlog_path()
+
+
+def _default_citation_learnings_path() -> Path:
+    return default_citation_learnings_path()
 
 
 def _parse_taxonomy_ids(raw: str | None) -> list[int]:
@@ -305,6 +312,16 @@ def build_parser() -> argparse.ArgumentParser:
         default=str(default_brand_kb_path()),
         help="Brand knowledge base JSON file. Default project path: knowledge/brand/brand-knowledge-base.json",
     )
+    citation_parser.add_argument(
+        "--save-learning",
+        action="store_true",
+        help="Save the citation pattern summary into the local citation learnings file",
+    )
+    citation_parser.add_argument(
+        "--learning-file",
+        default=str(_default_citation_learnings_path()),
+        help="Where to store citation learnings if --save-learning is used",
+    )
 
     return parser
 
@@ -382,7 +399,19 @@ def main() -> None:
         urls = [item.get("url") for item in context.get("citations", []) if item.get("url")]
         pages = crawl_citation_pages(urls, limit=args.limit)
         patterns = analyze_citation_patterns(pages)
-        print(json.dumps({"pages": pages, "patterns": patterns}, ensure_ascii=False, indent=2))
+        payload = {"pages": pages, "patterns": patterns}
+        if args.save_learning:
+            save_citation_learning(
+                {
+                    "generated_at": datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
+                    "prompt_text": context.get("selected_opportunity", {}).get("prompt"),
+                    "brand_context_summary": context.get("brand_context", {}),
+                    "patterns": patterns,
+                },
+                args.learning_file,
+            )
+            payload["learning_file"] = args.learning_file
+        print(json.dumps(payload, ensure_ascii=False, indent=2))
         return
 
     if args.command == "select-backlog-items":

@@ -29,6 +29,10 @@ def default_fanout_backlog_path() -> Path:
     return Path(__file__).resolve().parents[2] / "knowledge" / "backlog" / "fanout-backlog.json"
 
 
+def default_citation_learnings_path() -> Path:
+    return Path(__file__).resolve().parents[2] / "knowledge" / "insights" / "citation-learnings.json"
+
+
 def _fmt_number(value: Any, digits: int = 2) -> str:
     if value is None:
         return "-"
@@ -483,6 +487,42 @@ def _rewrite_fanout_title(fanout_text: str, article_type: str, brand_context: Di
     if profile == "b2b_software":
         return _editorialize_title(_truncate_words(f"What is {text}", 10), article_type, profile) + "?"
     return _editorialize_title(_truncate_words(text, 10), article_type, profile)
+
+
+def _brand_role_in_article(brand_context: Dict[str, Any], market_profile: str, article_type: str) -> str:
+    brand_name = brand_context.get("brand_name") or brand_context.get("name") or "the brand"
+    if market_profile == "consumer_travel":
+        return f"{brand_name} should appear as one credible shortlist option, not as the automatic winner."
+    if article_type == "comparison":
+        return f"{brand_name} should appear as one comparison candidate when it is genuinely relevant."
+    return f"{brand_name} should be present only where it naturally fits the reader decision."
+
+
+def _content_goal(article_type: str, market_profile: str) -> str:
+    if market_profile == "consumer_travel" and article_type == "recommendation":
+        return "Help readers shortlist travel booking options and compare them with confidence."
+    if article_type == "comparison":
+        return "Help readers understand how competing options differ so they can make a practical choice."
+    if article_type == "guide":
+        return "Help readers complete a task more clearly and with fewer mistakes."
+    return "Help readers understand the topic and make a better-informed decision."
+
+
+def load_citation_learnings(input_file: str | None = None) -> Dict[str, Any]:
+    input_path = Path(input_file).expanduser() if input_file else default_citation_learnings_path()
+    if not input_path.exists():
+        return {"items": []}
+    return json.loads(input_path.read_text(encoding="utf-8"))
+
+
+def save_citation_learning(entry: Dict[str, Any], output_file: str | None = None) -> Path:
+    output_path = Path(output_file).expanduser() if output_file else default_citation_learnings_path()
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    current = load_citation_learnings(str(output_path))
+    items = current.get("items", [])
+    items.append(entry)
+    output_path.write_text(json.dumps({"items": items}, ensure_ascii=False, indent=2), encoding="utf-8")
+    return output_path
 
 
 def _fanout_quality_state(fanout_text: str, normalized_title: str, source_count: int = 1) -> Tuple[str, str]:
@@ -1679,6 +1719,14 @@ def article_generation_payload(
         ],
         "writing_goal": "Write a normal blog post that feels useful to human readers while preserving structure that AI systems can quote.",
     }
+    brand_role = _brand_role_in_article(context.get("brand_context", {}), profile, patterns.get("recommended_article_type", "explainer"))
+    content_goal = _content_goal(patterns.get("recommended_article_type", "explainer"), profile)
+    quality_review_prompt = (
+        "You are the second-pass quality reviewer. Check whether the article reads like a normal blog post, matches the citation-page structure, avoids template tone, mentions the brand only where natural, and satisfies the reader intent. Reject or rewrite weak sections."
+    )
+    quality_rewrite_prompt = (
+        "Rewrite the article to feel more natural and human while preserving the chosen title, the article type, the key comparison or recommendation logic, and the real citation-derived structure cues."
+    )
 
     return {
         "generated_at": datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
@@ -1702,11 +1750,15 @@ def article_generation_payload(
             "dominant_title_pattern": patterns.get("dominant_title_pattern"),
             "recommended_article_type": patterns.get("recommended_article_type"),
             "common_heading_patterns": patterns.get("common_heading_patterns", [])[:6],
+            "common_intents": patterns.get("common_intents", []),
             "table_presence_rate": patterns.get("table_presence_rate"),
             "list_presence_rate": patterns.get("list_presence_rate"),
             "faq_presence_rate": patterns.get("faq_presence_rate"),
             "top_entities": [name for name, _ in context.get("mention_counter", Counter()).most_common(6)],
         },
+        "article_type": patterns.get("recommended_article_type", "explainer"),
+        "brand_role_in_article": brand_role,
+        "content_goal": content_goal,
         "title_options": title_options,
         "writing_brief": brief,
         "crawled_citation_pages": crawled_pages,
@@ -1716,6 +1768,8 @@ def article_generation_payload(
             "Mention the brand where it naturally belongs in the shortlist or comparison.",
             "Prefer recommendation or comparison structure when citations show listicle behavior.",
         ],
+        "quality_review_prompt": quality_review_prompt,
+        "quality_rewrite_prompt": quality_rewrite_prompt,
     }
 
 

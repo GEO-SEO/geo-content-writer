@@ -74,6 +74,7 @@ def analyze_citation_patterns(pages: List[Dict[str, Any]]) -> Dict[str, Any]:
 
     title_patterns: List[str] = []
     heading_terms: Dict[str, int] = {}
+    intent_terms: Dict[str, int] = {}
     table_count = 0
     list_count = 0
     faq_count = 0
@@ -93,6 +94,8 @@ def analyze_citation_patterns(pages: List[Dict[str, Any]]) -> Dict[str, Any]:
             normalized = _normalize_heading(heading)
             if normalized:
                 heading_terms[normalized] = heading_terms.get(normalized, 0) + 1
+        for intent in _page_intents(page):
+            intent_terms[intent] = intent_terms.get(intent, 0) + 1
 
         table_count += 1 if page.get("has_table") else 0
         list_count += 1 if page.get("has_list") else 0
@@ -100,6 +103,7 @@ def analyze_citation_patterns(pages: List[Dict[str, Any]]) -> Dict[str, Any]:
 
     recommended_article_type = max(set(title_patterns), key=title_patterns.count)
     common_headings = sorted(heading_terms.items(), key=lambda item: item[1], reverse=True)[:8]
+    common_intents = sorted(intent_terms.items(), key=lambda item: item[1], reverse=True)[:8]
 
     learning_mode = "article_first" if len(article_pages) >= 3 else "article_first_fallback"
 
@@ -110,6 +114,7 @@ def analyze_citation_patterns(pages: List[Dict[str, Any]]) -> Dict[str, Any]:
         "learning_mode": learning_mode,
         "dominant_title_pattern": recommended_article_type,
         "common_heading_patterns": [heading for heading, _ in common_headings],
+        "common_intents": [intent for intent, _ in common_intents],
         "table_presence_rate": round(table_count / len(article_pages), 2),
         "list_presence_rate": round(list_count / len(article_pages), 2),
         "faq_presence_rate": round(faq_count / len(article_pages), 2),
@@ -155,6 +160,31 @@ def _normalize_heading(text: str) -> str:
     cleaned = re.sub(r"[^a-z0-9\s]", " ", text.lower())
     cleaned = re.sub(r"\s{2,}", " ", cleaned).strip()
     return cleaned
+
+
+def _page_intents(page: Dict[str, Any]) -> List[str]:
+    haystack = " ".join(
+        [
+            page.get("title", ""),
+            page.get("meta_description", ""),
+            page.get("h1", ""),
+            " ".join(page.get("headings", [])[:12]),
+            page.get("paragraph_preview", ""),
+        ]
+    ).lower()
+    intents: List[str] = []
+    checks = {
+        "find_best_option": ["best", "top", "must-have", "top picks"],
+        "compare_options": ["vs", "compare", "comparison", "which one"],
+        "choose_criteria": ["what to look for", "how to choose", "criteria", "factors"],
+        "price_value": ["price", "cheap", "discount", "deal", "value"],
+        "trust_support": ["reviews", "support", "ratings", "reliable", "trust"],
+        "workflow_convenience": ["all in one", "one place", "plan", "itinerary", "book"],
+    }
+    for label, keywords in checks.items():
+        if any(keyword in haystack for keyword in keywords):
+            intents.append(label)
+    return intents or ["general_information"]
 
 
 def _classify_page_kind(title: str, h1: str, headings: List[str], domain: str) -> str:
