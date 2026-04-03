@@ -1,0 +1,24 @@
+{
+  "generated_at": "2026-04-03T00:00:00Z",
+  "time_window_days": 1,
+  "fanout_backlog": [
+    {
+      "backlog_id": "b1",
+      "fanout_text": "best GEO tools for agencies",
+      "normalized_title": "best geo tools for agencies",
+      "status": "write_now",
+      "overlap_status": "new",
+      "source_count": 3,
+      "article_type": "comparison"
+    },
+    {
+      "backlog_id": "b2",
+      "fanout_text": "how to measure AI visibility for a brand",
+      "normalized_title": "how to measure ai visibility for a brand",
+      "status": "write_now",
+      "overlap_status": "new",
+      "source_count": 2,
+      "article_type": "guide"
+    }
+  ]
+}

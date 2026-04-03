@@ -8,7 +8,7 @@ import requests
 from bs4 import BeautifulSoup
 
 
-def crawl_citation_pages(urls: List[str], *, limit: int = 5, timeout: int = 20, max_candidates: int = 15) -> List[Dict[str, Any]]:
+def crawl_citation_pages(urls: List[str], *, limit: int = 5, timeout: int = 20, max_candidates: int = 60) -> List[Dict[str, Any]]:
     pages: List[Dict[str, Any]] = []
     article_count = 0
     for url in urls[:max_candidates]:

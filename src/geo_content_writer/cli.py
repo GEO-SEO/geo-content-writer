@@ -20,11 +20,16 @@ from .workflows import (
     content_pack_json,
     default_brand_kb_path,
     default_fanout_backlog_path,
+    default_published_registry_path,
     default_citation_learnings_path,
     discover_prompt_candidates,
     build_fanout_backlog,
     load_fanout_backlog,
     save_fanout_backlog,
+    load_published_registry,
+    published_keys_from_registry,
+    add_published_item,
+    save_published_registry,
     select_backlog_items,
     article_generation_payload,
     article_generation_payload_from_backlog_row,
@@ -149,6 +154,30 @@ def build_parser() -> argparse.ArgumentParser:
     )
     select_backlog_parser.add_argument("--status", default="write_now", help="Which backlog status to select from")
     select_backlog_parser.add_argument("--top-n", type=int, default=10, help="How many items to return")
+    select_backlog_parser.add_argument(
+        "--published-file",
+        default=str(default_published_registry_path()),
+        help="Published registry JSON file used to avoid re-writing the same fanout",
+    )
+    select_backlog_parser.add_argument(
+        "--include-published",
+        action="store_true",
+        help="Include items even if they already appear in the published registry",
+    )
+
+    mark_published_parser = subparsers.add_parser(
+        "mark-published",
+        help="Add one item to the published registry to prevent future duplicates",
+    )
+    mark_published_parser.add_argument(
+        "--published-file",
+        default=str(default_published_registry_path()),
+        help="Published registry JSON file to update",
+    )
+    mark_published_parser.add_argument("--backlog-id", default=None, help="Optional backlog_id to record")
+    mark_published_parser.add_argument("--fanout-text", default=None, help="Optional fanout text to canonicalize")
+    mark_published_parser.add_argument("--canonical-key", default=None, help="Optional canonical key override")
+    mark_published_parser.add_argument("--url", default=None, help="Optional published URL to record")
     content_pack_parser = subparsers.add_parser(
         "content-pack",
         aliases=["pack"],
@@ -445,13 +474,29 @@ def main() -> None:
 
     if args.command == "select-backlog-items":
         backlog = load_fanout_backlog(args.input_file)
+        published_keys = None
+        if not args.include_published:
+            published_keys = published_keys_from_registry(load_published_registry(args.published_file))
         print(
             json.dumps(
-                select_backlog_items(backlog, limit=args.top_n, status=args.status),
+                select_backlog_items(backlog, limit=args.top_n, status=args.status, published_keys=published_keys),
                 ensure_ascii=False,
                 indent=2,
             )
         )
+        return
+
+    if args.command == "mark-published":
+        registry = load_published_registry(args.published_file)
+        registry = add_published_item(
+            registry,
+            backlog_id=args.backlog_id,
+            canonical_key=args.canonical_key,
+            fanout_text=args.fanout_text,
+            published_url=args.url,
+        )
+        save_published_registry(registry, args.published_file)
+        print(json.dumps(registry, ensure_ascii=False, indent=2))
         return
 
     if args.command == "article-generation-payload":

@@ -830,6 +830,31 @@ def _response_preview(text: str, limit: int = 420) -> str:
     return flat[:limit] + ("..." if len(flat) > limit else "")
 
 
+def _extract_response_text(detail: Dict[str, Any]) -> str:
+    if not detail:
+        return ""
+    for key in ["answer", "response", "content", "text", "output", "final", "message"]:
+        value = detail.get(key)
+        if isinstance(value, str) and value.strip():
+            return value.strip()
+    data = detail.get("data")
+    if isinstance(data, dict):
+        for key in ["answer", "response", "content", "text", "output", "final", "message"]:
+            value = data.get(key)
+            if isinstance(value, str) and value.strip():
+                return value.strip()
+    return ""
+
+
+def _response_previews(details: List[Dict[str, Any]], limit: int = 3) -> List[str]:
+    previews: List[str] = []
+    for item in details[:limit]:
+        text = _extract_response_text(item)
+        if text:
+            previews.append(_response_preview(text))
+    return previews
+
+
 def _summarize_mentions(detail: Dict[str, Any], limit: int = 5) -> List[str]:
     mentions = detail.get("mentions") or []
     lines: List[str] = []
@@ -1349,13 +1374,45 @@ def _top_citation_urls(citations: List[Dict[str, Any]], limit: int = 5) -> List[
     return urls
 
 
-def _diversified_citation_urls(citations: List[Dict[str, Any]], limit: int = 5, max_pool: int = 20) -> List[str]:
+def _diversified_citation_urls(citations: List[Dict[str, Any]], limit: int = 5, max_pool: int = 60) -> List[str]:
     ranked = _top(citations, "citationCount", max_pool)
+
+    def is_hard_excluded(domain: str, url: str, page_type: str) -> bool:
+        if domain in {"apps.apple.com", "play.google.com"}:
+            return True
+        if domain.endswith("reddit.com") or domain == "reddit.com":
+            return True
+        if any(token in url for token in ["/store/apps", "apps.apple.com", "play.google.com"]):
+            return True
+        if "app store" in page_type or "app" == page_type:
+            return True
+        if any(token in page_type for token in ["forum", "community", "ugc"]):
+            return True
+        return False
+
+    def is_article_like_type(page_type: str) -> bool:
+        pt = page_type.lower()
+        return any(token in pt for token in ["article", "listicle", "comparison", "guide", "review", "blog"])
+
+    preferred: List[Dict[str, Any]] = []
+    support: List[Dict[str, Any]] = []
+    for item in ranked:
+        url = (item.get("url") or "").strip()
+        if not url:
+            continue
+        domain = (item.get("domain") or "").strip().lower()
+        page_type = (item.get("pageType") or "unknown").strip()
+        if is_hard_excluded(domain, url, page_type.lower()):
+            continue
+        bucket = preferred if is_article_like_type(page_type) else support
+        bucket.append(item)
+
+    pool = preferred + support
     selected: List[str] = []
     seen_domains: set[str] = set()
     seen_types: set[str] = set()
 
-    for item in ranked:
+    for item in pool:
         url = (item.get("url") or "").strip()
         domain = (item.get("domain") or "").strip().lower()
         page_type = (item.get("pageType") or "unknown").strip().lower()
@@ -1365,10 +1422,10 @@ def _diversified_citation_urls(citations: List[Dict[str, Any]], limit: int = 5, 
             selected.append(url)
             seen_domains.add(domain)
             seen_types.add(page_type)
-        if len(selected) >= limit:
+        if len(selected) >= max(limit * 8, 24):
             return selected
 
-    for item in ranked:
+    for item in pool:
         url = (item.get("url") or "").strip()
         page_type = (item.get("pageType") or "unknown").strip().lower()
         if not url or url in selected:
@@ -1376,15 +1433,15 @@ def _diversified_citation_urls(citations: List[Dict[str, Any]], limit: int = 5, 
         if page_type not in seen_types:
             selected.append(url)
             seen_types.add(page_type)
-        if len(selected) >= limit:
+        if len(selected) >= max(limit * 8, 24):
             return selected
 
-    for item in ranked:
+    for item in pool:
         url = (item.get("url") or "").strip()
         if not url or url in selected:
             continue
         selected.append(url)
-        if len(selected) >= limit:
+        if len(selected) >= max(limit * 8, 24):
             return selected
     return selected
 
@@ -1714,11 +1771,25 @@ def _writer_prompt_from_payload(payload: Dict[str, Any]) -> str:
     brand_role = payload.get("brand_role_in_article", "")
     content_goal = payload.get("content_goal", "")
     rules = payload.get("writing_rules", [])
+    outline = payload.get("outline_bullets") or []
+    response_previews = payload.get("response_previews") or []
+    reference_candidates = payload.get("reference_candidates") or []
+    decision_table_template = payload.get("decision_table_template") or []
+
+    h1_title = title_options[0] if title_options else "Untitled Article"
 
     lines = [
         "You are a blog editor, not a document generator.",
         "",
         "Write one complete blog article for publication.",
+        "",
+        "Output format (strict):",
+        "- Markdown only.",
+        f"- Use this H1 title exactly: {h1_title}",
+        "- Include these sections in order: ## Outline, ## Article.",
+        "- Inside ## Article, include: _Last updated: YYYY-MM-DD_, ## TL;DR, 3-5 H2 sections, ## Decision Table, ## FAQ, ## References, ## Conclusion, ## Final Takeaway.",
+        "- For each H2 section, include: a short paragraph, a 'Steps to apply this:' list, an 'Example:' line, and a 'Common pitfall:' line.",
+        "- Use only the reference URLs provided below. Do not invent citations or numbers.",
         "",
         "Use these inputs:",
         f"- Selected fanout: {selected.get('fanout_text', '')}",
@@ -1729,7 +1800,7 @@ def _writer_prompt_from_payload(payload: Dict[str, Any]) -> str:
         f"- Brand role: {brand_role}",
         f"- Title options: {', '.join(title_options)}",
         "",
-        "Citation pattern summary:",
+        "Citation pattern summary (learn structure, do not mention this section in the article):",
         f"- Dominant page type: {citation.get('dominant_page_type', '')}",
         f"- Dominant title pattern: {citation.get('dominant_title_pattern', '')}",
         f"- Common intents: {', '.join(citation.get('common_intents', []))}",
@@ -1740,8 +1811,54 @@ def _writer_prompt_from_payload(payload: Dict[str, Any]) -> str:
         f"- Must cover: {', '.join(brief.get('must_cover', []))}",
         f"- Must avoid: {', '.join(brief.get('must_avoid', []))}",
         "",
-        "Rules:",
+        "Suggested outline bullets (use these as the Outline section):",
     ]
+    if outline:
+        for bullet in outline:
+            lines.append(f"- {bullet}")
+    else:
+        lines.extend(
+            [
+                "- Intro: why this matters and what the reader will get",
+                "- H2: definition or framing",
+                "- H2: evaluation criteria or comparison approach",
+                "- H2: realistic workflow or decision process",
+                "- H2: common mistakes and fixes",
+                "- FAQ",
+                "- References",
+            ]
+        )
+
+    lines.extend(["", "Decision table template (use as the Decision Table section):", ""])
+    if decision_table_template:
+        lines.extend(decision_table_template)
+        lines.extend([""])
+    else:
+        lines.extend(
+            [
+                "| Evaluation area | What to look for | Why it matters |",
+                "|---|---|---|",
+                "| Coverage | What the reader should test or compare | Helps avoid false confidence |",
+                "| Evidence | What signals to trust | Prevents vague claims |",
+                "| Workflow | How the process actually works | Makes the advice usable |",
+                "",
+            ]
+        )
+
+    lines.extend(["AI answer signals (background only; do not claim as facts unless supported by references):"])
+    if response_previews:
+        for item in response_previews:
+            lines.append(f"- {item}")
+    else:
+        lines.append("- (no response previews available)")
+
+    lines.extend(["", "Reference URLs you may cite (use only these):", ""])
+    if reference_candidates:
+        lines.extend(reference_candidates)
+    else:
+        lines.append("- (no crawlable article references available; keep claims general and avoid hard numbers)")
+
+    lines.extend(["", "Rules:"])
     for rule in rules:
         lines.append(f"- {rule}")
     lines.extend(
@@ -1751,7 +1868,8 @@ def _writer_prompt_from_payload(payload: Dict[str, Any]) -> str:
             "- Do not mention the internal analysis process.",
             "- Do not mention citation patterns or what the cited pages are doing.",
             "- Mention the brand only where it naturally fits the reader decision.",
-            "- Write like a normal blog post for humans.",
+            "- Avoid template tone and filler phrases.",
+            "- Keep paragraphs short and use explicit transitions.",
         ]
     )
     return "\n".join(lines)
@@ -1794,16 +1912,18 @@ def article_generation_payload(
     selected = context["selected_opportunity"]
     topic = selected.get("topic", "")
     prompt_text_value = selected.get("prompt", "")
-    reader_topic = _reader_topic_phrase(prompt_text_value, topic, context.get("brand_context", {}))
-    profile = _market_profile(prompt_text_value, topic, context.get("brand_context", {}))
+    brand_context = context.get("brand_context", {})
+    fanout_seed = ((context.get("api_fanout_prompts") or [])[:1] or [prompt_text_value])[0]
+    reader_topic = _reader_topic_phrase(fanout_seed, topic, brand_context)
+    profile = _market_profile(fanout_seed, topic, brand_context)
     citation_urls = _diversified_citation_urls(context.get("citations", []), limit=citation_limit)
     crawled_pages = crawl_citation_pages(citation_urls, limit=citation_limit)
     patterns = analyze_citation_patterns(crawled_pages)
     title_options = _dedupe_keep_order(
         [
             asset.get("asset_title", ""),
-            _rewrite_fanout_title(prompt_text_value, patterns.get("recommended_article_type", "explainer"), context.get("brand_context", {})),
-            _rewrite_fanout_title(reader_topic, patterns.get("recommended_article_type", "explainer"), context.get("brand_context", {})),
+            _rewrite_fanout_title(fanout_seed, patterns.get("recommended_article_type", "explainer"), brand_context),
+            _rewrite_fanout_title(reader_topic, patterns.get("recommended_article_type", "explainer"), brand_context),
         ]
     )[:3]
 
@@ -1823,7 +1943,7 @@ def article_generation_payload(
         ],
         "writing_goal": "Write a normal blog post that feels useful to human readers while preserving structure that AI systems can quote.",
     }
-    brand_role = _brand_role_in_article(context.get("brand_context", {}), profile, patterns.get("recommended_article_type", "explainer"))
+    brand_role = _brand_role_in_article(brand_context, profile, patterns.get("recommended_article_type", "explainer"))
     content_goal = _content_goal(patterns.get("recommended_article_type", "explainer"), profile)
     word_target = _word_count_target(patterns.get("recommended_article_type", "explainer"))
     quality_review_prompt = (
@@ -1846,7 +1966,7 @@ def article_generation_payload(
             "primary_intention": context.get("primary_intent"),
         },
         "selected_fanout": {
-            "fanout_text": prompt_text_value,
+            "fanout_text": fanout_seed,
             "reader_topic": reader_topic,
             "market_profile": profile,
         },
@@ -1870,6 +1990,19 @@ def article_generation_payload(
         "title_options": title_options,
         "writing_brief": brief,
         "crawled_citation_pages": crawled_pages,
+        "citation_url_pool": citation_urls,
+        "response_previews": _response_previews(context.get("response_details", []), limit=2),
+        "outline_bullets": [line[2:] for line in _article_outline_lines_for_profile(reader_topic, profile) if line.startswith("- ")],
+        "decision_table_template": (
+            _consumer_comparison_table_lines()
+            if profile == "consumer_travel"
+            else _comparison_table_lines(reader_topic)
+        ),
+        "reference_candidates": _reference_lines_from_crawled_pages(
+            [page for page in crawled_pages if page.get("status") == "ok" and page.get("is_article_like")]
+            or [page for page in crawled_pages if page.get("status") == "ok"],
+            limit=8,
+        ),
         "writing_rules": [
             "Write like a blog editor, not a document generator.",
             "Use the citation pages to learn structure, not to copy wording.",
@@ -1973,6 +2106,19 @@ def article_generation_payload_from_backlog_row(
         "title_options": title_options,
         "writing_brief": brief,
         "crawled_citation_pages": crawled_pages,
+        "citation_url_pool": citation_urls,
+        "response_previews": _response_previews(context.get("response_details", []), limit=2),
+        "outline_bullets": [line[2:] for line in _article_outline_lines_for_profile(reader_topic, profile) if line.startswith("- ")],
+        "decision_table_template": (
+            _consumer_comparison_table_lines()
+            if profile == "consumer_travel"
+            else _comparison_table_lines(reader_topic)
+        ),
+        "reference_candidates": _reference_lines_from_crawled_pages(
+            [page for page in crawled_pages if page.get("status") == "ok" and page.get("is_article_like")]
+            or [page for page in crawled_pages if page.get("status") == "ok"],
+            limit=8,
+        ),
         "writing_rules": [
             "Write like a blog editor, not a document generator.",
             "Use the citation pages to learn structure, not to copy wording.",
@@ -1990,7 +2136,7 @@ def article_generation_payload_from_backlog_row(
     return payload
 
 
-def draft_article_from_payload(payload: Dict[str, Any]) -> str:
+def _draft_article_from_payload_v1(payload: Dict[str, Any]) -> str:
     selected = payload.get("selected_fanout", {})
     brief = payload.get("writing_brief", {})
     citations = payload.get("citation_pattern_summary", {})
@@ -2153,7 +2299,7 @@ def draft_article_from_payload(payload: Dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
-def draft_article_from_payload(payload: Dict[str, Any]) -> str:
+def _draft_article_from_payload_v2(payload: Dict[str, Any]) -> str:
     selected = payload.get("selected_fanout", {})
     citations = payload.get("citation_pattern_summary", {})
     title = (payload.get("title_options") or ["Untitled Article"])[0]
@@ -2559,6 +2705,10 @@ def draft_article_from_payload(payload: Dict[str, Any]) -> str:
     return _force_minimum_length(article, article_type, payload)
 
 
+def draft_article_from_payload(payload: Dict[str, Any]) -> str:
+    return _draft_article_from_payload_v2(payload)
+
+
 def daily_publish_ready_package(
     client: DagenoClient,
     days: int = 1,
@@ -2740,6 +2890,8 @@ def _build_content_pack_context(
         "citations": citations,
         "mention_counter": mention_counter,
         "dominant_page_type": dominant_page_type,
+        "api_fanout_prompts": api_fanout,
+        "guessed_fanout_prompts": guessed_fanout,
         "fanout_prompts": fanout_prompts,
         "keyword_cluster": keyword_cluster,
         "keyword_volume_rows": keyword_volume_rows,
@@ -2893,14 +3045,98 @@ def load_fanout_backlog(input_file: str | None = None) -> Dict[str, Any]:
     return json.loads(input_path.read_text(encoding="utf-8"))
 
 
+def default_published_registry_path() -> Path:
+    return Path(__file__).resolve().parents[2] / "knowledge" / "backlog" / "published.json"
+
+
+def load_published_registry(input_file: str | None = None) -> Dict[str, Any]:
+    input_path = Path(input_file).expanduser() if input_file else default_published_registry_path()
+    if not input_path.exists():
+        return {"items": []}
+    payload = json.loads(input_path.read_text(encoding="utf-8"))
+    if isinstance(payload, list):
+        return {"items": payload}
+    if isinstance(payload, dict) and "items" in payload:
+        return payload
+    return {"items": []}
+
+
+def published_keys_from_registry(registry: Dict[str, Any]) -> set[str]:
+    keys: set[str] = set()
+    for item in registry.get("items", []) or []:
+        if isinstance(item, str):
+            keys.add(item.strip().lower())
+            continue
+        if not isinstance(item, dict):
+            continue
+        backlog_id = (item.get("backlog_id") or "").strip().lower()
+        canonical_key = (item.get("canonical_key") or "").strip().lower()
+        if backlog_id:
+            keys.add(backlog_id)
+        if canonical_key:
+            keys.add(canonical_key)
+    return keys
+
+
+def save_published_registry(registry: Dict[str, Any], output_file: str | None = None) -> Path:
+    output_path = Path(output_file).expanduser() if output_file else default_published_registry_path()
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(json.dumps(registry, ensure_ascii=False, indent=2), encoding="utf-8")
+    return output_path
+
+
+def add_published_item(
+    registry: Dict[str, Any],
+    *,
+    backlog_id: str | None = None,
+    canonical_key: str | None = None,
+    fanout_text: str | None = None,
+    published_url: str | None = None,
+) -> Dict[str, Any]:
+    items = registry.get("items")
+    if not isinstance(items, list):
+        items = []
+        registry["items"] = items
+
+    if not canonical_key:
+        canonical_key = _canonical_fanout_key(fanout_text or "")
+
+    payload: Dict[str, Any] = {
+        "published_at": datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
+    }
+    if backlog_id:
+        payload["backlog_id"] = backlog_id
+    if canonical_key:
+        payload["canonical_key"] = canonical_key
+    if published_url:
+        payload["url"] = published_url
+
+    keys = published_keys_from_registry(registry)
+    if (backlog_id or "").strip().lower() in keys:
+        return registry
+    if (canonical_key or "").strip().lower() in keys:
+        return registry
+
+    items.append(payload)
+    return registry
+
+
 def select_backlog_items(
     backlog: Dict[str, Any],
     *,
     limit: int = 10,
     status: str = "write_now",
+    published_keys: set[str] | None = None,
 ) -> Dict[str, Any]:
     article_type_rank = {"comparison": 0, "recommendation": 1, "guide": 2, "review": 3, "explainer": 4}
     rows = [row for row in backlog.get("fanout_backlog", []) if row.get("status") == status]
+    if published_keys:
+        rows = [
+            row
+            for row in rows
+            if (row.get("backlog_id") or "").strip().lower() not in published_keys
+            and _canonical_fanout_key(row.get("fanout_text", "")) not in published_keys
+        ]
     rows = sorted(
         rows,
         key=lambda row: (
