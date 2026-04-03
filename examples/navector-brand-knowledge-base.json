@@ -1,0 +1,37 @@
+{
+  "brand_name": "Navector",
+  "domain": "navector-group.com",
+  "category": "Industrial screening and powder handling equipment manufacturer",
+  "one_liner": "Navector provides industrial screening, sifting, and powder handling solutions for sectors such as food, pharmaceuticals, minerals, and additive manufacturing.",
+  "target_audience": [
+    "Manufacturing engineers evaluating screening equipment",
+    "Procurement teams sourcing industrial sifting systems",
+    "Operations leaders comparing powder handling solutions"
+  ],
+  "differentiators": [
+    "Ultrasonic and high-accuracy screening technology for fine powders",
+    "Gyratory, tumbler, and vibrating screening equipment across multiple throughput levels",
+    "Application coverage spanning food, pharmaceuticals, minerals, and 3D metal additive manufacturing"
+  ],
+  "proof_points": [
+    "Offers ultrasonic vibrating screens, gyratory sifters, and tumbler screening machines",
+    "Serves multiple industrial sectors with powder handling and separation workflows",
+    "Positions itself as a full-chain powder equipment solutions provider"
+  ],
+  "core_messages": [
+    "Industrial buyers care about throughput, accuracy, reliability, and total process fit",
+    "Equipment comparisons should focus on application fit, operating conditions, and maintenance realities",
+    "Powder handling decisions are operational decisions, not just spec-sheet decisions"
+  ],
+  "preferred_cta": "Encourage readers to compare their screening requirements, shortlist the right equipment class, and contact Navector if they need a fit assessment for their specific process.",
+  "prohibited_claims": [
+    "Do not claim universal best-in-market performance without evidence",
+    "Do not claim exact efficiency, cost savings, or ROI figures without support",
+    "Do not imply every application has the same machine recommendation"
+  ],
+  "tone_guidelines": [
+    "Practical",
+    "Technical but clear",
+    "Buyer-side and evidence-aware"
+  ]
+}

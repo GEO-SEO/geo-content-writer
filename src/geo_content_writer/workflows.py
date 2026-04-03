@@ -2506,11 +2506,18 @@ def article_generation_payload_from_backlog_row(
         "crawled_citation_pages": crawled_pages,
         "citation_url_pool": citation_urls,
         "response_previews": _response_previews(context.get("response_details", []), limit=2),
-        "outline_bullets": [line[2:] for line in _article_outline_lines_for_profile(reader_topic, profile) if line.startswith("- ")],
+        "outline_bullets": [
+            line[2:]
+            for line in _article_outline_lines_for_profile(
+                editorial_brief.get("reader_topic", ""),
+                editorial_brief.get("market_profile", ""),
+            )
+            if line.startswith("- ")
+        ],
         "decision_table_template": (
             _consumer_comparison_table_lines()
-            if profile == "consumer_travel"
-            else _comparison_table_lines(reader_topic)
+            if editorial_brief.get("market_profile") == "consumer_travel"
+            else _comparison_table_lines(editorial_brief.get("reader_topic", ""))
         ),
         "reference_candidates": _reference_lines_from_crawled_pages(
             [page for page in crawled_pages if page.get("status") == "ok" and page.get("is_article_like")]
@@ -3423,8 +3430,8 @@ def draft_article_from_payload(payload: Dict[str, Any]) -> str:
     )
 
 
-def draft_article_from_payload(payload: Dict[str, Any]) -> str:
-    return _draft_article_from_payload_v2(payload)
+def _deprecated_draft_article_from_payload_dispatch(payload: Dict[str, Any]) -> str:
+    return _deprecated_draft_article_from_payload_v2(payload)
 
 
 def daily_publish_ready_package(
@@ -3604,7 +3611,7 @@ def _build_content_pack_context(
         "mention_counter": mention_counter,
         "dominant_page_type": dominant_page_type,
         "api_fanout_prompts": api_fanout,
-        "guessed_fanout_prompts": guessed_fanout,
+        "guessed_fanout_prompts": [],
         "fanout_prompts": fanout_prompts,
         "keyword_cluster": keyword_cluster,
         "keyword_volume_rows": keyword_volume_rows,
