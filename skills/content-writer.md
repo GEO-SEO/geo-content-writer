@@ -5,7 +5,7 @@ description: >
   write one publish-ready article from one selected fanout item.
 metadata:
   author: GEO-SEO
-  version: "0.5.0"
+  version: "0.6.0"
   homepage: https://github.com/GEO-SEO/geo-content-writer
   primaryEnv: DAGENO_API_KEY
   tags:
@@ -28,7 +28,7 @@ metadata:
 
 # Content Writer
 
-Use this skill to turn Dageno prompt opportunities into a real-fanout backlog and then produce one publish-ready article from one selected fanout item.
+Use this skill to turn Dageno prompt opportunities into a real-fanout backlog and then produce one backlog-row-first editorial package for one selected fanout item.
 
 ## Fixed Workflow
 
@@ -48,13 +48,14 @@ Use this skill to turn Dageno prompt opportunities into a real-fanout backlog an
 
 7. crawl top citation pages for the selected fanout
 8. analyze citation patterns
-9. choose article type
-10. rewrite the title into reader language
-11. generate one publish-ready article
+9. build one editorial brief from one selected backlog row
+10. generate section drafting instructions
+11. generate section review instructions
+12. assemble one publish-ready article
 
 ### D. Distribution Layer
 
-12. publish to WordPress draft or publish status
+13. publish to WordPress draft or publish status
 
 ## Non-Negotiable Rules
 
@@ -62,6 +63,8 @@ Use this skill to turn Dageno prompt opportunities into a real-fanout backlog an
 - do not generate guessed fanout
 - do not write directly from Dageno `topic`
 - one selected fanout should map to one article
+- one backlog row should map to one editorial brief
+- use the section drafting and review contracts when integrating with external agents
 - if local brand knowledge base and Dageno brand snapshot do not match, block publish-ready output
 
 ## Required Local Files

@@ -1,17 +1,18 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Skill](https://img.shields.io/badge/skill-Content%20Writer-blue)](skills/content-writer.md)
-[![Workflow](https://img.shields.io/badge/workflow-Prompt%20%E2%86%92%20Fanout%20Backlog%20%E2%86%92%20Citation%20Analysis-blue)](references/pipeline-spec.md)
+[![Workflow](https://img.shields.io/badge/workflow-Backlog%20Row%20%E2%86%92%20Editorial%20Brief%20%E2%86%92%20Draft%20%2B%20Review-blue)](references/pipeline-spec.md)
 
 # GEO Content Writer
 
-> Turn Dageno prompt opportunities into a fanout backlog, then turn selected fanout items into publishable GEO articles.
+> Turn Dageno prompt opportunities into a fanout backlog, then turn one selected backlog row into an editorial brief, draft contract, and review contract for publishable GEO articles.
 
 ## What Works Today
 
 - discover high-value prompts from Dageno
 - extract real fanout into a reusable backlog
 - mark backlog rows as `write_now` or `needs_cleanup`
-- generate publish-ready article drafts from selected backlog items
+- generate backlog-row-first editorial payloads for selected backlog items
+- generate section-by-section draft and review contracts for external agents
 - publish drafts to WordPress and WordPress.com
 
 ## Current Limitation
@@ -24,7 +25,7 @@ Current behavior:
 - it now performs lightweight article-first citation crawling
 - it does **not** yet perform full browser-rendered or Firecrawl-based extraction
 
-So the project has already shifted to a fanout-backlog-first architecture, but the citation crawl step is still a missing implementation in the writing layer.
+So the project has already shifted to a fanout-backlog-first architecture, but the citation crawl step is still a partial implementation in the writing layer.
 
 ## Citation Learning Policy
 
@@ -41,8 +42,9 @@ It is a GEO writing system with one core idea:
 
 - Dageno finds high-value prompts
 - real fanout becomes the content backlog
-- citation analysis teaches the writing structure
-- one selected fanout becomes one article
+- one backlog row becomes one editorial brief
+- the editorial brief becomes a draft contract and review contract
+- external agents can write section by section instead of improvising from one loose prompt
 
 ## Core Workflow
 
@@ -62,13 +64,14 @@ It is a GEO writing system with one core idea:
 
 7. crawl top citation pages for the selected fanout
 8. analyze citation patterns
-9. choose article type
-10. rewrite into a reader-facing title
-11. generate one publish-ready article
+9. build one editorial brief from one selected backlog row
+10. generate section-by-section draft instructions
+11. generate section-by-section review instructions
+12. assemble one publish-ready article
 
 ### D. Distribution Layer
 
-12. publish to WordPress draft or publish status
+13. publish to WordPress draft or publish status
 
 ## Non-Negotiable Rules
 
@@ -86,6 +89,13 @@ This design avoids three common failure modes:
 - writing from internal topic labels that do not sound like human search language
 - repeating near-duplicate articles because different prompts expand into similar fanout
 - copying one universal article template across every industry
+
+It also gives external agents a cleaner interface:
+
+- a stable backlog row as the production object
+- an editorial brief with audience, angle, and differentiation targets
+- a section drafting contract instead of one giant article prompt
+- a section review contract and assembly review prompt for quality control
 
 ## Required Knowledge Base
 
@@ -130,15 +140,33 @@ Suggested backlog statuses:
 PYTHONPATH=src python -m geo_content_writer.cli select-backlog-items --top-n 10
 ```
 
-### 4. Generate one publish-ready article
+### 4. Generate one backlog-row-first article payload
 
 ```bash
-PYTHONPATH=src python -m geo_content_writer.cli publish-ready-article --output-file examples/publish-ready-article.md
+PYTHONPATH=src python -m geo_content_writer.cli publish-ready-article \
+  --backlog-file knowledge/backlog/fanout-backlog.json \
+  --backlog-id your-backlog-row-id \
+  --output-file examples/publish-ready-payload.json
 ```
 
-This now outputs the structured article-generation payload plus a writer prompt.
+This now outputs a structured payload with:
 
-### 5. Publish to WordPress
+- `editorial_brief`
+- `draft_package`
+- `review_package`
+- `writer_prompt`
+
+If you do not pass `--backlog-id`, the CLI will fall back to the top `write_now` row.
+
+### 5. Draft an article from the payload
+
+```bash
+PYTHONPATH=src python -m geo_content_writer.cli draft-article-from-payload \
+  examples/publish-ready-payload.json \
+  --output-file examples/publish-ready-article.md
+```
+
+### 6. Publish to WordPress
 
 ```bash
 export WORDPRESS_SITE_URL="https://your-site.com"
@@ -160,9 +188,72 @@ export WORDPRESS_CLIENT_SECRET="your-client-secret"
 PYTHONPATH=src python -m geo_content_writer.cli discover-prompts
 PYTHONPATH=src python -m geo_content_writer.cli build-fanout-backlog
 PYTHONPATH=src python -m geo_content_writer.cli select-backlog-items --top-n 10
-PYTHONPATH=src python -m geo_content_writer.cli publish-ready-article
+PYTHONPATH=src python -m geo_content_writer.cli publish-ready-article --backlog-id <row-id>
+PYTHONPATH=src python -m geo_content_writer.cli draft-article-from-payload examples/publish-ready-payload.json
 PYTHONPATH=src python -m geo_content_writer.cli publish-wordpress examples/publish-ready-article.md --status draft
 ```
+
+## Payload Shape
+
+The primary production payload is no longer a loose writer prompt. It is a machine-readable object for external agents:
+
+- `backlog_row`: the selected production unit
+- `selected_fanout`: normalized writing seed
+- `editorial_brief`: audience, article angle, differentiation targets, adjacent rows to avoid, and evidence guardrails
+- `draft_package`: target word counts, `draft_sections`, and assembly notes
+- `review_package`: final review prompts plus `section_review_contract`
+- `writer_prompt`: a convenience prompt derived from the structured payload
+
+See:
+
+- `schemas/article_generation_payload_schema.json`
+- `examples/publish-ready-payload-trip.json`
+
+## Official Path
+
+The recommended production flow is now:
+
+1. `build-fanout-backlog`
+2. `select-backlog-items`
+3. `publish-ready-article --backlog-id <row-id>`
+4. `draft-article-from-payload`
+5. run section reviews from `review_package.section_review_contract`
+6. run assembly review from `review_package.assembly_review_prompt`
+7. clear the final gate in `review_package.final_gate`
+8. `publish-wordpress`
+
+Commands still present for compatibility but no longer recommended as the main entrypoint:
+
+- `legacy-publish-ready-article`
+- `content-pack`
+- `first-asset-draft`
+
+## Cluster Roles
+
+Each backlog row now carries a `cluster_role` to make the content calendar more deliberate before writing begins. Examples:
+
+- `category_article`
+- `buyer_shortlist_article`
+- `decision_stage_comparison_article`
+- `workflow_guidance_article`
+- `fit_assessment_article`
+
+The goal is to stop adjacent rows from becoming near-duplicates that differ only in title wording.
+
+## Benchmarks
+
+A lightweight benchmark suite now lives in:
+
+- `examples/benchmarks/README.md`
+- `examples/benchmarks/benchmark_manifest.json`
+
+It uses 4 real project examples across travel and enterprise software to evaluate:
+
+- distinctness
+- naturalness
+- decision support
+- brand fit
+- cluster role clarity
 
 ## Repo Structure
 
@@ -190,8 +281,9 @@ geo-content-writer/
 - the project keeps Dageno as the opportunity discovery layer
 - the backlog is the core production object
 - fanout is the main writing seed
-- citation crawl is planned in the workflow design but not yet fully wired into runtime article generation
-- `publish-ready-article` is now a payload builder for model-driven writing
+- citation crawl is still lightweight and not yet a full browser-rendered implementation
+- `publish-ready-article` is now a backlog-row-first payload builder for model-driven writing
+- the main writing interface is designed for external agents that can draft and review section by section
 - WordPress publishing is a lightweight distribution example, not the center of the system
 
 ## License

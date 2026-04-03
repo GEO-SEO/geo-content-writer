@@ -448,6 +448,35 @@ def _dedupe_rows_by_text(rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     return list(grouped.values())
 
 
+def _backlog_similarity(row: Dict[str, Any], other: Dict[str, Any]) -> int:
+    score = 0
+    if row.get("article_type") == other.get("article_type"):
+        score += 3
+    if row.get("market_profile") == other.get("market_profile"):
+        score += 2
+    if _canonical_fanout_key(row.get("fanout_text", "")) == _canonical_fanout_key(other.get("fanout_text", "")):
+        score += 5
+    if _normalize_text(row.get("source_topic", "")) == _normalize_text(other.get("source_topic", "")):
+        score += 2
+    shared_prompts = set(row.get("source_prompt_ids", [])) & set(other.get("source_prompt_ids", []))
+    score += min(len(shared_prompts), 2)
+    return score
+
+
+def _adjacent_backlog_rows(rows: List[Dict[str, Any]], target_row: Dict[str, Any], limit: int = 3) -> List[Dict[str, Any]]:
+    ranked: List[Tuple[int, Dict[str, Any]]] = []
+    target_id = target_row.get("backlog_id")
+    for row in rows:
+        if row.get("backlog_id") == target_id:
+            continue
+        similarity = _backlog_similarity(target_row, row)
+        if similarity <= 0:
+            continue
+        ranked.append((similarity, row))
+    ranked.sort(key=lambda item: (-item[0], item[1].get("normalized_title", "")))
+    return [row for _, row in ranked[:limit]]
+
+
 def _article_type_from_fanout(fanout_text: str, dominant_page_type: str) -> str:
     text = fanout_text.lower()
     if any(token in text for token in ["vs", "compare", "comparison"]):
@@ -1765,101 +1794,98 @@ def legacy_publish_ready_article(
 
 def _writer_prompt_from_payload(payload: Dict[str, Any]) -> str:
     selected = payload.get("selected_fanout", {})
-    citation = payload.get("citation_pattern_summary", {})
-    title_options = payload.get("title_options", [])
-    brief = payload.get("writing_brief", {})
-    brand_role = payload.get("brand_role_in_article", "")
-    content_goal = payload.get("content_goal", "")
-    rules = payload.get("writing_rules", [])
-    outline = payload.get("outline_bullets") or []
-    response_previews = payload.get("response_previews") or []
-    reference_candidates = payload.get("reference_candidates") or []
-    decision_table_template = payload.get("decision_table_template") or []
-
-    h1_title = title_options[0] if title_options else "Untitled Article"
+    editorial = payload.get("editorial_brief", {})
+    citation = editorial.get("citation_learnings", payload.get("citation_pattern_summary", {}))
+    source_materials = editorial.get("source_materials", {})
+    title_options = editorial.get("alternative_titles") or payload.get("title_options", [])
+    working_title = editorial.get("working_title") or (title_options[0] if title_options else "")
+    rules = _dedupe_keep_order(editorial.get("must_avoid", []) + payload.get("writing_rules", []))
 
     lines = [
         "You are a blog editor, not a document generator.",
         "",
         "Write one complete blog article for publication.",
         "",
-        "Output format (strict):",
-        "- Markdown only.",
-        f"- Use this H1 title exactly: {h1_title}",
-        "- Include these sections in order: ## Outline, ## Article.",
-        "- Inside ## Article, include: _Last updated: YYYY-MM-DD_, ## TL;DR, 3-5 H2 sections, ## Decision Table, ## FAQ, ## References, ## Conclusion, ## Final Takeaway.",
-        "- For each H2 section, include: a short paragraph, a 'Steps to apply this:' list, an 'Example:' line, and a 'Common pitfall:' line.",
-        "- Use only the reference URLs provided below. Do not invent citations or numbers.",
-        "",
-        "Use these inputs:",
+        "Use this editorial brief:",
+        f"- Working title: {working_title}",
         f"- Selected fanout: {selected.get('fanout_text', '')}",
-        f"- Reader-facing topic: {selected.get('reader_topic', '')}",
-        f"- Market profile: {selected.get('market_profile', '')}",
-        f"- Recommended article type: {payload.get('article_type', '')}",
-        f"- Content goal: {content_goal}",
-        f"- Brand role: {brand_role}",
-        f"- Title options: {', '.join(title_options)}",
+        f"- Reader-facing topic: {editorial.get('reader_topic', selected.get('reader_topic', ''))}",
+        f"- Reader persona: {editorial.get('reader_persona', '')}",
+        f"- Reader job to be done: {editorial.get('reader_job_to_be_done', '')}",
+        f"- Market profile: {editorial.get('market_profile', selected.get('market_profile', ''))}",
+        f"- Article type: {editorial.get('article_type', payload.get('article_type', ''))}",
+        f"- Article angle: {editorial.get('article_angle', '')}",
+        f"- Why this article now: {editorial.get('why_this_article_now', '')}",
+        f"- Cluster role: {editorial.get('cluster_role', '')}",
+        f"- Opening move: {editorial.get('opening_move', '')}",
+        f"- Decision frame: {editorial.get('decision_frame', '')}",
+        f"- Content gap to fill: {editorial.get('content_gap', '')}",
+        f"- Brand inclusion rule: {editorial.get('brand_inclusion_rule', payload.get('brand_role_in_article', ''))}",
+        f"- Alternative titles: {', '.join(title_options)}",
+        f"- Content goal: {payload.get('content_goal', '')}",
         "",
         "Citation pattern summary (learn structure, do not mention this section in the article):",
         f"- Dominant page type: {citation.get('dominant_page_type', '')}",
         f"- Dominant title pattern: {citation.get('dominant_title_pattern', '')}",
         f"- Common intents: {', '.join(citation.get('common_intents', []))}",
         f"- Common heading patterns: {', '.join(citation.get('common_heading_patterns', []))}",
+        f"- Top entities: {', '.join(source_materials.get('top_entities', []))}",
+        f"- Supporting URLs: {', '.join(source_materials.get('supporting_urls', []))}",
         "",
-        "Writing brief:",
-        f"- Reader problem: {brief.get('reader_problem', '')}",
-        f"- Must cover: {', '.join(brief.get('must_cover', []))}",
-        f"- Must avoid: {', '.join(brief.get('must_avoid', []))}",
-        "",
-        "Suggested outline bullets (use these as the Outline section):",
+        "Must prove:",
     ]
-    if outline:
-        for bullet in outline:
-            lines.append(f"- {bullet}")
-    else:
-        lines.extend(
-            [
-                "- Intro: why this matters and what the reader will get",
-                "- H2: definition or framing",
-                "- H2: evaluation criteria or comparison approach",
-                "- H2: realistic workflow or decision process",
-                "- H2: common mistakes and fixes",
-                "- FAQ",
-                "- References",
-            ]
+    for item in editorial.get("must_prove", []):
+        lines.append(f"- {item}")
+    lines.extend([
+        "",
+        "Must include:",
+    ])
+    for item in editorial.get("must_include", []):
+        lines.append(f"- {item}")
+    lines.extend([
+        "",
+        "External research tasks:",
+    ])
+    for item in editorial.get("external_research_tasks", []):
+        lines.append(f"- {item}")
+    lines.extend([
+        "",
+        "E-E-A-T layer:",
+        f"- Testing guidance: {editorial.get('testing_framework', {}).get('sample_size_guidance', '')}",
+        f"- Same-input rule: {editorial.get('testing_framework', {}).get('same_input_rule', '')}",
+        f"- Conclusion scope template: {editorial.get('testing_framework', {}).get('conclusion_scope_template', '')}",
+    ])
+    for item in editorial.get("eeat_layer", {}).get("recommended_signals", []):
+        lines.append(f"- {item}")
+    lines.extend([
+        "",
+        "Differentiation targets:",
+    ])
+    for item in editorial.get("differentiation_targets", []):
+        lines.append(f"- {item}")
+    lines.extend([
+        "",
+        "Adjacent articles to avoid overlapping with:",
+    ])
+    for item in editorial.get("adjacent_articles_to_avoid", []):
+        lines.append(
+            f"- {item.get('title', '')} ({item.get('article_type', '')}, {item.get('backlog_id', '')})"
         )
-
-    lines.extend(["", "Decision table template (use as the Decision Table section):", ""])
-    if decision_table_template:
-        lines.extend(decision_table_template)
-        lines.extend([""])
-    else:
-        lines.extend(
-            [
-                "| Evaluation area | What to look for | Why it matters |",
-                "|---|---|---|",
-                "| Coverage | What the reader should test or compare | Helps avoid false confidence |",
-                "| Evidence | What signals to trust | Prevents vague claims |",
-                "| Workflow | How the process actually works | Makes the advice usable |",
-                "",
-            ]
+    lines.extend([
+        "",
+        "Recommended outline:",
+    ])
+    for item in editorial.get("recommended_outline", []):
+        lines.append(
+            f"- {item.get('heading', '')}: {item.get('purpose', '')}. Include: {item.get('must_include', '')}"
         )
-
-    lines.extend(["AI answer signals (background only; do not claim as facts unless supported by references):"])
-    if response_previews:
-        for item in response_previews:
-            lines.append(f"- {item}")
-    else:
-        lines.append("- (no response previews available)")
-
-    lines.extend(["", "Reference URLs you may cite (use only these):", ""])
-    if reference_candidates:
-        lines.extend(reference_candidates)
-    else:
-        lines.append("- (no crawlable article references available; keep claims general and avoid hard numbers)")
-
-    lines.extend(["", "Rules:"])
+    lines.extend([
+        "",
+        "Rules:",
+    ])
     for rule in rules:
+        lines.append(f"- {rule}")
+    for rule in editorial.get("evidence_guardrails", []):
         lines.append(f"- {rule}")
     lines.extend(
         [
@@ -1875,145 +1901,533 @@ def _writer_prompt_from_payload(payload: Dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
+def _reader_persona(profile: str, article_type: str) -> str:
+    if profile == "consumer_travel":
+        if article_type == "comparison":
+            return "A traveler actively comparing two or three booking options before paying."
+        return "A traveler trying to choose a booking workflow that feels simpler and more trustworthy."
+    if profile == "b2b_software":
+        return "A marketing or growth lead evaluating vendors and practical workflow fit."
+    return "A reader who wants practical help making a clearer decision."
+
+
+def _reader_job_to_be_done(row: Dict[str, Any], article_type: str, profile: str) -> str:
+    title = row.get("normalized_title") or row.get("fanout_text") or "the topic"
+    if profile == "consumer_travel":
+        if article_type == "comparison":
+            return f"Help the reader compare credible options behind '{title}' and leave with a smaller shortlist."
+        if article_type == "guide":
+            return f"Help the reader choose a booking path for '{title}' without wasting time on the wrong criteria."
+        return f"Help the reader understand which option best fits how they actually book trips for '{title}'."
+    return f"Help the reader make a more confident decision around '{title}' with clearer criteria and fewer vague claims."
+
+
+def _content_role_in_cluster(article_type: str) -> str:
+    mapping = {
+        "recommendation": "shortlist_article",
+        "comparison": "comparison_article",
+        "guide": "how_to_article",
+        "review": "evaluation_article",
+        "explainer": "category_article",
+    }
+    return mapping.get(article_type, "editorial_article")
+
+
+def _cluster_role_plan(row: Dict[str, Any]) -> Dict[str, str]:
+    article_type = row.get("article_type", "explainer")
+    funnel = (row.get("funnel") or "").lower()
+    role = _content_role_in_cluster(article_type)
+    if article_type == "explainer" and funnel in {"commercial", "transactional"}:
+        role = "category_to_consideration_article"
+    elif article_type == "recommendation" and funnel in {"commercial", "transactional"}:
+        role = "buyer_shortlist_article"
+    elif article_type == "comparison":
+        role = "decision_stage_comparison_article"
+    elif article_type == "guide":
+        role = "workflow_guidance_article"
+    elif article_type == "review":
+        role = "fit_assessment_article"
+
+    return {
+        "cluster_role": role,
+        "cluster_role_reason": (
+            f"Selected because the row behaves like a {article_type} article in the {funnel or 'unknown'} funnel stage."
+        ),
+    }
+
+
+def _official_workflow_contract() -> Dict[str, Any]:
+    return {
+        "recommended_entrypoint": "publish-ready-article --backlog-id <row-id>",
+        "recommended_steps": [
+            "build_fanout_backlog",
+            "select_backlog_items",
+            "publish-ready-article",
+            "draft-article-from-payload",
+            "section-review-and-rewrite",
+            "assembly-review",
+            "final-gate",
+            "publish-wordpress",
+        ],
+        "deprecated_paths": [
+            "legacy-publish-ready-article",
+            "content-pack",
+            "first-asset-draft",
+        ],
+    }
+
+
+def _decision_frame(article_type: str, profile: str) -> str:
+    if profile == "consumer_travel":
+        if article_type == "comparison":
+            return "Compare convenience, pricing clarity, coverage, and trust under one realistic trip scenario."
+        if article_type == "recommendation":
+            return "Shortlist options by traveler type and trade-offs, not by brand familiarity alone."
+    if article_type == "guide":
+        return "Turn a confusing choice into a sequence the reader can actually follow."
+    return "Move the reader from vague interest into a practical decision framework."
+
+
+def _editorial_outline(row: Dict[str, Any], article_type: str, reader_topic: str, profile: str) -> List[Dict[str, str]]:
+    first_heading = {
+        "comparison": "What Actually Changes the Decision",
+        "recommendation": "Start With the Problem You Need the Option to Solve",
+        "guide": "Start With the Real Decision",
+        "review": "What the Reader Should Evaluate First",
+        "explainer": f"What {reader_topic.capitalize()} Really Means",
+    }.get(article_type, "What the Reader Should Understand First")
+    second_heading = {
+        "comparison": "How to Compare Without Drowning in Features",
+        "recommendation": "The Criteria That Matter in Real Use",
+        "guide": "Turn the Decision Into a Sequence",
+        "review": "Where the Product Helps and Where It Does Not",
+        "explainer": "What the Reader Should Notice Early",
+    }.get(article_type, "What to Compare Next")
+    third_heading = {
+        "comparison": "Where Readers Usually Go Wrong",
+        "recommendation": "Which Reader Types Usually Prefer Different Options",
+        "guide": "Where the Process Usually Breaks Down",
+        "review": "How to Decide if It Is the Right Fit",
+        "explainer": "Why the Topic Gets Misunderstood So Easily",
+    }.get(article_type, "Where Weak Content Usually Fails")
+    must_include = "Use real decision criteria, name trade-offs, and keep the brand in a natural supporting role."
+    if profile == "consumer_travel":
+        must_include = "Anchor the advice in a realistic travel scenario, not only generic product descriptions."
+    return [
+        {"heading": first_heading, "purpose": "Frame the actual decision behind the search", "must_include": must_include},
+        {"heading": second_heading, "purpose": "Explain the few criteria that genuinely change the outcome", "must_include": "Use explicit trade-offs and practical examples."},
+        {"heading": third_heading, "purpose": "Create information gain by correcting common bad comparisons or assumptions", "must_include": "Show where readers usually waste time or misread the market."},
+        {"heading": "FAQ", "purpose": "Answer the natural follow-up questions succinctly", "must_include": "Keep answers direct and publication-ready."},
+        {"heading": "Final Takeaway", "purpose": "Leave the reader with a next step, not only a summary", "must_include": "Make the next action obvious and low-friction."},
+    ]
+
+
+def _evidence_framework(
+    row: Dict[str, Any],
+    *,
+    reader_topic: str,
+    article_type: str,
+    profile: str,
+    supporting_urls: List[str],
+) -> Dict[str, Any]:
+    fanout_text = row.get("fanout_text", "")
+    tasks = [
+        f"Find 1 to 2 official or primary-source pages relevant to '{fanout_text}' and extract the exact policy, rule, feature, or definition that matters to the reader decision.",
+        f"Find 2 to 3 independent corroborating sources for '{fanout_text}' such as expert articles, trade publications, or high-signal community discussions.",
+    ]
+    if article_type in {"comparison", "recommendation", "review"}:
+        tasks.append(
+            f"Run a small same-input comparison for '{fanout_text}' and record the test setup, timestamp, sample size, and the exact fields that were aligned."
+        )
+    if article_type == "guide":
+        tasks.append(
+            f"Find practical walkthroughs or help-center content that clarify the process steps behind '{fanout_text}'."
+        )
+    if article_type == "explainer":
+        tasks.append(
+            f"Find category-defining sources that clarify what '{reader_topic}' means in practice and where readers usually misunderstand it."
+        )
+
+    eeat_signals = [
+        "State who tested or researched the article and when the checks were performed.",
+        "Explain the testing or comparison method in plain language.",
+        "Show the scope and limits of the conclusion so the page does not overclaim.",
+        "Prefer official/help-center evidence for policy claims and independent sources for market context.",
+    ]
+
+    sample_size = "3 to 5 checks"
+    if profile == "consumer_travel":
+        sample_size = "3 to 5 booking checks across the same route, dates, room type, or package setup"
+    elif profile == "b2b_software":
+        sample_size = "3 to 5 comparable vendor or workflow checks using the same evaluation criteria"
+
+    return {
+        "research_mode": "external_agent_web_research_recommended",
+        "external_research_tasks": tasks,
+        "testing_framework": {
+            "tested_at_field": "Record the test date and, when possible, the timestamp.",
+            "sample_size_guidance": sample_size,
+            "same_input_rule": "Keep the input consistent across every option being compared before calling any difference meaningful.",
+            "capture_fields": [
+                "test date",
+                "sample size",
+                "aligned comparison fields",
+                "observed difference",
+                "conclusion scope",
+            ],
+            "conclusion_scope_template": f"This conclusion applies to the tested sample and setup for '{fanout_text}', not to every possible case in the category.",
+        },
+        "eeat_layer": {
+            "recommended_signals": eeat_signals,
+            "official_source_needed": True,
+            "independent_source_count": 2,
+            "supporting_urls_seed": supporting_urls[:4],
+        },
+    }
+
+
+def _editorial_brief_from_backlog_row(
+    row: Dict[str, Any],
+    *,
+    context: Dict[str, Any],
+    citation_patterns: Dict[str, Any],
+    crawled_pages: List[Dict[str, Any]],
+    adjacent_rows: List[Dict[str, Any]] | None = None,
+) -> Dict[str, Any]:
+    reader_topic = _reader_topic_phrase(
+        row.get("fanout_text", ""),
+        row.get("source_topic", ""),
+        context.get("brand_context", {}),
+    )
+    profile = row.get("market_profile") or _market_profile(
+        row.get("fanout_text", ""),
+        row.get("source_topic", ""),
+        context.get("brand_context", {}),
+    )
+    article_type = row.get("article_type") or citation_patterns.get("recommended_article_type", "explainer")
+    title_options = _dedupe_keep_order(
+        [
+            row.get("normalized_title", ""),
+            _rewrite_fanout_title(row.get("fanout_text", ""), article_type, context.get("brand_context", {})),
+            _rewrite_fanout_title(reader_topic, article_type, context.get("brand_context", {})),
+        ]
+    )[:3]
+    mention_counter: Counter[str] = context.get("mention_counter", Counter())
+    supporting_urls = [page.get("url", "") for page in crawled_pages if page.get("status") == "ok" and page.get("url")][:5]
+    source_count = int(row.get("source_count", 1) or 1)
+    adjacent_rows = adjacent_rows or []
+    adjacent_titles = [item.get("normalized_title", "") for item in adjacent_rows if item.get("normalized_title")]
+    article_neighbors = [
+        {
+            "backlog_id": item.get("backlog_id", ""),
+            "title": item.get("normalized_title", "") or item.get("fanout_text", ""),
+            "article_type": item.get("article_type", ""),
+        }
+        for item in adjacent_rows
+    ]
+    why_now = (
+        "This backlog row captures a real Dageno fanout and should become a specific editorial asset instead of another broad category summary."
+    )
+    if profile == "consumer_travel":
+        why_now = (
+            "This fanout reflects a real trip-planning decision, so the article should help readers choose a booking workflow instead of repeating generic travel advice."
+        )
+    evidence_framework = _evidence_framework(
+        row,
+        reader_topic=reader_topic,
+        article_type=article_type,
+        profile=profile,
+        supporting_urls=supporting_urls,
+    )
+
+    return {
+        "working_title": title_options[0] if title_options else row.get("normalized_title", "Untitled Article"),
+        "alternative_titles": title_options,
+        "reader_topic": reader_topic,
+        "reader_persona": _reader_persona(profile, article_type),
+        "reader_job_to_be_done": _reader_job_to_be_done(row, article_type, profile),
+        "article_type": article_type,
+        "article_angle": row.get("normalized_title", "") or row.get("fanout_text", ""),
+        "search_intent": row.get("primary_intention", "-"),
+        "funnel_stage": row.get("funnel", "-"),
+        "market_profile": profile,
+        "content_role_in_cluster": _content_role_in_cluster(article_type),
+        "cluster_role": row.get("cluster_role", _cluster_role_plan(row).get("cluster_role")),
+        "cluster_role_reason": row.get("cluster_role_reason", _cluster_role_plan(row).get("cluster_role_reason")),
+        "why_this_article_now": why_now,
+        "opening_move": "Open with the real decision tension behind the selected fanout, not a generic category definition.",
+        "decision_frame": _decision_frame(article_type, profile),
+        "information_gain": (
+            "Add practical judgment and trade-offs that generic roundup pages usually flatten."
+            if source_count <= 1
+            else "Combine repeated demand signals into one cleaner, more differentiated editorial angle."
+        ),
+        "content_gap": (
+            "Most nearby articles in this cluster are likely to overlap on generic criteria and shortlists; this article should add a sharper decision frame and reader-type differentiation."
+            if adjacent_rows
+            else "The article should still add practical judgment and a reader-facing decision model instead of generic summary language."
+        ),
+        "differentiation_targets": [
+            "Lead with the reader decision, not the category definition.",
+            "Add one realistic scenario or use case before expanding the shortlist.",
+            "Explain why some options fit different reader types instead of implying one universal winner.",
+        ],
+        "adjacent_articles_to_avoid": article_neighbors,
+        "internal_linking_notes": (
+            "Link out to adjacent cluster articles only when they answer a genuinely different question, such as comparison, mistakes, or workflow guidance."
+        ),
+        "evidence_guardrails": [
+            "Use cited pages to learn market framing and recurring entities, not to mimic wording.",
+            "Do not claim product features or pricing details that the payload does not support.",
+            "Avoid pretending to have tested products first-hand unless external tooling supplies that evidence.",
+        ],
+        "external_research_tasks": evidence_framework["external_research_tasks"],
+        "testing_framework": evidence_framework["testing_framework"],
+        "eeat_layer": evidence_framework["eeat_layer"],
+        "must_prove": [
+            "Why this choice is difficult for a real reader.",
+            "Which criteria deserve attention first and which are secondary.",
+            "How the shortlist should change based on reader type or use case.",
+        ],
+        "must_include": [
+            "A concrete decision framework tied to the selected fanout.",
+            "A natural shortlist or comparison set when relevant.",
+            "At least one practical scenario or example the reader can imagine.",
+            "A next step the reader can actually use after reading.",
+        ],
+        "must_avoid": [
+            "Do not write from the prompt label as if it were already a finished blog angle.",
+            "Do not sound like a template, checklist dump, or content mill roundup.",
+            "Do not mention the brand as an automatic winner.",
+            "Do not make unsupported claims or fake first-hand experience.",
+        ],
+        "brand_inclusion_rule": _brand_role_in_article(context.get("brand_context", {}), profile, article_type),
+        "recommended_outline": _editorial_outline(row, article_type, reader_topic, profile),
+        "citation_learnings": {
+            "learning_mode": citation_patterns.get("learning_mode"),
+            "dominant_page_type": context.get("dominant_page_type"),
+            "dominant_title_pattern": citation_patterns.get("dominant_title_pattern"),
+            "recommended_article_type": article_type,
+            "common_heading_patterns": citation_patterns.get("common_heading_patterns", [])[:6],
+            "common_intents": citation_patterns.get("common_intents", []),
+            "table_presence_rate": citation_patterns.get("table_presence_rate"),
+            "list_presence_rate": citation_patterns.get("list_presence_rate"),
+            "faq_presence_rate": citation_patterns.get("faq_presence_rate"),
+        },
+        "source_materials": {
+            "top_entities": [name for name, _ in mention_counter.most_common(6)],
+            "supporting_urls": supporting_urls,
+            "crawled_page_count": len(crawled_pages),
+            "adjacent_titles": adjacent_titles,
+        },
+    }
+
+
+def _review_package(payload: Dict[str, Any]) -> Dict[str, Any]:
+    editorial = payload.get("editorial_brief", {})
+    draft_package = payload.get("draft_package", {})
+    draft_sections = draft_package.get("draft_sections", [])
+    section_reviews = _section_review_contract(editorial, draft_sections)
+    return {
+        "quality_checks": [
+            "Does the article sound like an edited blog post instead of a generated template?",
+            "Does the opening frame a real reader decision quickly?",
+            "Does each section add judgment, trade-offs, or a practical example?",
+            "Is the brand included naturally and only where it genuinely fits?",
+            "Would this article feel distinct from neighboring backlog rows?",
+            "Does the draft clearly avoid collapsing into titles or angles already assigned to adjacent backlog rows?",
+        ],
+        "quality_review_prompt": (
+            f"You are the second-pass editor. Review this draft against the editorial brief for '{editorial.get('working_title', '')}'. "
+            f"Check for template tone, vague repetition, weak differentiation, overlap with adjacent backlog rows, unnatural brand mentions, and missing decision support. "
+            f"The target range is {draft_package.get('target_word_count_range', '-')}, with a minimum of {draft_package.get('min_word_count', '-')} words."
+        ),
+        "quality_rewrite_prompt": (
+            "Rewrite weak sections so the article feels like a confident blog editor made sharper choices, while preserving the selected fanout, core angle, and natural brand placement rules."
+        ),
+        "section_review_contract": section_reviews,
+        "assembly_review_prompt": (
+            f"After section-level rewrites, assemble the full article for '{editorial.get('working_title', '')}'. "
+            "Check transitions, remove repeated setup language, make the voice consistent, and ensure the final article reads like one coherent blog post rather than stitched segments."
+        ),
+        "final_gate": {
+            "status": "pending_human_or_agent_review",
+            "required_checks": [
+                "section_reviews_complete",
+                "assembly_review_complete",
+                "brand_inclusion_rule_respected",
+                "adjacent_overlap_reviewed",
+                "word_count_within_target",
+            ],
+            "publish_blockers": [],
+        },
+    }
+
+
+def _pipeline_state(payload: Dict[str, Any]) -> Dict[str, Any]:
+    return {
+        "current_stage": "editorial_brief_ready",
+        "recommended_next_stage": "section_drafting",
+        "steps": [
+            {"step": "backlog_row_selected", "status": "completed"},
+            {"step": "editorial_brief_ready", "status": "completed"},
+            {"step": "section_drafting", "status": "ready"},
+            {"step": "section_review", "status": "ready"},
+            {"step": "assembly_review", "status": "ready"},
+            {"step": "final_gate", "status": "pending"},
+            {"step": "publish", "status": "pending"},
+        ],
+        "official_workflow": _official_workflow_contract(),
+        "state_notes": [
+            "This payload is designed to be executed section by section.",
+            "Do not skip from editorial brief directly to publish.",
+            "Final publication should happen only after the final gate clears.",
+        ],
+    }
+
+
+def _draft_sections_from_editorial_brief(
+    editorial_brief: Dict[str, Any],
+    *,
+    row: Dict[str, Any],
+    min_word_count: int,
+    ideal_word_count: int,
+) -> List[Dict[str, Any]]:
+    outline = editorial_brief.get("recommended_outline", [])
+    fanout_text = row.get("fanout_text", "")
+    section_count = max(len(outline) + 2, 5)
+    target_words = max(140, ideal_word_count // section_count)
+    sections: List[Dict[str, Any]] = [
+        {
+            "section_id": "intro",
+            "heading": "Introduction",
+            "purpose": "Open with the real decision tension behind the selected fanout and establish who the article is helping.",
+            "must_include": [
+                "State the reader problem fast.",
+                "Name the reader persona or decision context.",
+                "Avoid generic category throat-clearing.",
+            ],
+            "target_words": target_words,
+            "writer_prompt": (
+                f"Write the introduction for an article about '{fanout_text}'. Open with the decision tension, not a broad definition. "
+                f"Make the reader feel seen within about {target_words} words."
+            ),
+        }
+    ]
+    for idx, item in enumerate(outline, start=1):
+        heading = item.get("heading", "")
+        sections.append(
+            {
+                "section_id": f"body_{idx}",
+                "heading": heading,
+                "purpose": item.get("purpose", ""),
+                "must_include": [
+                    item.get("must_include", ""),
+                    editorial_brief.get("decision_frame", ""),
+                    editorial_brief.get("content_gap", ""),
+                ],
+                "target_words": target_words,
+                "writer_prompt": (
+                    f"Write the section '{heading}' for the article '{editorial_brief.get('working_title', '')}'. "
+                    f"Use the angle '{editorial_brief.get('article_angle', '')}', keep it distinct from adjacent cluster articles, "
+                    f"and land the section in about {target_words} words."
+                ),
+            }
+        )
+    sections.append(
+        {
+            "section_id": "conclusion",
+            "heading": "Conclusion",
+            "purpose": "End with a confident takeaway and a practical next step.",
+            "must_include": [
+                "Summarize the decision frame.",
+                "Leave the reader with one useful next move.",
+                "Keep the ending concise and editorial.",
+            ],
+            "target_words": max(120, min_word_count // 8),
+            "writer_prompt": (
+                f"Write a conclusion for '{editorial_brief.get('working_title', '')}' that sharpens the final judgment and gives the reader a practical next step."
+            ),
+        }
+    )
+    return sections
+
+
+def _section_review_contract(
+    editorial_brief: Dict[str, Any],
+    draft_sections: List[Dict[str, Any]],
+) -> List[Dict[str, Any]]:
+    contracts: List[Dict[str, Any]] = []
+    for section in draft_sections:
+        heading = section.get("heading", "")
+        contracts.append(
+            {
+                "section_id": section.get("section_id", ""),
+                "heading": heading,
+                "review_checks": [
+                    f"Does the section '{heading}' fulfill its stated purpose?",
+                    "Does it add judgment, trade-offs, or practical specificity instead of generic filler?",
+                    "Does it avoid overlapping too heavily with adjacent cluster articles?",
+                    "Does it keep brand mentions natural and proportionate?",
+                ],
+                "review_prompt": (
+                    f"Review the drafted section '{heading}' for the article '{editorial_brief.get('working_title', '')}'. "
+                    "Check whether it is concrete, differentiated, and useful to a real reader. Flag template language and vague repetition."
+                ),
+                "rewrite_prompt": (
+                    f"Rewrite the section '{heading}' so it feels more editorial, more specific, and more distinct from adjacent cluster articles while preserving the original section purpose."
+                ),
+            }
+        )
+    return contracts
+
+
 def article_generation_payload(
     client: DagenoClient,
     days: int = 30,
     *,
+    backlog_id: str | None = None,
+    backlog_file: str | None = None,
     prompt_id: str | None = None,
     prompt_text: str | None = None,
     asset_id: str | None = None,
     brand_kb_file: str | None = None,
     citation_limit: int = 5,
 ) -> Dict[str, Any]:
-    context = _build_content_pack_context(
+    backlog_path = Path(backlog_file).expanduser() if backlog_file else None
+    if backlog_path and backlog_path.exists():
+        backlog = load_fanout_backlog(str(backlog_path))
+    else:
+        backlog = build_fanout_backlog(
+            client,
+            days=days,
+            brand_kb_file=brand_kb_file,
+            max_prompts=20,
+        )
+
+    row = _select_backlog_row_for_writing(
         client,
         days,
+        backlog_id=backlog_id,
         prompt_id=prompt_id,
         prompt_text=prompt_text,
+        backlog_file=backlog_file,
         brand_kb_file=brand_kb_file,
-        detail_limit=1,
     )
-    _assert_brand_alignment(context)
-    if context["empty"]:
+    if not row:
         return {
             "generated_at": datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
-            "status": "empty",
-            "message": "No content opportunities were returned for the selected window.",
+            "status": "no_backlog_row",
+            "message": "No writable backlog row was available for the selected window.",
         }
-
-    asset = _pick_publishable_article_asset(context["asset_rows"], asset_id=asset_id)
-    if not asset:
-        return {
-            "generated_at": datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
-            "status": "no_asset",
-            "message": "No publishable article asset was available for the selected window.",
-        }
-
-    selected = context["selected_opportunity"]
-    topic = selected.get("topic", "")
-    prompt_text_value = selected.get("prompt", "")
-    brand_context = context.get("brand_context", {})
-    fanout_seed = ((context.get("api_fanout_prompts") or [])[:1] or [prompt_text_value])[0]
-    reader_topic = _reader_topic_phrase(fanout_seed, topic, brand_context)
-    profile = _market_profile(fanout_seed, topic, brand_context)
-    citation_urls = _diversified_citation_urls(context.get("citations", []), limit=citation_limit)
-    crawled_pages = crawl_citation_pages(citation_urls, limit=citation_limit)
-    patterns = analyze_citation_patterns(crawled_pages)
-    title_options = _dedupe_keep_order(
-        [
-            asset.get("asset_title", ""),
-            _rewrite_fanout_title(fanout_seed, patterns.get("recommended_article_type", "explainer"), brand_context),
-            _rewrite_fanout_title(reader_topic, patterns.get("recommended_article_type", "explainer"), brand_context),
-        ]
-    )[:3]
-
-    brief = {
-        "reader_problem": f"Readers want help with {reader_topic} and need a clear way to compare options without wasting time.",
-        "must_cover": [
-            "what readers should compare first",
-            "how current cited pages structure the topic",
-            "which products or options usually appear in the shortlist",
-            "where the monitored brand naturally fits",
-        ],
-        "must_avoid": [
-            "template tone",
-            "internal topic labels as final titles",
-            "unsupported claims",
-            "brand mentions that feel like ads",
-        ],
-        "writing_goal": "Write a normal blog post that feels useful to human readers while preserving structure that AI systems can quote.",
-    }
-    brand_role = _brand_role_in_article(brand_context, profile, patterns.get("recommended_article_type", "explainer"))
-    content_goal = _content_goal(patterns.get("recommended_article_type", "explainer"), profile)
-    word_target = _word_count_target(patterns.get("recommended_article_type", "explainer"))
-    quality_review_prompt = (
-        f"You are the second-pass quality reviewer. Check whether the article reads like a normal blog post, matches the citation-page structure, avoids template tone, mentions the brand only where natural, and satisfies the reader intent. The target word count range is {word_target['range']}, with a minimum acceptable length of {word_target['min']} words. If the article is too short, mark it as needing expansion before publication."
+    return article_generation_payload_from_backlog_row(
+        client,
+        row,
+        days=days,
+        brand_kb_file=brand_kb_file,
+        citation_limit=citation_limit,
+        backlog_rows=backlog.get("fanout_backlog", []),
     )
-    quality_rewrite_prompt = (
-        "Rewrite the article to feel more natural and human while preserving the chosen title, the article type, the key comparison or recommendation logic, and the real citation-derived structure cues."
-    )
-
-    payload = {
-        "generated_at": datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
-        "status": "ok",
-        "backlog_row": {
-            "asset_id": asset.get("asset_id"),
-            "asset_title": asset.get("asset_title"),
-            "article_type": patterns.get("recommended_article_type", "explainer"),
-            "source_prompt": prompt_text_value,
-            "source_topic": topic,
-            "target_query_cluster": asset.get("target_query_cluster"),
-            "primary_intention": context.get("primary_intent"),
-        },
-        "selected_fanout": {
-            "fanout_text": fanout_seed,
-            "reader_topic": reader_topic,
-            "market_profile": profile,
-        },
-        "citation_pattern_summary": {
-            "dominant_page_type": context.get("dominant_page_type"),
-            "dominant_title_pattern": patterns.get("dominant_title_pattern"),
-            "recommended_article_type": patterns.get("recommended_article_type"),
-            "common_heading_patterns": patterns.get("common_heading_patterns", [])[:6],
-            "common_intents": patterns.get("common_intents", []),
-            "table_presence_rate": patterns.get("table_presence_rate"),
-            "list_presence_rate": patterns.get("list_presence_rate"),
-            "faq_presence_rate": patterns.get("faq_presence_rate"),
-            "top_entities": [name for name, _ in context.get("mention_counter", Counter()).most_common(6)],
-        },
-        "article_type": patterns.get("recommended_article_type", "explainer"),
-        "brand_role_in_article": brand_role,
-        "content_goal": content_goal,
-        "target_word_count_range": word_target["range"],
-        "min_word_count": word_target["min"],
-        "ideal_word_count": word_target["ideal"],
-        "title_options": title_options,
-        "writing_brief": brief,
-        "crawled_citation_pages": crawled_pages,
-        "citation_url_pool": citation_urls,
-        "response_previews": _response_previews(context.get("response_details", []), limit=2),
-        "outline_bullets": [line[2:] for line in _article_outline_lines_for_profile(reader_topic, profile) if line.startswith("- ")],
-        "decision_table_template": (
-            _consumer_comparison_table_lines()
-            if profile == "consumer_travel"
-            else _comparison_table_lines(reader_topic)
-        ),
-        "reference_candidates": _reference_lines_from_crawled_pages(
-            [page for page in crawled_pages if page.get("status") == "ok" and page.get("is_article_like")]
-            or [page for page in crawled_pages if page.get("status") == "ok"],
-            limit=8,
-        ),
-        "writing_rules": [
-            "Write like a blog editor, not a document generator.",
-            "Use the citation pages to learn structure, not to copy wording.",
-            "Mention the brand where it naturally belongs in the shortlist or comparison.",
-            "Prefer recommendation or comparison structure when citations show listicle behavior.",
-        ],
-        "quality_review_prompt": quality_review_prompt,
-        "quality_rewrite_prompt": quality_rewrite_prompt,
-    }
-    payload["writer_prompt"] = _writer_prompt_from_payload(payload)
-    return payload
 
 
 def article_generation_payload_from_backlog_row(
@@ -2023,6 +2437,7 @@ def article_generation_payload_from_backlog_row(
     *,
     brand_kb_file: str | None = None,
     citation_limit: int = 5,
+    backlog_rows: List[Dict[str, Any]] | None = None,
 ) -> Dict[str, Any]:
     source_prompt = (row.get("source_prompts") or [""])[0]
     context = _build_content_pack_context(
@@ -2043,47 +2458,33 @@ def article_generation_payload_from_backlog_row(
     citation_urls = _diversified_citation_urls(context.get("citations", []), limit=citation_limit)
     crawled_pages = crawl_citation_pages(citation_urls, limit=citation_limit)
     patterns = analyze_citation_patterns(crawled_pages)
-    reader_topic = _reader_topic_phrase(
-        row.get("fanout_text", ""),
-        row.get("source_topic", ""),
-        context.get("brand_context", {}),
+    adjacent_rows = _adjacent_backlog_rows(backlog_rows or [], row)
+    editorial_brief = _editorial_brief_from_backlog_row(
+        row,
+        context=context,
+        citation_patterns=patterns,
+        crawled_pages=crawled_pages,
+        adjacent_rows=adjacent_rows,
     )
-    profile = row.get("market_profile") or _market_profile(row.get("fanout_text", ""), row.get("source_topic", ""), context.get("brand_context", {}))
-    article_type = row.get("article_type") or patterns.get("recommended_article_type", "explainer")
-    title_options = _dedupe_keep_order(
-        [
-            row.get("normalized_title", ""),
-            _rewrite_fanout_title(row.get("fanout_text", ""), article_type, context.get("brand_context", {})),
-            _rewrite_fanout_title(reader_topic, article_type, context.get("brand_context", {})),
-        ]
-    )[:3]
-    brief = {
-        "reader_problem": f"Readers want help with {reader_topic} and need a clear way to compare options without wasting time.",
-        "must_cover": [
-            "what readers should compare first",
-            "which options usually appear in the shortlist",
-            "where the monitored brand naturally fits",
-            "the most practical decision criteria for this article type",
-        ],
-        "must_avoid": [
-            "template tone",
-            "internal topic labels as final titles",
-            "unsupported claims",
-            "brand mentions that feel like ads",
-        ],
-        "writing_goal": "Write a normal blog post that feels useful to human readers while preserving structure that AI systems can quote.",
-    }
-    brand_role = _brand_role_in_article(context.get("brand_context", {}), profile, article_type)
-    content_goal = _content_goal(article_type, profile)
+    article_type = editorial_brief.get("article_type", row.get("article_type", "explainer"))
     word_target = _word_count_target(article_type)
+    content_goal = _content_goal(article_type, editorial_brief.get("market_profile", "generic"))
+    draft_sections = _draft_sections_from_editorial_brief(
+        editorial_brief,
+        row=row,
+        min_word_count=word_target["min"],
+        ideal_word_count=word_target["ideal"],
+    )
     payload = {
+        "schema_version": "2.0.0",
         "generated_at": datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
         "status": "ok",
+        "workflow_stage": "editorial_brief",
         "backlog_row": row,
         "selected_fanout": {
             "fanout_text": row.get("fanout_text", ""),
-            "reader_topic": reader_topic,
-            "market_profile": profile,
+            "reader_topic": editorial_brief.get("reader_topic", ""),
+            "market_profile": editorial_brief.get("market_profile", ""),
         },
         "citation_pattern_summary": {
             "dominant_page_type": context.get("dominant_page_type"),
@@ -2098,13 +2499,10 @@ def article_generation_payload_from_backlog_row(
             "learning_mode": patterns.get("learning_mode"),
         },
         "article_type": article_type,
-        "brand_role_in_article": brand_role,
+        "brand_role_in_article": editorial_brief.get("brand_inclusion_rule", ""),
         "content_goal": content_goal,
-        "target_word_count_range": word_target["range"],
-        "min_word_count": word_target["min"],
-        "ideal_word_count": word_target["ideal"],
-        "title_options": title_options,
-        "writing_brief": brief,
+        "title_options": editorial_brief.get("alternative_titles", []),
+        "editorial_brief": editorial_brief,
         "crawled_citation_pages": crawled_pages,
         "citation_url_pool": citation_urls,
         "response_previews": _response_previews(context.get("response_details", []), limit=2),
@@ -2123,20 +2521,37 @@ def article_generation_payload_from_backlog_row(
             "Write like a blog editor, not a document generator.",
             "Use the citation pages to learn structure, not to copy wording.",
             "Mention the brand where it naturally belongs in the shortlist or comparison.",
-            "Prefer recommendation or comparison structure when citations show listicle behavior.",
+            "Write from the backlog row and reader task, not from an internal prompt label.",
         ],
-        "quality_review_prompt": (
-            f"You are the second-pass quality reviewer. Check whether the article reads like a normal blog post, matches the citation-page structure, avoids template tone, mentions the brand only where natural, and satisfies the reader intent. The target word count range is {word_target['range']}, with a minimum acceptable length of {word_target['min']} words. If the article is too short, mark it as needing expansion before publication."
-        ),
-        "quality_rewrite_prompt": (
-            "Rewrite the article to feel more natural and human while preserving the chosen title, the article type, the key comparison or recommendation logic, and the real citation-derived structure cues."
-        ),
+        "draft_package": {
+            "target_word_count_range": word_target["range"],
+            "min_word_count": word_target["min"],
+            "ideal_word_count": word_target["ideal"],
+            "draft_sections": draft_sections,
+            "assembly_notes": [
+                "Write section by section before stitching the full article together.",
+                "Preserve a natural editorial flow between sections rather than repeating the same setup.",
+                "Check each section against adjacent-article avoidance notes before final assembly.",
+            ],
+        },
+    }
+    payload.update(_review_package(payload))
+    payload["pipeline_state"] = _pipeline_state(payload)
+    payload["target_word_count_range"] = word_target["range"]
+    payload["min_word_count"] = word_target["min"]
+    payload["ideal_word_count"] = word_target["ideal"]
+    payload["review_package"] = {
+        "quality_checks": payload.pop("quality_checks"),
+        "quality_review_prompt": payload.pop("quality_review_prompt"),
+        "quality_rewrite_prompt": payload.pop("quality_rewrite_prompt"),
+        "section_review_contract": payload.pop("section_review_contract"),
+        "assembly_review_prompt": payload.pop("assembly_review_prompt"),
     }
     payload["writer_prompt"] = _writer_prompt_from_payload(payload)
     return payload
 
 
-def _draft_article_from_payload_v1(payload: Dict[str, Any]) -> str:
+def _deprecated_draft_article_from_payload_v1(payload: Dict[str, Any]) -> str:
     selected = payload.get("selected_fanout", {})
     brief = payload.get("writing_brief", {})
     citations = payload.get("citation_pattern_summary", {})
@@ -2299,7 +2714,7 @@ def _draft_article_from_payload_v1(payload: Dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
-def _draft_article_from_payload_v2(payload: Dict[str, Any]) -> str:
+def _deprecated_draft_article_from_payload_v2(payload: Dict[str, Any]) -> str:
     selected = payload.get("selected_fanout", {})
     citations = payload.get("citation_pattern_summary", {})
     title = (payload.get("title_options") or ["Untitled Article"])[0]
@@ -2535,174 +2950,477 @@ def _force_minimum_length(markdown_text: str, article_type: str, payload: Dict[s
     blocks = expansions.get(article_type, [])
     if not blocks:
         return expanded
-    idx = 0
-    while len(expanded.split()) < min_word_count and idx < 6:
-        for block in blocks:
-            expanded += block if block.startswith("\n") else ("\n" + block)
-        idx += 1
+    insert_marker = "\n## Final Takeaway\n"
+    for block in blocks:
+        if len(expanded.split()) >= min_word_count:
+            break
+        addition = block if block.startswith("\n") else ("\n" + block)
+        if insert_marker in expanded:
+            head, tail = expanded.split(insert_marker, 1)
+            expanded = head + addition + insert_marker + tail
+        else:
+            expanded += addition
     return expanded
 
 
 def draft_article_from_payload(payload: Dict[str, Any]) -> str:
     selected = payload.get("selected_fanout", {})
-    citations = payload.get("citation_pattern_summary", {})
-    title = (payload.get("title_options") or ["Untitled Article"])[0]
-    entities = ", ".join(citations.get("top_entities", [])[:5]) or "well-known options"
-    brand_role = payload.get("brand_role_in_article", "")
-    content_goal = payload.get("content_goal", "")
-    article_type = payload.get("article_type", "")
+    editorial = payload.get("editorial_brief", {})
+    source_materials = editorial.get("source_materials", {})
+    title = editorial.get("working_title") or (payload.get("title_options") or ["Untitled Article"])[0]
+    article_type = editorial.get("article_type", payload.get("article_type", "explainer"))
+    reader_topic = editorial.get("reader_topic", selected.get("reader_topic", selected.get("fanout_text", "the topic")))
     fanout_text = selected.get("fanout_text", "")
-    reader_topic = selected.get("reader_topic", fanout_text)
-    min_word_count = int(payload.get("min_word_count", 1000) or 1000)
+    content_goal = payload.get("content_goal", "")
+    brand_rule = editorial.get("brand_inclusion_rule", payload.get("brand_role_in_article", ""))
+    entities = ", ".join(source_materials.get("top_entities", [])[:5]) or "well-known options"
+    outline = editorial.get("recommended_outline", [])
+    adjacent_titles = source_materials.get("adjacent_titles", [])
+    persona = editorial.get("reader_persona", "a practical reader")
+    job = editorial.get("reader_job_to_be_done", "help the reader make a clearer decision.")
+    decision_frame = editorial.get("decision_frame", "")
+    cluster_role = editorial.get("cluster_role", "")
+    references = source_materials.get("supporting_urls", [])[:4]
+    title_l = title.lower()
+    fanout_l = fanout_text.lower()
+    comparison_table = _consumer_comparison_table_lines() if editorial.get("market_profile") == "consumer_travel" else _comparison_table_lines(reader_topic)
+    reference_lines = [f"- {url}" for url in references]
+    nearby = ", ".join(adjacent_titles[:3]) if adjacent_titles else ""
+    testing_framework = editorial.get("testing_framework", {})
+    eeat_layer = editorial.get("eeat_layer", {})
 
-    if article_type == "recommendation":
-        article = "\n".join([
+    def add_common_tail(lines: List[str], first_answer: str, second_answer: str, takeaway_intro: str) -> str:
+        if article_type in {"comparison", "recommendation"}:
+            lines.extend(["## Decision Table", ""])
+            lines.extend(comparison_table)
+            lines.extend([""])
+        if nearby:
+            lines.extend(
+                [
+                    "## What Makes This Angle Different",
+                    "",
+                    f"This topic sits close to related articles such as {nearby}. The point of this piece is not to recycle those pages with slightly different wording. It is to use a different decision frame so the reader leaves with a clearer next move.",
+                    "",
+                ]
+            )
+        lines.extend(
+            [
+                "## Where the Brand Fits",
+                "",
+                brand_rule,
+                "",
+                "## FAQ",
+                "",
+                f"### What should readers compare first when evaluating {reader_topic}?",
+                "",
+                first_answer,
+                "",
+                f"### How should someone use this article after searching for \"{fanout_text}\"?",
+                "",
+                second_answer,
+                "",
+            ]
+        )
+        if reference_lines:
+            lines.extend(["## References", ""])
+            lines.extend(reference_lines)
+            lines.extend([""])
+        lines.extend(
+            [
+                "## Final Takeaway",
+                "",
+                takeaway_intro,
+                "",
+                _publish_cta_text({"asset_title": title, "target_intent": editorial.get("search_intent", "")}),
+            ]
+        )
+        return _force_minimum_length("\n".join(lines), article_type, payload)
+
+    if article_type == "comparison":
+        if "booking.com" in title_l or "booking.com" in fanout_l:
+            lines = [
+                f"# {title}",
+                "",
+                "## Quick Answer",
+                "",
+                "- Yes, Booking.com can be cheaper in the app, but usually only under specific conditions.",
+                "- The most common reasons are mobile-only deals, Genius/member pricing, different room or cancellation terms, taxes/fees display, and currency handling.",
+                "- The fastest way to verify the difference is to compare the exact same room, policy, dates, currency, and login state on both surfaces.",
+                "",
+                f"If you are searching for {fanout_text}, the useful question is not whether the app is magically cheaper in every case. The useful question is where the apparent difference comes from and whether that difference still holds once you line up the actual booking terms.",
+                "",
+                "## When Booking.com Really Can Be Cheaper in the App",
+                "",
+                "The app can genuinely show a lower price when a mobile-only promotion is active, when a Genius or member rate is surfaced more aggressively in-app, or when the app is showing a slightly different offer configuration from the website. In practice, travelers often mistake these cases for a universal app advantage when they are really seeing one of a few recurring triggers.",
+                "",
+                "Those triggers usually include mobile-only discounts, Genius/member pricing, prepaid versus pay-at-property defaults, free-cancellation cutoffs, tax inclusion differences, and currency conversion behavior. If even one of those shifts between the app and web view, the rate can look cheaper without being a true apples-to-apples comparison.",
+                "",
+                "## The 3-Step Check That Prevents Fake Price Gaps",
+                "",
+                "1. Compare the same hotel, same room, same dates, same occupancy, and the same cancellation terms.",
+                "2. Make sure you are using the same login state, same currency, and same payment setting on both surfaces.",
+                "3. Compare the total payable amount and booking conditions, not only the first visible nightly rate.",
+                "",
+                "That sounds basic, but it is where most bad comparisons break. The app may look cheaper simply because it defaulted to a prepaid room, a less flexible policy, or a different tax display.",
+                "",
+                "## Field Alignment Checklist",
+                "",
+                "| Field | Why it creates fake gaps | What to verify |",
+                "|---|---|---|",
+                "| Room type | Slightly different inventory can look like a pricing gap | Match the exact room name and occupancy |",
+                "| Cancellation policy | Non-refundable offers often look cheaper | Confirm the same flexibility and deadline |",
+                "| Payment timing | Prepaid and pay-at-property rates are often different | Check whether payment timing matches |",
+                "| Taxes and fees | One surface may reveal more cost later | Compare total payable amount, not only base price |",
+                "| Currency | Exchange display can distort the comparison | Lock the same currency on both sides |",
+                "| Login/member state | Genius or member pricing may appear differently | Stay logged in consistently on both surfaces |",
+                "",
+                "## Booking.com-Specific Triggers to Check First",
+                "",
+                "- Genius or member pricing",
+                "- mobile-only deals",
+                "- breakfast included vs room only",
+                "- free cancellation deadline",
+                "- pay now vs pay later",
+                "- taxes/fees included vs shown later",
+                "- Booking.com currency conversion versus card issuer conversion",
+                "",
+                "## A Simple Test Method",
+                "",
+                f"If you want a trustworthy answer, run a small manual test instead of relying on one screenshot. {testing_framework.get('tested_at_field', 'Record the test date and timestamp when possible.')} Use the same property, keep the same login state, fix the currency, and compare the total price plus key conditions across app and web. Even a tiny sample is more useful than a broad claim if the method is clear.",
+                "",
+                "## Evidence and Scope",
+                "",
+                f"- Recommended sample size: {testing_framework.get('sample_size_guidance', '')}",
+                f"- Same-input rule: {testing_framework.get('same_input_rule', '')}",
+                f"- Scope: {testing_framework.get('conclusion_scope_template', '')}",
+                "",
+                "## Where Travelers Usually Go Wrong",
+                "",
+                "The biggest mistake is stopping at the first visible rate and never checking whether the app and website are showing the same offer structure. The second is treating a temporary promotional surface as a permanent pricing truth. The third is ignoring the fact that a slightly lower rate can still be a worse booking if flexibility, taxes, or payment terms are different.",
+                "",
+                "## FAQ",
+                "",
+                "### Is Booking.com always cheaper in the app?",
+                "",
+                "No. It can be cheaper in some cases, especially when mobile-only or member pricing is involved, but it is not automatically cheaper on every booking.",
+                "",
+                "### Why does Booking.com show different prices on app and website?",
+                "",
+                "The most common reasons are mobile-only promotions, Genius/member pricing, different room or cancellation defaults, tax display, and currency handling.",
+                "",
+                "### What is the fastest way to check whether the app deal is real?",
+                "",
+                "Compare the exact same room, same terms, same login state, same currency, and the full payable amount on both surfaces.",
+                "",
+            ]
+            if reference_lines:
+                lines.extend(["## References", ""])
+                lines.extend(reference_lines)
+                lines.extend([""])
+            lines.extend(
+                [
+                    "## Final Takeaway",
+                    "",
+                    "Booking.com can be cheaper in the app, but usually because something specific changed: a mobile-only promotion, a Genius discount, a different rate type, or how the total price is displayed. The smartest move is to verify the same booking conditions side by side before assuming the app always wins.",
+                ]
+            )
+            return "\n".join(lines)
+
+        if "expedia" in title_l or "expedia" in fanout_l:
+            lines = [
+                f"# {title}",
+                "",
+                "## Quick Answer",
+                "",
+                "- Yes, Expedia can show cheaper hotel pricing in the app in some situations, but not by default on every booking.",
+                "- The most common causes are member pricing, app-only promotions, coupon or loyalty treatment, packaging logic, and differences in how fees or room conditions are surfaced.",
+                "- The fastest way to verify it is to compare one hotel across app and web using the same room, same dates, same login state, and the same total-price view.",
+                "",
+                f"If you are searching for {fanout_text}, what you usually want is not a broad theory. You want to know whether the app is worth checking first, when the web view is still better, and how to avoid being fooled by differences that are not real price wins.",
+                "",
+                "## The 6 Most Common Expedia Price-Gap Triggers",
+                "",
+                "1. Member or loyalty pricing being surfaced differently.",
+                "2. App-only promotional discounts or coupons.",
+                "3. Different room or cancellation defaults.",
+                "4. Bundling logic affecting hotel visibility or value signals.",
+                "5. Fees and taxes being noticed at different stages.",
+                "6. A cleaner desktop experience making the real trade-offs easier to inspect before checkout.",
+                "",
+                "## When to Check the App First",
+                "",
+                "| Situation | Better first stop | Why |",
+                "|---|---|---|",
+                "| You suspect app-only discounts | App | Mobile promotions may surface there first |",
+                "| You want to inspect many room conditions | Website | Bigger screen makes policy comparison easier |",
+                "| You are booking quickly on a simple trip | App | Faster flow can matter more than feature depth |",
+                "| You are comparing many hotels side by side | Website | Desktop usually makes multi-tab review easier |",
+                "",
+                "## 3 Steps to Verify the Difference Fast",
+                "",
+                "1. Log in the same way on both app and web so member treatment matches.",
+                "2. Compare the exact same room, dates, occupancy, cancellation terms, and currency.",
+                "3. Use the total booking cost and conditions as the final answer, not the first visible price.",
+                "",
+                "## Evidence and Scope",
+                "",
+                f"- Recommended sample size: {testing_framework.get('sample_size_guidance', '')}",
+                f"- Same-input rule: {testing_framework.get('same_input_rule', '')}",
+                f"- Scope: {testing_framework.get('conclusion_scope_template', '')}",
+                "",
+                "## Where Expedia Comparisons Go Wrong",
+                "",
+                "Travelers often misread Expedia app-versus-web differences because they compare different room types, different refund terms, or different moments in a volatile pricing window. Another issue is assuming that a lower-looking app rate is automatically a better deal even when the web flow makes the conditions much easier to inspect.",
+                "",
+                "That is why the smarter question is not only 'Which is cheaper?' but 'Which surface helps me make the cleaner booking decision for this stay?'",
+                "",
+                "## FAQ",
+                "",
+                "### Is Expedia always cheaper in the app?",
+                "",
+                "No. Sometimes the app has an advantage, but it is not consistent enough to treat as a rule.",
+                "",
+                "### Why might Expedia app and website prices differ?",
+                "",
+                "The main causes are member pricing, app-only offers, room-condition mismatches, fee display differences, and packaging or merchandising logic.",
+                "",
+                "### Should I book on Expedia app or website?",
+                "",
+                "Check the app first for speed and possible mobile offers, but use the website when you need a cleaner side-by-side review of policies and options.",
+                "",
+            ]
+            if reference_lines:
+                lines.extend(["## References", ""])
+                lines.extend(reference_lines)
+                lines.extend([""])
+            lines.extend(
+                [
+                    "## Final Takeaway",
+                    "",
+                    "Expedia app pricing can beat the website in some cases, but the difference usually comes from a small set of triggers rather than a permanent app advantage. The right habit is to test one booking both ways, line up the conditions carefully, and decide based on the total booking outcome, not the first number that looks lower.",
+                ]
+            )
+            return "\n".join(lines)
+
+        if "package deals" in fanout_l and "separately" in fanout_l:
+            lines = [
+                f"# {title}",
+                "",
+                "## Quick Answer",
+                "",
+                "- Package deals are not always cheaper, but they can win on either bundled pricing or simpler trip coordination.",
+                "- Booking separately usually wins when flexibility, loyalty strategy, or custom trip structure matters more than convenience.",
+                "- The best choice depends on the trip type, not just the headline price.",
+                "",
+                f"If you are searching for {fanout_text}, you are usually trying to answer a practical question: should I optimize this trip like a builder, or should I take the cleaner bundled route and accept less customization?",
+                "",
+                "## What Usually Decides It",
+                "",
+                "The real decision is not package versus separate in the abstract. It is package versus separate for one specific trip. A simple beach holiday, family resort stay, or fixed-date city break behaves differently from a multi-city trip, a points-heavy strategy, or a trip with a high chance of change.",
+                "",
+                "That is why the comparison works best when it focuses on total cost, flexibility, support complexity, loyalty value, and how much coordination the traveler wants to handle personally.",
+                "",
+                "## Which Trip Types Usually Favor Each Option",
+                "",
+                "| Trip type | Usually better | Why | Watch out for |",
+                "|---|---|---|---|",
+                "| Simple family vacation | Package | Easier coordination and occasional bundle savings | Check cancellation terms carefully |",
+                "| Resort or all-inclusive trip | Package | Bundles often align well with the trip shape | Compare room and transfer details |",
+                "| Multi-city itinerary | Separate | More control over flight and hotel combinations | More planning effort |",
+                "| Business or schedule-sensitive trip | Separate | Flexibility and timing matter more | Total cost can rise |",
+                "| Points/miles strategy trip | Separate | Better chance to optimize airline and hotel loyalty | More moving parts |",
+                "",
+                "## Hidden Costs and Restrictions People Miss",
+                "",
+                "- Refund and cancellation chains can be more complicated in packages.",
+                "- Customer-service responsibility may feel blurrier when multiple services are bundled.",
+                "- Loyalty points and hotel/airline status benefits can be weaker or harder to optimize in packages.",
+                "- Travel insurance and disruption handling can work differently depending on how the trip is booked.",
+                "- A package that looks cheaper may still reduce flexibility enough to become the worse choice.",
+                "",
+                "## A Better Way to Compare",
+                "",
+                "Take one real trip and compare both workflows side by side. Measure the total cost, the cancellation flexibility, the hotel quality, the flight timing, the booking friction, and who you will need to deal with if something changes. That gives you a much better answer than a generic rule about which method is always cheaper.",
+                "",
+                "## Evidence and Scope",
+                "",
+                f"- Recommended sample size: {testing_framework.get('sample_size_guidance', '')}",
+                f"- Same-input rule: {testing_framework.get('same_input_rule', '')}",
+                f"- Scope: {testing_framework.get('conclusion_scope_template', '')}",
+                "",
+                "## FAQ",
+                "",
+                "### Why can a flight plus hotel package be cheaper?",
+                "",
+                "Because providers may discount the bundle more aggressively than the individual pieces, or because the package is optimized for a standard leisure-trip pattern.",
+                "",
+                "### Do package deals affect airline miles or hotel status benefits?",
+                "",
+                "They can. In some cases you earn less or have fewer ways to optimize loyalty value compared with booking separately.",
+                "",
+                "### Who handles changes or cancellations on a package deal?",
+                "",
+                "That depends on the provider, which is why customer-service ownership and change rules should be checked before booking.",
+                "",
+                "### Are multi-city trips good candidates for package deals?",
+                "",
+                "Usually less so. Once the trip becomes more custom, separate booking often gives better control.",
+                "",
+            ]
+            if reference_lines:
+                lines.extend(["## References", ""])
+                lines.extend(reference_lines)
+                lines.extend([""])
+            lines.extend(
+                [
+                    "## Final Takeaway",
+                    "",
+                    "Package deals can absolutely be the better choice, but usually because they save coordination time, reduce friction, or fit a standard trip pattern well, not simply because they are always the cheapest. Separate bookings win when flexibility, loyalty strategy, or custom routing matters more. The right answer comes from testing one real trip both ways and judging the total outcome.",
+                ]
+            )
+            return "\n".join(lines)
+
+        lines = [
             f"# {title}",
             "",
-            f"If you are trying to choose between {reader_topic}, the hard part is not a lack of options. It is that too many options look plausible until you actually compare them in a real booking scenario. Readers usually come to this kind of article because they want a shorter, stronger shortlist and a clearer way to decide what deserves attention first.",
+            f"If you are looking into {fanout_text}, the difficult part is usually not finding options. It is figuring out which differences actually matter before you spend more time, money, or trust on the wrong path.",
             "",
-            f"That is why names like {entities} keep appearing. They already dominate the visible comparison set, which makes them feel familiar long before the reader has decided whether they are the right fit. A useful article should not pretend that the shortlist starts from zero. It should explain why those names stay visible, what each one tends to optimize for, and where the decision becomes easier once the right criteria are clear.",
+            f"This article is written for {persona.lower()} The real job here is practical: {job}",
             "",
-            "## Start With the Problem You Want the App to Solve",
+            f"In this corner of the market, names such as {entities} already shape the shortlist. That is exactly why comparison content matters. Readers do not need another vague overview. They need help seeing which differences are real, which differences are cosmetic, and which trade-offs will matter once they actually try to book.",
             "",
-            f"The strongest recommendation articles start from the reader's actual problem, not the app's marketing promise. In a query like \"{fanout_text}\", that usually means deciding whether the reader wants one place to compare and book the whole trip, whether they are mainly trying to surface better prices, or whether they simply want a booking experience that feels clearer and easier to trust.",
+            "## What Actually Changes the Decision",
             "",
-            "This sounds simple, but it changes the whole article. Once the problem is framed properly, the recommendation becomes more than a list of names. It becomes guidance about fit.",
+            f"The most useful way to approach {editorial.get('article_angle', reader_topic)} is to compare one realistic scenario across the same options instead of comparing broad claims. {decision_frame}",
+            "",
+            "In practice, that means keeping the booking conditions as consistent as possible and asking a narrower question: which option creates the cleaner outcome once price, flexibility, and trust are weighed together?",
+            "",
+            "## How to Compare Without Drowning in Features",
+            "",
+            "Weak comparison pages usually try to sound comprehensive by adding more rows, more filters, and more edge cases than the reader can actually use. Strong comparison pages do the opposite. They narrow the field and make the decision lighter.",
+            "",
+            "A useful comparison should tell the reader which differences deserve attention first and which ones look important but rarely change the final choice. In travel, that usually means visible pricing, refund terms, booking clarity, and what happens when the itinerary stops being simple.",
+            "",
+            "## Where Readers Usually Go Wrong",
+            "",
+            "The most common mistake is trusting the first visible price before checking the booking conditions underneath it. The second is assuming the most familiar brand is automatically the safer or smarter choice. The third is comparing too many variables at once and leaving the page more confused than when the search started.",
+            "",
+            "The article becomes genuinely useful when it does some of that sorting for the reader. Instead of saying everything matters, it helps the reader understand what matters now, what can wait, and what is probably just noise.",
+            "",
+        ]
+        return add_common_tail(
+            lines,
+            "Start with the differences that change the real outcome: total cost, policy clarity, flexibility, and how trustworthy the booking flow feels once the details get specific.",
+            "Use it to narrow the shortlist, test one realistic trip across the strongest options, and judge the result on the total booking experience rather than the first number you see.",
+            f"A strong comparison article should leave the reader with a clearer shortlist and a sharper sense of what to test next. {content_goal}",
+        )
+
+    if article_type == "recommendation":
+        lines = [
+            f"# {title}",
+            "",
+            f"When people look into {fanout_text}, they are usually not asking for a giant list. They are asking for help getting to a shortlist that actually fits the way they travel, buy, or compare options.",
+            "",
+            f"This article is written for {persona.lower()} The practical job is simple: {job}",
+            "",
+            f"The challenge is that familiar names such as {entities} already dominate the visible comparison set. That makes it easy to confuse awareness with fit. A good recommendation article should correct that. It should help the reader understand why some options work better for certain priorities and why the loudest brand is not always the strongest choice.",
+            "",
+            "## Start With the Problem You Need the Option to Solve",
+            "",
+            f"The smartest starting point is not the product list. It is the reader's actual situation. {decision_frame}",
+            "",
+            "Someone trying to reduce booking friction is making a different decision from someone trying to maximize flexibility or squeeze more value out of a complicated itinerary. Once that is clear, the shortlist becomes much more useful.",
             "",
             "## The Criteria That Matter in Real Use",
             "",
-            "Readers usually care about four things more than everything else: booking coverage, price clarity, ease of use, and trust. Coverage matters because a fragmented trip is harder to manage. Price clarity matters because the cheapest-looking option is not always the easiest one to trust. Ease of use matters because an app can feel impressive until it starts creating friction the moment the itinerary gets more complicated. Trust matters because travel booking becomes stressful fast when conditions or support are unclear.",
+            "Most recommendation content gets weak when it turns into a feature dump. Better recommendation content explains which criteria actually change the outcome. In travel, that often means coverage, clarity, trust, and how smooth the workflow feels once the booking gets real.",
             "",
-            "Weak recommendation content often turns those factors into a feature checklist. Better recommendation content explains what those factors change for the reader. That is the difference between a page that feels like a catalog and one that actually helps someone decide.",
-            "",
-            "## Why the Same Shortlist Keeps Coming Back",
-            "",
-            f"Readers keep seeing {entities} because these products already sit at the center of the market conversation. They are visible, familiar, and easy to compare. But visibility is not fit. A useful article has to help readers understand when a familiar option is actually the right choice and when it is simply benefiting from awareness.",
-            "",
-            f"{brand_role}",
-            "",
-            "This matters because recommendation articles are strongest when they explain why different readers can land on different winners. Someone who wants one-stop convenience may not choose the same product as someone who values more price exploration or more flexibility in how they piece the trip together.",
-            "",
-            "## How to Compare Without Wasting an Afternoon",
-            "",
-            "The simplest way to use a shortlist well is to test the same travel scenario across two or three serious options. Use the same route, the same date range, and the same booking assumptions. Then compare not only visible price, but whether the search flow, booking conditions, and checkout path still feel clear when the trip gets real.",
-            "",
-            "This is where weak options usually reveal themselves. Some products look compelling at the first search screen and then create more work once support, cancellations, or itinerary changes begin to matter. Others may look less dramatic at first glance, but create a better total experience because they reduce confusion and keep more of the workflow in one place.",
+            "This is also where good editorial judgment matters. The article should not pretend every reader needs the same winner. It should explain why different readers can end up choosing different tools for legitimate reasons.",
             "",
             "## Which Reader Types Usually Prefer Different Options",
             "",
-            "Not every reader is making the same decision. A convenience-first traveler, a deal hunter, and a planner dealing with a more complex itinerary may all start from the same shortlist and still end up making different choices. Recommendation writing becomes much more useful when it names those reader differences directly instead of pretending one universal winner can solve every scenario.",
+            "A convenience-first traveler often wants a different answer from a deal hunter or a traveler piecing together a more complex itinerary. Naming those differences directly is what makes recommendation content feel useful instead of generic.",
             "",
-            "That is also why strong recommendation pages usually feel more editorial than product-led. They help the reader understand themselves as much as they help the reader understand the products.",
+            "That is also what helps the article avoid becoming another interchangeable roundup. The point is not to crown one universal winner. The point is to help the right reader arrive at the right shortlist faster.",
             "",
-            "## Where Recommendation Articles Usually Fail",
-            "",
-            "Most recommendation articles fail because they either add too many names or too little judgment. The result is the same in both cases: the reader leaves with more noise and not enough clarity. A stronger article should reduce the shortlist, sharpen the reasons, and make the next comparison easier to run in real life.",
-            "",
-            "## Final Takeaway",
-            "",
-            f"The purpose of this article is not to force every reader into the same answer. It is to help the right reader get to the right shortlist faster, with stronger reasons and less wasted effort. That is the content goal here: {content_goal}",
-        ])
-    elif article_type == "comparison":
-        article = "\n".join([
+        ]
+        return add_common_tail(
+            lines,
+            "Compare the criteria that will actually change your final choice: how much the tool covers, how clearly it presents trade-offs, and whether the booking path still feels trustworthy once details matter.",
+            "Use it to identify which reader type sounds most like you, then test the two or three options that best match that profile instead of reading endless roundups.",
+            f"A strong recommendation article should reduce decision fatigue and leave the reader with a shortlist that feels easier to trust. {content_goal}",
+        )
+
+    if article_type == "guide":
+        lines = [
             f"# {title}",
             "",
-            f"Comparison searches happen when readers already recognize the shortlist and still do not feel any closer to a decision. They are not looking for another generic summary. They want one article that makes the real trade-offs easier to see and the final choice easier to justify.",
+            f"If you are trying to figure out {fanout_text}, the hardest part is usually not lack of information. It is too much information arriving in the wrong order.",
             "",
-            f"That is exactly why products like {entities} dominate this kind of search. They already shape the comparison set. A useful article should not simply repeat that visibility. It should explain what changes when one option is chosen over another, why those differences matter, and which kind of reader is most likely to care about each difference.",
+            f"This guide is written for {persona.lower()} The goal is not to overwhelm you with more detail. It is to make the decision easier to move through: {job}",
             "",
-            "## Which Differences Actually Matter First",
+            f"In a space already shaped by options such as {entities}, a useful guide should do more than explain what exists. It should show what to do first, what to compare next, and what is probably wasting your time.",
             "",
-            f"For a comparison shaped by \"{fanout_text}\", the strongest criteria are usually the ones that affect the booking experience directly: coverage, transparency, ease of use, flexibility, and trust. Those are the factors that determine whether the final decision feels smooth and confident or messy and uncertain.",
+            "## Start With the Real Decision",
             "",
-            "A weak comparison article lists too many variables and expects the reader to do the real sorting alone. A stronger one makes the hierarchy visible. It tells the reader which differences matter first, which ones are secondary, and where the final decision is most likely to pivot.",
+            f"The best guides begin by naming the actual job the reader is trying to finish. {decision_frame}",
             "",
-            "## Why Familiar Options Need Better Contrast",
+            "That matters because plenty of advice sounds helpful while still leaving the reader unclear about the next step. Once the decision is framed properly, the rest of the process becomes much easier to follow.",
             "",
-            f"When readers compare {reader_topic}, they naturally begin with brands they already recognize. That is why {entities} keep showing up. But familiarity is only the start of the decision. A useful comparison article should make the reader understand where those options actually separate in practice.",
+            "## Turn the Process Into a Sequence",
             "",
-            f"{brand_role}",
+            "The article should reduce the choice into a usable order. What deserves attention now? What can wait? Which details are meaningful only after the shortlist is already smaller?",
             "",
-            "This is where comparison writing becomes much more valuable than a generic list. It helps the reader understand how the same shortlist can produce different winners depending on whether convenience, pricing clarity, or support matters most.",
-            "",
-            "## How to Compare Without Turning the Page Into a Spreadsheet",
-            "",
-            "The cleanest comparison process is to fix one realistic scenario and run every candidate through it. The same route, dates, and booking goals. Once the scenario stays stable, the differences become more trustworthy because the article is no longer pretending every edge case matters equally.",
-            "",
-            "That is also what makes comparison writing easier to read. It narrows the scope just enough that the reader can actually use the page instead of just admiring its apparent thoroughness.",
-            "",
-            "## Where Comparison Pages Usually Go Wrong",
-            "",
-            "Weak comparison pages often mistake completeness for usefulness. They pile on more rows, more products, and more variables than the reader can meaningfully process. That often creates the look of rigor without delivering confidence.",
-            "",
-            "A better comparison article is selective. It names the trade-offs clearly, acknowledges that different readers may reach different conclusions, and leaves the reader with a smaller, clearer final decision.",
-            "",
-            "## Final Takeaway",
-            "",
-            f"A strong comparison article should reduce ambiguity and make the reader's choice easier to justify. That is the content goal here: {content_goal}",
-        ])
-    elif article_type == "guide":
-        article = "\n".join([
-            f"# {title}",
-            "",
-            f"Guide-style searches happen when readers want a process more than a list. They need a simpler path through a task that already feels harder than it should. That means the article must reduce uncertainty, sequence the decision clearly, and help the reader avoid mistakes before they become expensive or frustrating.",
-            "",
-            f"In a category already shaped by names like {entities}, that kind of process matters even more. Readers can discover products anywhere. What they need is a cleaner way to know what to do first, what to compare next, and what can safely wait until later.",
-            "",
-            "## Start With the Actual Job Behind the Search",
-            "",
-            f"A useful guide begins by defining the real job implied by \"{fanout_text}\". In many cases, the reader thinks they are choosing a product when they are actually choosing a workflow. Once that job is named clearly, the rest of the advice becomes much easier to use.",
-            "",
-            "That shift matters because advice without a clear job often sounds complete while still failing to help. The guide becomes stronger when it explains not just what exists, but what the reader is actually trying to make easier.",
-            "",
-            "## Turn the Choice Into a Sequence",
-            "",
-            "The best guides reduce complexity into a sequence. What should the reader check first? Which differences matter early? Which details can wait? This is what makes guide writing useful in practice rather than merely informative on the page.",
-            "",
-            f"{brand_role}",
-            "",
-            "A guide also becomes more useful when it teaches the reader what not to overthink yet. That protects momentum and keeps the decision lighter.",
+            "That sequencing is what separates guide content from generic blog filler. It creates momentum for the reader instead of giving them one more pile of variables to juggle.",
             "",
             "## Where the Process Usually Breaks Down",
             "",
-            "Weak guides often fail because they confuse quantity with usefulness. They offer more names, more caveats, and more conditional advice than the reader can apply. The result is information overload disguised as thoroughness.",
+            "People usually go wrong when they compare too much too early, trust marketing language before practical fit, or chase small differences that do not really change the outcome.",
             "",
-            "A better guide keeps the process moving. It narrows the field, clarifies the decision order, and leaves the reader with a cleaner sense of what matters most.",
+            "A good guide prevents that by making the next move obvious and helping the reader ignore the noise that looks useful but rarely improves the decision.",
             "",
-            "## Final Takeaway",
-            "",
-            f"The purpose of this guide is progress. Readers should leave with fewer wrong turns and a clearer next step. That is the content goal here: {content_goal}",
-        ])
-    else:
-        article = "\n".join([
-            f"# {title}",
-            "",
-            f"When readers search for {reader_topic}, they are usually trying to understand a category that feels increasingly important but still slightly blurry. A good explainer has to reduce that blur quickly and connect the explanation to something the reader can actually use.",
-            "",
-            f"That matters even more in a topic already framed by names like {entities}. Repetition can make a category feel clear even when the underlying decision is still fuzzy. A useful article should help the reader separate the category itself from the surrounding market noise.",
-            "",
-            f"## What {reader_topic.capitalize()} Actually Means",
-            "",
-            f"The strongest explanation starts from the reader's problem. A category only matters if it changes how the reader evaluates options, reduces friction, or helps avoid a mistake. Once the article is grounded in that outcome, the explanation becomes practical rather than decorative.",
-            "",
-            "That is why strong explainers do not stay at the definition layer very long. They use the definition as a bridge into consequences, choices, and next steps.",
-            "",
-            "## What the Reader Should Notice First",
-            "",
-            "A useful explainer highlights the few variables that most affect the final decision. It does not flatten every feature into one neutral list. It gives the reader hierarchy and a stronger way to think about the category.",
-            "",
-            f"{brand_role}",
-            "",
-            "## Why This Topic Gets Misunderstood",
-            "",
-            "Most weak explainer content sounds polished while still failing to help. It explains the topic without changing the reader's next move. Better content solves that by connecting concept, relevance, and application into one line of thought.",
-            "",
-            "## Final Takeaway",
-            "",
-            f"A useful explainer should leave the reader with clearer understanding and a more practical next step. That is the content goal here: {content_goal}",
-        ])
+        ]
+        return add_common_tail(
+            lines,
+            "Start with the step that changes the whole path: define the real job you need the tool or workflow to do before comparing every visible feature.",
+            "Use it as a sequence, not as a checklist to skim. Follow the order, shrink the field, and only then compare finer details.",
+            f"A good guide should leave the reader with a clearer process and fewer wrong turns. {content_goal}",
+        )
 
-    return _force_minimum_length(article, article_type, payload)
+    lines = [
+        f"# {title}",
+        "",
+        f"When people search for {fanout_text}, they are often trying to understand a category that feels important but still slightly blurry.",
+        "",
+        f"This article is written for {persona.lower()} The practical goal is straightforward: {job}",
+        "",
+        f"That is why familiar names such as {entities} matter, but only up to a point. They shape the market conversation, yet they do not automatically explain what the category means or how the reader should use that understanding to make a better decision.",
+        "",
+        f"## What {reader_topic} Actually Means",
+        "",
+        f"A good explainer should reduce confusion quickly and connect the definition to a real choice. {decision_frame}",
+        "",
+        "The point is not to stay in definition mode too long. The point is to give the reader a cleaner mental model and then show why that model matters once options, workflows, or trade-offs enter the picture.",
+        "",
+        "## What the Reader Should Notice Early",
+        "",
+        "Strong explainers do not treat every variable as equally important. They help the reader notice which differences actually change the outcome and which ones are mostly background noise.",
+        "",
+        "That is what makes the article useful. It gives the reader a better lens for evaluating the category instead of simply repeating the market's labels back to them.",
+        "",
+        "## Why This Topic Gets Misunderstood",
+        "",
+        "Most weak explainer content stays broad for too long. It sounds polished, but it never really helps the reader move from abstract understanding into better judgment.",
+        "",
+        "A better explainer closes that gap. It helps the reader understand the category and then immediately use that understanding in a more practical way.",
+        "",
+    ]
+    return add_common_tail(
+        lines,
+        "Start with the variables that would actually change your next decision, not the labels that make the category sound bigger or trendier than it is.",
+        "Use it to clarify the category first, then make one stronger comparison than you could have made before reading.",
+        f"A strong explainer should leave the reader with a cleaner mental model and a more useful next step. {content_goal}",
+    )
 
 
 def draft_article_from_payload(payload: Dict[str, Any]) -> str:
@@ -2843,11 +3561,6 @@ def _build_content_pack_context(
     primary_intent = _primary_intention((selected_prompt or {}).get("intentions") or [])
     tier = _opportunity_tier(selected_opportunity)
     dominant_page_type = _page_type_family(citations)
-    guessed_fanout = _fanout_prompt_guesses(
-        selected_opportunity.get("prompt", ""),
-        selected_opportunity.get("topic", ""),
-        primary_intent,
-    )
     api_fanout: List[str] = []
     if selected_prompt_id:
         try:
@@ -2858,11 +3571,11 @@ def _build_content_pack_context(
             api_fanout = [item.get("name", "").strip() for item in fanout_items if item.get("name")]
         except Exception:
             api_fanout = []
-    fanout_prompts = _dedupe_keep_order(api_fanout + guessed_fanout)
+    fanout_prompts = _dedupe_keep_order(api_fanout)
 
     keyword_cluster = _dedupe_keep_order(
-        _keyword_cluster_guesses(selected_opportunity.get("prompt", ""), selected_opportunity.get("topic", ""))
-        + fanout_prompts[:5]
+        fanout_prompts[:5]
+        + _keyword_cluster_guesses(selected_opportunity.get("prompt", ""), selected_opportunity.get("topic", ""))
     )
     keyword_volume_rows: List[Dict[str, Any]] = []
     if keyword_cluster:
@@ -3010,6 +3723,7 @@ def build_fanout_backlog(
             row.get("normalized_title", ""),
             row["source_count"],
         )
+        row.update(_cluster_role_plan(row))
         if row["source_count"] > 1:
             row["overlap_status"] = "merge"
         else:
@@ -3153,6 +3867,50 @@ def select_backlog_items(
         "count": min(limit, len(rows)),
         "items": rows[:limit],
     }
+
+
+def _select_backlog_row_for_writing(
+    client: DagenoClient,
+    days: int,
+    *,
+    backlog_id: str | None = None,
+    prompt_id: str | None = None,
+    prompt_text: str | None = None,
+    backlog_file: str | None = None,
+    brand_kb_file: str | None = None,
+) -> Dict[str, Any]:
+    backlog_path = Path(backlog_file).expanduser() if backlog_file else None
+    if backlog_path and backlog_path.exists():
+        backlog = load_fanout_backlog(str(backlog_path))
+    else:
+        backlog = build_fanout_backlog(
+            client,
+            days=days,
+            brand_kb_file=brand_kb_file,
+            max_prompts=20,
+        )
+
+    rows = backlog.get("fanout_backlog", [])
+    if backlog_id:
+        for row in rows:
+            if row.get("backlog_id") == backlog_id:
+                return row
+    if prompt_id:
+        for row in rows:
+            if prompt_id in row.get("source_prompt_ids", []):
+                return row
+    if prompt_text:
+        normalized = _normalize_text(prompt_text)
+        for row in rows:
+            if any(_normalize_text(item) == normalized for item in row.get("source_prompts", [])):
+                return row
+            if _normalize_text(row.get("fanout_text", "")) == normalized:
+                return row
+
+    selected = select_backlog_items(backlog, limit=1, status="write_now").get("items", [])
+    if selected:
+        return selected[0]
+    return rows[0] if rows else {}
 
 
 def brand_snapshot(client: DagenoClient) -> str:

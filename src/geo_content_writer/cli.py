@@ -233,7 +233,13 @@ def build_parser() -> argparse.ArgumentParser:
     publish_ready_parser = subparsers.add_parser(
         "publish-ready-article",
         parents=[common],
-        help="Build the payload and writer prompt for one publish-ready article",
+        help="Official path: build the backlog-row-first payload and writer prompt for one publish-ready article",
+    )
+    publish_ready_parser.add_argument("--backlog-id", default=None, help="Optional backlog row id to target")
+    publish_ready_parser.add_argument(
+        "--backlog-file",
+        default=str(_default_fanout_backlog_path()),
+        help="Optional backlog JSON file; defaults to knowledge/backlog/fanout-backlog.json",
     )
     publish_ready_parser.add_argument("--prompt-id", default=None, help="Optional prompt ID to target")
     publish_ready_parser.add_argument("--prompt-text", default=None, help="Optional prompt text to target")
@@ -251,7 +257,7 @@ def build_parser() -> argparse.ArgumentParser:
     legacy_article_parser = subparsers.add_parser(
         "legacy-publish-ready-article",
         parents=[common],
-        help="Legacy direct article generator kept for backward compatibility",
+        help="Deprecated: legacy direct article generator kept only for backward compatibility",
     )
     legacy_article_parser.add_argument("--prompt-id", default=None, help="Optional prompt ID to target")
     legacy_article_parser.add_argument("--prompt-text", default=None, help="Optional prompt text to target")
@@ -270,6 +276,12 @@ def build_parser() -> argparse.ArgumentParser:
         "article-generation-payload",
         parents=[common],
         help="Build a structured writing payload for one selected article item",
+    )
+    payload_parser.add_argument("--backlog-id", default=None, help="Optional backlog row id to target")
+    payload_parser.add_argument(
+        "--backlog-file",
+        default=str(_default_fanout_backlog_path()),
+        help="Optional backlog JSON file; defaults to knowledge/backlog/fanout-backlog.json",
     )
     payload_parser.add_argument("--prompt-id", default=None, help="Optional prompt ID to target")
     payload_parser.add_argument("--prompt-text", default=None, help="Optional prompt text to target")
@@ -506,6 +518,8 @@ def main() -> None:
                 article_generation_payload(
                     client,
                     days=args.days,
+                    backlog_id=args.backlog_id,
+                    backlog_file=args.backlog_file,
                     prompt_id=args.prompt_id,
                     prompt_text=args.prompt_text,
                     asset_id=args.asset_id,
@@ -579,6 +593,8 @@ def main() -> None:
                 article_generation_payload(
                     client=DagenoClient(api_key=args.api_key, base_url=args.base_url),
                     days=args.days,
+                    backlog_id=args.backlog_id,
+                    backlog_file=args.backlog_file,
                     prompt_id=args.prompt_id,
                     prompt_text=args.prompt_text,
                     asset_id=args.asset_id,
@@ -628,6 +644,7 @@ def main() -> None:
                 row,
                 days=args.days,
                 brand_kb_file=args.brand_kb_file,
+                backlog_rows=backlog.get("fanout_backlog", []),
             )
             article_markdown = draft_article_from_payload(payload)
             actual_word_count = _word_count(article_markdown)

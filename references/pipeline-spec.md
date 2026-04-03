@@ -13,6 +13,7 @@ Do not write directly from:
 Write only from:
 
 - one selected real fanout item
+- one selected backlog row derived from that fanout
 
 ## Workflow
 
@@ -26,19 +27,22 @@ Write only from:
 
 4. mark overlap / merge / duplicate items
 5. rank and track statuses
-6. select one fanout item to write
+6. assign each row a cluster role
+7. select one backlog row to write
 
 ### C. Writing Layer
 
-7. crawl top citation pages for the selected fanout
-8. analyze citation patterns
-9. choose article type
-10. rewrite into a reader-facing title
-11. generate one publish-ready article
+8. crawl top citation pages for the selected fanout
+9. analyze citation patterns
+10. build one editorial brief from one backlog row
+11. generate section drafting instructions
+12. generate section review instructions
+13. run assembly review and final gate
+14. generate one publish-ready article
 
 ### D. Distribution Layer
 
-12. publish to WordPress
+15. publish to WordPress
 
 ## Citation Learning Policy
 
@@ -87,3 +91,5 @@ Each row should include:
 - block publish-ready generation on brand mismatch
 - treat Dageno `topic` as an internal label, not a final blog title
 - use citation pattern analysis before article drafting
+- use cluster roles before writing to reduce content collisions
+- use section review and final gate before publishing

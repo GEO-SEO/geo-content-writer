@@ -1,0 +1,92 @@
+{
+  "schema_version": "1.0.0",
+  "suite_name": "geo-content-writer-benchmark-suite",
+  "generated_at": "2026-04-03T00:55:18Z",
+  "official_workflow": [
+    "build_fanout_backlog",
+    "select_backlog_items",
+    "publish-ready-article",
+    "draft-article-from-payload",
+    "section_review",
+    "assembly_review",
+    "final_gate"
+  ],
+  "cases": [
+    {
+      "case_id": "travel_shortlist",
+      "industry": "travel",
+      "cluster_role_expected": "buyer_shortlist_article",
+      "payload_example": "examples/publish-ready-payload-trip.json",
+      "article_example": "examples/daily-wordpress-batch-trip/best-travel-booking-apps-in-one-place.md",
+      "evaluation_focus": [
+        "distinctness_from_travel_comparison",
+        "natural_blog_opening",
+        "reader_type_differentiation"
+      ],
+      "scores": {
+        "distinctness": null,
+        "naturalness": null,
+        "decision_support": null,
+        "brand_fit": null,
+        "cluster_role_clarity": null
+      }
+    },
+    {
+      "case_id": "travel_comparison",
+      "industry": "travel",
+      "cluster_role_expected": "decision_stage_comparison_article",
+      "payload_example": "examples/daily-wordpress-batch-trip/travel-booking-apps-compared-which-one-fits-your-trip-style.md",
+      "article_example": "examples/daily-wordpress-batch-trip/travel-booking-apps-compared-which-one-fits-your-trip-style.md",
+      "evaluation_focus": [
+        "distinctness_from_travel_shortlist",
+        "tradeoff_clarity",
+        "comparison_specificity"
+      ],
+      "scores": {
+        "distinctness": null,
+        "naturalness": null,
+        "decision_support": null,
+        "brand_fit": null,
+        "cluster_role_clarity": null
+      }
+    },
+    {
+      "case_id": "enterprise_category",
+      "industry": "enterprise_software",
+      "cluster_role_expected": "category_article",
+      "payload_example": "examples/content-pack-compact.json",
+      "article_example": "examples/daily-wordpress-batch/what-is-an-enterprise-answer-engine-optimization-solution.md",
+      "evaluation_focus": [
+        "category_clarity",
+        "non-generic_explanation",
+        "internal_linking_readiness"
+      ],
+      "scores": {
+        "distinctness": null,
+        "naturalness": null,
+        "decision_support": null,
+        "brand_fit": null,
+        "cluster_role_clarity": null
+      }
+    },
+    {
+      "case_id": "enterprise_evaluation",
+      "industry": "enterprise_software",
+      "cluster_role_expected": "buyer_shortlist_article",
+      "payload_example": "examples/content-pack-compact.json",
+      "article_example": "examples/daily-wordpress-batch/how-to-evaluate-enterprise-answer-engine-optimization-platforms.md",
+      "evaluation_focus": [
+        "buyer_stage_alignment",
+        "criteria_specificity",
+        "distinctness_from_enterprise_category"
+      ],
+      "scores": {
+        "distinctness": null,
+        "naturalness": null,
+        "decision_support": null,
+        "brand_fit": null,
+        "cluster_role_clarity": null
+      }
+    }
+  ]
+}

@@ -1,14 +1,27 @@
 {
+  "schema_version": "2.0.0",
   "generated_at": "2026-04-03T00:55:18Z",
   "status": "ok",
+  "workflow_stage": "editorial_brief",
   "backlog_row": {
-    "asset_id": "A1",
-    "asset_title": "Best Travel Booking Apps in One Place",
-    "article_type": "explainer",
-    "source_prompt": "best app for travel bookings in one place",
+    "backlog_id": "best-app-for-travel-bookings-in-one-place",
+    "fanout_text": "best app for travel bookings in one place",
+    "source_prompt_ids": ["prompt_trip_001"],
+    "source_prompts": ["best app for travel bookings in one place"],
     "source_topic": "Top Rated Travel Apps",
-    "target_query_cluster": "Top Rated Travel Apps",
-    "primary_intention": "Commercial"
+    "market_profile": "consumer_travel",
+    "article_type": "recommendation",
+    "normalized_title": "Best Travel Booking Apps in One Place",
+    "brand_gap": "86%",
+    "source_gap": "74%",
+    "response_count": 18,
+    "funnel": "Commercial",
+    "primary_intention": "Commercial",
+    "status": "write_now",
+    "overlap_status": "new",
+    "first_seen_at": "2026-04-03T00:30:00Z",
+    "notes": "",
+    "source_count": 1
   },
   "selected_fanout": {
     "fanout_text": "best app for travel bookings in one place",
@@ -17,47 +30,172 @@
   },
   "citation_pattern_summary": {
     "dominant_page_type": "Listicle",
-    "dominant_title_pattern": "unknown",
-    "recommended_article_type": "explainer",
-    "common_heading_patterns": [],
-    "common_intents": [],
-    "table_presence_rate": 0.0,
-    "list_presence_rate": 0.0,
+    "dominant_title_pattern": "recommendation",
+    "recommended_article_type": "recommendation",
+    "common_heading_patterns": [
+      "best travel apps",
+      "how to choose",
+      "what to compare"
+    ],
+    "common_intents": [
+      "find_best_option",
+      "workflow_convenience",
+      "trust_support"
+    ],
+    "table_presence_rate": 0.33,
+    "list_presence_rate": 0.67,
     "faq_presence_rate": 0.0,
     "top_entities": [
-      "Google",
-      "Hopper",
       "Booking.com",
-      "TripAdvisor",
       "Skyscanner",
-      "Kayak"
-    ]
+      "Hopper",
+      "Trip.com",
+      "Expedia"
+    ],
+    "learning_mode": "article_first_fallback"
   },
-  "article_type": "explainer",
-  "brand_role_in_article": "Trip should appear as one credible shortlist option, not as the automatic winner.",
-  "content_goal": "Help readers understand the topic and make a better-informed decision.",
+  "article_type": "recommendation",
+  "brand_role_in_article": "Trip.com should appear as one credible shortlist option, not as the automatic winner.",
+  "content_goal": "Help readers shortlist travel booking options and compare them with confidence.",
   "title_options": [
     "Best Travel Booking Apps in One Place",
-    "Best App for Travel Bookings in One Place",
-    "Travel Booking Apps"
+    "How to Choose a Travel Booking App That Actually Saves Time",
+    "Travel Booking Apps Compared: Which One Fits Your Trip Style?"
   ],
-  "writing_brief": {
-    "reader_problem": "Readers want help with travel booking apps and need a clear way to compare options without wasting time.",
-    "must_cover": [
-      "what readers should compare first",
-      "how current cited pages structure the topic",
-      "which products or options usually appear in the shortlist",
-      "where the monitored brand naturally fits"
+  "editorial_brief": {
+    "working_title": "Best Travel Booking Apps in One Place",
+    "alternative_titles": [
+      "Best Travel Booking Apps in One Place",
+      "How to Choose a Travel Booking App That Actually Saves Time",
+      "Travel Booking Apps Compared: Which One Fits Your Trip Style?"
+    ],
+    "reader_topic": "travel booking apps",
+    "reader_persona": "A traveler trying to choose a booking workflow that feels simpler and more trustworthy.",
+    "reader_job_to_be_done": "Help the reader understand which option best fits how they actually book trips for 'Best Travel Booking Apps in One Place'.",
+    "article_type": "recommendation",
+    "article_angle": "Best Travel Booking Apps in One Place",
+    "search_intent": "Commercial",
+    "funnel_stage": "Commercial",
+    "market_profile": "consumer_travel",
+    "content_role_in_cluster": "shortlist_article",
+    "why_this_article_now": "This fanout reflects a real trip-planning decision, so the article should help readers choose a booking workflow instead of repeating generic travel advice.",
+    "opening_move": "Open with the real decision tension behind the selected fanout, not a generic category definition.",
+    "decision_frame": "Shortlist options by traveler type and trade-offs, not by brand familiarity alone.",
+    "information_gain": "Add practical judgment and trade-offs that generic roundup pages usually flatten.",
+    "content_gap": "Most nearby articles in this cluster are likely to overlap on generic criteria and shortlists; this article should add a sharper decision frame and reader-type differentiation.",
+    "differentiation_targets": [
+      "Lead with the reader decision, not the category definition.",
+      "Add one realistic scenario or use case before expanding the shortlist.",
+      "Explain why some options fit different reader types instead of implying one universal winner."
+    ],
+    "adjacent_articles_to_avoid": [
+      {
+        "backlog_id": "travel-booking-apps-compared-which-one-fits-your-trip-style",
+        "title": "Travel Booking Apps Compared: Which One Fits Your Trip Style?",
+        "article_type": "comparison"
+      },
+      {
+        "backlog_id": "common-mistakes-people-make-when-choosing-travel-apps",
+        "title": "Common Mistakes People Make When Choosing Travel Apps",
+        "article_type": "guide"
+      }
+    ],
+    "internal_linking_notes": "Link out to adjacent cluster articles only when they answer a genuinely different question, such as comparison, mistakes, or workflow guidance.",
+    "evidence_guardrails": [
+      "Use cited pages to learn market framing and recurring entities, not to mimic wording.",
+      "Do not claim product features or pricing details that the payload does not support.",
+      "Avoid pretending to have tested products first-hand unless external tooling supplies that evidence."
+    ],
+    "must_prove": [
+      "Why this choice is difficult for a real reader.",
+      "Which criteria deserve attention first and which are secondary.",
+      "How the shortlist should change based on reader type or use case."
+    ],
+    "must_include": [
+      "A concrete decision framework tied to the selected fanout.",
+      "A natural shortlist or comparison set when relevant.",
+      "At least one practical scenario or example the reader can imagine.",
+      "A next step the reader can actually use after reading."
     ],
     "must_avoid": [
-      "template tone",
-      "internal topic labels as final titles",
-      "unsupported claims",
-      "brand mentions that feel like ads"
+      "Do not write from the prompt label as if it were already a finished blog angle.",
+      "Do not sound like a template, checklist dump, or content mill roundup.",
+      "Do not mention the brand as an automatic winner.",
+      "Do not make unsupported claims or fake first-hand experience."
     ],
-    "writing_goal": "Write a normal blog post that feels useful to human readers while preserving structure that AI systems can quote."
+    "brand_inclusion_rule": "Trip.com should appear as one credible shortlist option, not as the automatic winner.",
+    "recommended_outline": [
+      {
+        "heading": "Start With the Problem You Need the Option to Solve",
+        "purpose": "Frame the actual decision behind the search",
+        "must_include": "Anchor the advice in a realistic travel scenario, not only generic product descriptions."
+      },
+      {
+        "heading": "The Criteria That Matter in Real Use",
+        "purpose": "Explain the few criteria that genuinely change the outcome",
+        "must_include": "Use explicit trade-offs and practical examples."
+      },
+      {
+        "heading": "Which Reader Types Usually Prefer Different Options",
+        "purpose": "Create information gain by correcting common bad comparisons or assumptions",
+        "must_include": "Show where readers usually waste time or misread the market."
+      },
+      {
+        "heading": "FAQ",
+        "purpose": "Answer the natural follow-up questions succinctly",
+        "must_include": "Keep answers direct and publication-ready."
+      },
+      {
+        "heading": "Final Takeaway",
+        "purpose": "Leave the reader with a next step, not only a summary",
+        "must_include": "Make the next action obvious and low-friction."
+      }
+    ],
+    "citation_learnings": {
+      "learning_mode": "article_first_fallback",
+      "dominant_page_type": "Listicle",
+      "dominant_title_pattern": "recommendation",
+      "recommended_article_type": "recommendation",
+      "common_heading_patterns": [
+        "best travel apps",
+        "how to choose",
+        "what to compare"
+      ],
+      "common_intents": [
+        "find_best_option",
+        "workflow_convenience",
+        "trust_support"
+      ],
+      "table_presence_rate": 0.33,
+      "list_presence_rate": 0.67,
+      "faq_presence_rate": 0.0
+    },
+    "source_materials": {
+      "top_entities": [
+        "Booking.com",
+        "Skyscanner",
+        "Hopper",
+        "Trip.com",
+        "Expedia"
+      ],
+      "supporting_urls": [
+        "https://www.pcmag.com/picks/best-travel-apps",
+        "https://play.google.com/store/apps/details?id=net.skyscanner.android.main&hl=en_US",
+        "https://www.reddit.com/r/AussieFrugal/comments/18xd9ba/best_travel_and_booking_app/"
+      ],
+      "crawled_page_count": 3,
+      "adjacent_titles": [
+        "Travel Booking Apps Compared: Which One Fits Your Trip Style?",
+        "Common Mistakes People Make When Choosing Travel Apps"
+      ]
+    }
   },
   "crawled_citation_pages": [
+    {
+      "url": "https://www.pcmag.com/picks/best-travel-apps",
+      "status": "error",
+      "error": "403 Client Error: Forbidden for url: https://www.pcmag.com/picks/best-travel-apps"
+    },
     {
       "url": "https://play.google.com/store/apps/details?id=net.skyscanner.android.main&hl=en_US",
       "status": "ok",
@@ -67,65 +205,15 @@
       "headings": [
         "About this app",
         "Data safety",
-        "Ratings and reviews",
-        "What’s new",
-        "App support",
-        "Similar apps"
+        "Ratings and reviews"
       ],
-      "paragraph_preview": "Play Pass Play Points Gift cards",
+      "paragraph_preview": "The travel app that makes booking cheap flights, hotels, and car rentals easy.",
       "has_table": false,
       "has_list": true,
       "has_faq_signal": false,
       "word_count": 1435,
       "page_kind": "app_listing",
       "is_article_like": false
-    },
-    {
-      "url": "https://www.pcmag.com/picks/best-travel-apps",
-      "status": "error",
-      "error": "403 Client Error: Forbidden for url: https://www.pcmag.com/picks/best-travel-apps",
-      "title": "",
-      "meta_description": "",
-      "h1": "",
-      "headings": [],
-      "paragraph_preview": "",
-      "has_table": false,
-      "has_list": false,
-      "has_faq_signal": false,
-      "word_count": 0,
-      "is_article_like": false,
-      "page_kind": "error"
-    },
-    {
-      "url": "https://activetraveladventures.com/best-travel-apps-2026/#:~:text=Popular%20across%20Europe%20and%20Africa,Careem&text=Long%2DDistance%20Logistics,especially%20strong%20coverage%20across%20Europe.",
-      "status": "ok",
-      "title": "",
-      "meta_description": "",
-      "h1": "",
-      "headings": [],
-      "paragraph_preview": "",
-      "has_table": false,
-      "has_list": false,
-      "has_faq_signal": false,
-      "word_count": 0,
-      "page_kind": "unknown",
-      "is_article_like": false
-    },
-    {
-      "url": "https://qz.com/best-travel-apps-readers-digest",
-      "status": "error",
-      "error": "403 Client Error: Forbidden for url: https://qz.com/best-travel-apps-readers-digest",
-      "title": "",
-      "meta_description": "",
-      "h1": "",
-      "headings": [],
-      "paragraph_preview": "",
-      "has_table": false,
-      "has_list": false,
-      "has_faq_signal": false,
-      "word_count": 0,
-      "is_article_like": false,
-      "page_kind": "error"
     },
     {
       "url": "https://www.reddit.com/r/AussieFrugal/comments/18xd9ba/best_travel_and_booking_app/",
@@ -147,9 +235,142 @@
     "Write like a blog editor, not a document generator.",
     "Use the citation pages to learn structure, not to copy wording.",
     "Mention the brand where it naturally belongs in the shortlist or comparison.",
-    "Prefer recommendation or comparison structure when citations show listicle behavior."
+    "Write from the backlog row and reader task, not from an internal prompt label."
   ],
-  "quality_review_prompt": "You are the second-pass quality reviewer. Check whether the article reads like a normal blog post, matches the citation-page structure, avoids template tone, mentions the brand only where natural, and satisfies the reader intent. Reject or rewrite weak sections.",
-  "quality_rewrite_prompt": "Rewrite the article to feel more natural and human while preserving the chosen title, the article type, the key comparison or recommendation logic, and the real citation-derived structure cues.",
-  "writer_prompt": "You are a blog editor, not a document generator.\n\nWrite one complete blog article for publication.\n\nUse these inputs:\n- Selected fanout: best app for travel bookings in one place\n- Reader-facing topic: travel booking apps\n- Market profile: consumer_travel\n- Recommended article type: explainer\n- Content goal: Help readers understand the topic and make a better-informed decision.\n- Brand role: Trip should appear as one credible shortlist option, not as the automatic winner.\n- Title options: Best Travel Booking Apps in One Place, Best App for Travel Bookings in One Place, Travel Booking Apps\n\nCitation pattern summary:\n- Dominant page type: Listicle\n- Dominant title pattern: unknown\n- Common intents: \n- Common heading patterns: \n\nWriting brief:\n- Reader problem: Readers want help with travel booking apps and need a clear way to compare options without wasting time.\n- Must cover: what readers should compare first, how current cited pages structure the topic, which products or options usually appear in the shortlist, where the monitored brand naturally fits\n- Must avoid: template tone, internal topic labels as final titles, unsupported claims, brand mentions that feel like ads\n\nRules:\n- Write like a blog editor, not a document generator.\n- Use the citation pages to learn structure, not to copy wording.\n- Mention the brand where it naturally belongs in the shortlist or comparison.\n- Prefer recommendation or comparison structure when citations show listicle behavior.\n\nImportant:\n- Do not mention the internal analysis process.\n- Do not mention citation patterns or what the cited pages are doing.\n- Mention the brand only where it naturally fits the reader decision.\n- Write like a normal blog post for humans."
+  "draft_package": {
+    "target_word_count_range": "1200-1800",
+    "min_word_count": 1200,
+    "ideal_word_count": 1500,
+    "draft_sections": [
+      {
+        "section_id": "intro",
+        "heading": "Introduction",
+        "purpose": "Open with the real decision tension behind the selected fanout and establish who the article is helping.",
+        "must_include": [
+          "State the reader problem fast.",
+          "Name the reader persona or decision context.",
+          "Avoid generic category throat-clearing."
+        ],
+        "target_words": 214,
+        "writer_prompt": "Write the introduction for an article about 'best app for travel bookings in one place'. Open with the decision tension, not a broad definition. Make the reader feel seen within about 214 words."
+      },
+      {
+        "section_id": "body_1",
+        "heading": "Start With the Problem You Need the Option to Solve",
+        "purpose": "Frame the actual decision behind the search",
+        "must_include": [
+          "Anchor the advice in a realistic travel scenario, not only generic product descriptions.",
+          "Shortlist options by traveler type and trade-offs, not by brand familiarity alone.",
+          "Most nearby articles in this cluster are likely to overlap on generic criteria and shortlists; this article should add a sharper decision frame and reader-type differentiation."
+        ],
+        "target_words": 214,
+        "writer_prompt": "Write the section 'Start With the Problem You Need the Option to Solve' for the article 'Best Travel Booking Apps in One Place'. Use the angle 'Best Travel Booking Apps in One Place', keep it distinct from adjacent cluster articles, and land the section in about 214 words."
+      },
+      {
+        "section_id": "body_2",
+        "heading": "The Criteria That Matter in Real Use",
+        "purpose": "Explain the few criteria that genuinely change the outcome",
+        "must_include": [
+          "Use explicit trade-offs and practical examples.",
+          "Shortlist options by traveler type and trade-offs, not by brand familiarity alone.",
+          "Most nearby articles in this cluster are likely to overlap on generic criteria and shortlists; this article should add a sharper decision frame and reader-type differentiation."
+        ],
+        "target_words": 214,
+        "writer_prompt": "Write the section 'The Criteria That Matter in Real Use' for the article 'Best Travel Booking Apps in One Place'. Use the angle 'Best Travel Booking Apps in One Place', keep it distinct from adjacent cluster articles, and land the section in about 214 words."
+      },
+      {
+        "section_id": "body_3",
+        "heading": "Which Reader Types Usually Prefer Different Options",
+        "purpose": "Create information gain by correcting common bad comparisons or assumptions",
+        "must_include": [
+          "Show where readers usually waste time or misread the market.",
+          "Shortlist options by traveler type and trade-offs, not by brand familiarity alone.",
+          "Most nearby articles in this cluster are likely to overlap on generic criteria and shortlists; this article should add a sharper decision frame and reader-type differentiation."
+        ],
+        "target_words": 214,
+        "writer_prompt": "Write the section 'Which Reader Types Usually Prefer Different Options' for the article 'Best Travel Booking Apps in One Place'. Use the angle 'Best Travel Booking Apps in One Place', keep it distinct from adjacent cluster articles, and land the section in about 214 words."
+      },
+      {
+        "section_id": "body_4",
+        "heading": "FAQ",
+        "purpose": "Answer the natural follow-up questions succinctly",
+        "must_include": [
+          "Keep answers direct and publication-ready.",
+          "Shortlist options by traveler type and trade-offs, not by brand familiarity alone.",
+          "Most nearby articles in this cluster are likely to overlap on generic criteria and shortlists; this article should add a sharper decision frame and reader-type differentiation."
+        ],
+        "target_words": 214,
+        "writer_prompt": "Write the section 'FAQ' for the article 'Best Travel Booking Apps in One Place'. Use the angle 'Best Travel Booking Apps in One Place', keep it distinct from adjacent cluster articles, and land the section in about 214 words."
+      },
+      {
+        "section_id": "body_5",
+        "heading": "Final Takeaway",
+        "purpose": "Leave the reader with a next step, not only a summary",
+        "must_include": [
+          "Make the next action obvious and low-friction.",
+          "Shortlist options by traveler type and trade-offs, not by brand familiarity alone.",
+          "Most nearby articles in this cluster are likely to overlap on generic criteria and shortlists; this article should add a sharper decision frame and reader-type differentiation."
+        ],
+        "target_words": 214,
+        "writer_prompt": "Write the section 'Final Takeaway' for the article 'Best Travel Booking Apps in One Place'. Use the angle 'Best Travel Booking Apps in One Place', keep it distinct from adjacent cluster articles, and land the section in about 214 words."
+      },
+      {
+        "section_id": "conclusion",
+        "heading": "Conclusion",
+        "purpose": "End with a confident takeaway and a practical next step.",
+        "must_include": [
+          "Summarize the decision frame.",
+          "Leave the reader with one useful next move.",
+          "Keep the ending concise and editorial."
+        ],
+        "target_words": 150,
+        "writer_prompt": "Write a conclusion for 'Best Travel Booking Apps in One Place' that sharpens the final judgment and gives the reader a practical next step."
+      }
+    ],
+    "assembly_notes": [
+      "Write section by section before stitching the full article together.",
+      "Preserve a natural editorial flow between sections rather than repeating the same setup.",
+      "Check each section against adjacent-article avoidance notes before final assembly."
+    ]
+  },
+  "review_package": {
+    "quality_checks": [
+      "Does the article sound like an edited blog post instead of a generated template?",
+      "Does the opening frame a real reader decision quickly?",
+      "Does each section add judgment, trade-offs, or a practical example?",
+      "Is the brand included naturally and only where it genuinely fits?",
+      "Would this article feel distinct from neighboring backlog rows?",
+      "Does the draft clearly avoid collapsing into titles or angles already assigned to adjacent backlog rows?"
+    ],
+    "quality_review_prompt": "You are the second-pass editor. Review this draft against the editorial brief for 'Best Travel Booking Apps in One Place'. Check for template tone, vague repetition, weak differentiation, overlap with adjacent backlog rows, unnatural brand mentions, and missing decision support. The target range is 1200-1800, with a minimum of 1200 words.",
+    "quality_rewrite_prompt": "Rewrite weak sections so the article feels like a confident blog editor made sharper choices, while preserving the selected fanout, core angle, and natural brand placement rules.",
+    "section_review_contract": [
+      {
+        "section_id": "intro",
+        "heading": "Introduction",
+        "review_checks": [
+          "Does the section 'Introduction' fulfill its stated purpose?",
+          "Does it add judgment, trade-offs, or practical specificity instead of generic filler?",
+          "Does it avoid overlapping too heavily with adjacent cluster articles?",
+          "Does it keep brand mentions natural and proportionate?"
+        ],
+        "review_prompt": "Review the drafted section 'Introduction' for the article 'Best Travel Booking Apps in One Place'. Check whether it is concrete, differentiated, and useful to a real reader. Flag template language and vague repetition.",
+        "rewrite_prompt": "Rewrite the section 'Introduction' so it feels more editorial, more specific, and more distinct from adjacent cluster articles while preserving the original section purpose."
+      },
+      {
+        "section_id": "body_1",
+        "heading": "Start With the Problem You Need the Option to Solve",
+        "review_checks": [
+          "Does the section 'Start With the Problem You Need the Option to Solve' fulfill its stated purpose?",
+          "Does it add judgment, trade-offs, or practical specificity instead of generic filler?",
+          "Does it avoid overlapping too heavily with adjacent cluster articles?",
+          "Does it keep brand mentions natural and proportionate?"
+        ],
+        "review_prompt": "Review the drafted section 'Start With the Problem You Need the Option to Solve' for the article 'Best Travel Booking Apps in One Place'. Check whether it is concrete, differentiated, and useful to a real reader. Flag template language and vague repetition.",
+        "rewrite_prompt": "Rewrite the section 'Start With the Problem You Need the Option to Solve' so it feels more editorial, more specific, and more distinct from adjacent cluster articles while preserving the original section purpose."
+      }
+    ],
+    "assembly_review_prompt": "After section-level rewrites, assemble the full article for 'Best Travel Booking Apps in One Place'. Check transitions, remove repeated setup language, make the voice consistent, and ensure the final article reads like one coherent blog post rather than stitched segments."
+  },
+  "writer_prompt": "You are a blog editor, not a document generator.\n\nWrite one complete blog article for publication.\n\nUse this editorial brief:\n- Working title: Best Travel Booking Apps in One Place\n- Selected fanout: best app for travel bookings in one place\n- Reader-facing topic: travel booking apps\n- Reader persona: A traveler trying to choose a booking workflow that feels simpler and more trustworthy.\n- Reader job to be done: Help the reader understand which option best fits how they actually book trips for 'Best Travel Booking Apps in One Place'.\n- Market profile: consumer_travel\n- Article type: recommendation\n- Article angle: Best Travel Booking Apps in One Place\n- Why this article now: This fanout reflects a real trip-planning decision, so the article should help readers choose a booking workflow instead of repeating generic travel advice.\n- Opening move: Open with the real decision tension behind the selected fanout, not a generic category definition.\n- Decision frame: Shortlist options by traveler type and trade-offs, not by brand familiarity alone.\n- Content gap to fill: Most nearby articles in this cluster are likely to overlap on generic criteria and shortlists; this article should add a sharper decision frame and reader-type differentiation.\n- Brand inclusion rule: Trip.com should appear as one credible shortlist option, not as the automatic winner.\n- Alternative titles: Best Travel Booking Apps in One Place, How to Choose a Travel Booking App That Actually Saves Time, Travel Booking Apps Compared: Which One Fits Your Trip Style?\n- Content goal: Help readers shortlist travel booking options and compare them with confidence.\n\nCitation pattern summary:\n- Dominant page type: Listicle\n- Dominant title pattern: recommendation\n- Common intents: find_best_option, workflow_convenience, trust_support\n- Common heading patterns: best travel apps, how to choose, what to compare\n- Top entities: Booking.com, Skyscanner, Hopper, Trip.com, Expedia\n- Supporting URLs: https://www.pcmag.com/picks/best-travel-apps, https://play.google.com/store/apps/details?id=net.skyscanner.android.main&hl=en_US, https://www.reddit.com/r/AussieFrugal/comments/18xd9ba/best_travel_and_booking_app/\n\nMust prove:\n- Why this choice is difficult for a real reader.\n- Which criteria deserve attention first and which are secondary.\n- How the shortlist should change based on reader type or use case.\n\nMust include:\n- A concrete decision framework tied to the selected fanout.\n- A natural shortlist or comparison set when relevant.\n- At least one practical scenario or example the reader can imagine.\n- A next step the reader can actually use after reading.\n\nDifferentiation targets:\n- Lead with the reader decision, not the category definition.\n- Add one realistic scenario or use case before expanding the shortlist.\n- Explain why some options fit different reader types instead of implying one universal winner.\n\nAdjacent articles to avoid overlapping with:\n- Travel Booking Apps Compared: Which One Fits Your Trip Style? (comparison, travel-booking-apps-compared-which-one-fits-your-trip-style)\n- Common Mistakes People Make When Choosing Travel Apps (guide, common-mistakes-people-make-when-choosing-travel-apps)\n\nRecommended outline:\n- Start With the Problem You Need the Option to Solve: Frame the actual decision behind the search. Include: Anchor the advice in a realistic travel scenario, not only generic product descriptions.\n- The Criteria That Matter in Real Use: Explain the few criteria that genuinely change the outcome. Include: Use explicit trade-offs and practical examples.\n- Which Reader Types Usually Prefer Different Options: Create information gain by correcting common bad comparisons or assumptions. Include: Show where readers usually waste time or misread the market.\n- FAQ: Answer the natural follow-up questions succinctly. Include: Keep answers direct and publication-ready.\n- Final Takeaway: Leave the reader with a next step, not only a summary. Include: Make the next action obvious and low-friction.\n\nRules:\n- Do not write from the prompt label as if it were already a finished blog angle.\n- Do not sound like a template, checklist dump, or content mill roundup.\n- Do not mention the brand as an automatic winner.\n- Do not make unsupported claims or fake first-hand experience.\n- Write like a blog editor, not a document generator.\n- Use the citation pages to learn structure, not to copy wording.\n- Mention the brand where it naturally belongs in the shortlist or comparison.\n- Write from the backlog row and reader task, not from an internal prompt label.\n- Use cited pages to learn market framing and recurring entities, not to mimic wording.\n- Do not claim product features or pricing details that the payload does not support.\n- Avoid pretending to have tested products first-hand unless external tooling supplies that evidence.\n\nImportant:\n- Do not mention the internal analysis process.\n- Do not mention citation patterns or what the cited pages are doing.\n- Mention the brand only where it naturally fits the reader decision.\n- Write like a normal blog post for humans."
 }

@@ -1,0 +1,210 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/GEO-SEO/geo-content-writer/schemas/article_generation_payload_schema.json",
+  "title": "GEO Article Generation Payload Schema",
+  "description": "Structured backlog-row-first payload for editorial brief, draft generation, and review.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "status",
+    "workflow_stage",
+    "backlog_row",
+    "selected_fanout",
+    "editorial_brief",
+    "draft_package",
+    "review_package",
+    "writer_prompt"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "2.0.0"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "status": {
+      "type": "string"
+    },
+    "workflow_stage": {
+      "type": "string",
+      "const": "editorial_brief"
+    },
+    "backlog_row": {
+      "type": "object"
+    },
+    "selected_fanout": {
+      "type": "object",
+      "required": ["fanout_text", "reader_topic", "market_profile"],
+      "properties": {
+        "fanout_text": { "type": "string" },
+        "reader_topic": { "type": "string" },
+        "market_profile": { "type": "string" }
+      }
+    },
+    "editorial_brief": {
+      "type": "object",
+      "required": [
+        "working_title",
+        "reader_persona",
+        "reader_job_to_be_done",
+        "article_type",
+        "article_angle",
+        "market_profile",
+        "why_this_article_now",
+        "decision_frame",
+        "content_gap",
+        "differentiation_targets",
+        "adjacent_articles_to_avoid",
+        "external_research_tasks",
+        "testing_framework",
+        "eeat_layer",
+        "must_prove",
+        "must_include",
+        "must_avoid",
+        "brand_inclusion_rule",
+        "recommended_outline"
+      ],
+      "properties": {
+        "working_title": { "type": "string" },
+        "alternative_titles": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "reader_topic": { "type": "string" },
+        "reader_persona": { "type": "string" },
+        "reader_job_to_be_done": { "type": "string" },
+        "article_type": { "type": "string" },
+        "article_angle": { "type": "string" },
+        "search_intent": { "type": "string" },
+        "funnel_stage": { "type": "string" },
+        "market_profile": { "type": "string" },
+        "content_role_in_cluster": { "type": "string" },
+        "why_this_article_now": { "type": "string" },
+        "opening_move": { "type": "string" },
+        "decision_frame": { "type": "string" },
+        "information_gain": { "type": "string" },
+        "content_gap": { "type": "string" },
+        "differentiation_targets": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "adjacent_articles_to_avoid": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "backlog_id": { "type": "string" },
+              "title": { "type": "string" },
+              "article_type": { "type": "string" }
+            }
+          }
+        },
+        "internal_linking_notes": { "type": "string" },
+        "evidence_guardrails": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "external_research_tasks": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "testing_framework": { "type": "object" },
+        "eeat_layer": { "type": "object" },
+        "must_prove": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "must_include": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "must_avoid": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "brand_inclusion_rule": { "type": "string" },
+        "recommended_outline": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["heading", "purpose", "must_include"],
+            "properties": {
+              "heading": { "type": "string" },
+              "purpose": { "type": "string" },
+              "must_include": { "type": "string" }
+            }
+          }
+        },
+        "citation_learnings": { "type": "object" },
+        "source_materials": { "type": "object" }
+      }
+    },
+    "draft_package": {
+      "type": "object",
+      "required": ["target_word_count_range", "min_word_count", "ideal_word_count", "draft_sections"],
+      "properties": {
+        "target_word_count_range": { "type": "string" },
+        "min_word_count": { "type": "integer" },
+        "ideal_word_count": { "type": "integer" },
+        "draft_sections": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["section_id", "heading", "purpose", "must_include", "target_words", "writer_prompt"],
+            "properties": {
+              "section_id": { "type": "string" },
+              "heading": { "type": "string" },
+              "purpose": { "type": "string" },
+              "must_include": {
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "target_words": { "type": "integer" },
+              "writer_prompt": { "type": "string" }
+            }
+          }
+        },
+        "assembly_notes": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "review_package": {
+      "type": "object",
+      "required": ["quality_checks", "quality_review_prompt", "quality_rewrite_prompt", "section_review_contract", "assembly_review_prompt"],
+      "properties": {
+        "quality_checks": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "quality_review_prompt": { "type": "string" },
+        "quality_rewrite_prompt": { "type": "string" },
+        "section_review_contract": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["section_id", "heading", "review_checks", "review_prompt", "rewrite_prompt"],
+            "properties": {
+              "section_id": { "type": "string" },
+              "heading": { "type": "string" },
+              "review_checks": {
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "review_prompt": { "type": "string" },
+              "rewrite_prompt": { "type": "string" }
+            }
+          }
+        },
+        "assembly_review_prompt": { "type": "string" }
+      }
+    },
+    "writer_prompt": {
+      "type": "string"
+    }
+  }
+}
