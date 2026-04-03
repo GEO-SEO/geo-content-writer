@@ -30,8 +30,8 @@ from .workflows import (
     save_citation_learning,
     daily_publish_ready_package,
     first_asset_draft,
+    legacy_publish_ready_article,
     new_content_brief,
-    publish_ready_article,
     prompt_deep_dive,
     prompt_gap_report,
     topic_watchlist,
@@ -199,7 +199,7 @@ def build_parser() -> argparse.ArgumentParser:
     publish_ready_parser = subparsers.add_parser(
         "publish-ready-article",
         parents=[common],
-        help="Generate a publish-ready article from the top article asset using the project's fixed writing policy",
+        help="Build the payload and writer prompt for one publish-ready article",
     )
     publish_ready_parser.add_argument("--prompt-id", default=None, help="Optional prompt ID to target")
     publish_ready_parser.add_argument("--prompt-text", default=None, help="Optional prompt text to target")
@@ -212,7 +212,25 @@ def build_parser() -> argparse.ArgumentParser:
     publish_ready_parser.add_argument(
         "--output-file",
         default=None,
-        help="Optional file path to write the publish-ready article output",
+        help="Optional file path to write the article-generation payload output",
+    )
+    legacy_article_parser = subparsers.add_parser(
+        "legacy-publish-ready-article",
+        parents=[common],
+        help="Legacy direct article generator kept for backward compatibility",
+    )
+    legacy_article_parser.add_argument("--prompt-id", default=None, help="Optional prompt ID to target")
+    legacy_article_parser.add_argument("--prompt-text", default=None, help="Optional prompt text to target")
+    legacy_article_parser.add_argument("--asset-id", default=None, help="Optional asset row ID such as A1")
+    legacy_article_parser.add_argument(
+        "--brand-kb-file",
+        default=str(default_brand_kb_path()),
+        help="Brand knowledge base JSON file. Default project path: knowledge/brand/brand-knowledge-base.json",
+    )
+    legacy_article_parser.add_argument(
+        "--output-file",
+        default=None,
+        help="Optional file path to write the legacy article output",
     )
     payload_parser = subparsers.add_parser(
         "article-generation-payload",
@@ -495,7 +513,24 @@ def main() -> None:
 
     if args.command == "publish-ready-article":
         emit_output(
-            publish_ready_article(
+            json.dumps(
+                article_generation_payload(
+                    client=DagenoClient(api_key=args.api_key, base_url=args.base_url),
+                    days=args.days,
+                    prompt_id=args.prompt_id,
+                    prompt_text=args.prompt_text,
+                    asset_id=args.asset_id,
+                    brand_kb_file=args.brand_kb_file,
+                ),
+                ensure_ascii=False,
+                indent=2,
+            )
+        )
+        return
+
+    if args.command == "legacy-publish-ready-article":
+        emit_output(
+            legacy_publish_ready_article(
                 client=DagenoClient(api_key=args.api_key, base_url=args.base_url),
                 days=args.days,
                 prompt_id=args.prompt_id,

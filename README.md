@@ -136,6 +136,8 @@ PYTHONPATH=src python -m geo_content_writer.cli select-backlog-items --top-n 10
 PYTHONPATH=src python -m geo_content_writer.cli publish-ready-article --output-file examples/publish-ready-article.md
 ```
 
+This now outputs the structured article-generation payload plus a writer prompt.
+
 ### 5. Publish to WordPress
 
 ```bash
@@ -189,6 +191,7 @@ geo-content-writer/
 - the backlog is the core production object
 - fanout is the main writing seed
 - citation crawl is planned in the workflow design but not yet fully wired into runtime article generation
+- `publish-ready-article` is now a payload builder for model-driven writing
 - WordPress publishing is a lightweight distribution example, not the center of the system
 
 ## License

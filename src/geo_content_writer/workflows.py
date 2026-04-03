@@ -1626,7 +1626,7 @@ def _publish_ready_article_from_context(context: Dict[str, Any], asset: Dict[str
     return "\n".join(lines)
 
 
-def publish_ready_article(
+def legacy_publish_ready_article(
     client: DagenoClient,
     days: int = 30,
     *,
@@ -1651,6 +1651,57 @@ def publish_ready_article(
     if not asset:
         return "# Publish-Ready Article\n\nNo publishable article asset was available for the selected window."
     return _publish_ready_article_from_context(context, asset)
+
+
+def _writer_prompt_from_payload(payload: Dict[str, Any]) -> str:
+    selected = payload.get("selected_fanout", {})
+    citation = payload.get("citation_pattern_summary", {})
+    title_options = payload.get("title_options", [])
+    brief = payload.get("writing_brief", {})
+    brand_role = payload.get("brand_role_in_article", "")
+    content_goal = payload.get("content_goal", "")
+    rules = payload.get("writing_rules", [])
+
+    lines = [
+        "You are a blog editor, not a document generator.",
+        "",
+        "Write one complete blog article for publication.",
+        "",
+        "Use these inputs:",
+        f"- Selected fanout: {selected.get('fanout_text', '')}",
+        f"- Reader-facing topic: {selected.get('reader_topic', '')}",
+        f"- Market profile: {selected.get('market_profile', '')}",
+        f"- Recommended article type: {payload.get('article_type', '')}",
+        f"- Content goal: {content_goal}",
+        f"- Brand role: {brand_role}",
+        f"- Title options: {', '.join(title_options)}",
+        "",
+        "Citation pattern summary:",
+        f"- Dominant page type: {citation.get('dominant_page_type', '')}",
+        f"- Dominant title pattern: {citation.get('dominant_title_pattern', '')}",
+        f"- Common intents: {', '.join(citation.get('common_intents', []))}",
+        f"- Common heading patterns: {', '.join(citation.get('common_heading_patterns', []))}",
+        "",
+        "Writing brief:",
+        f"- Reader problem: {brief.get('reader_problem', '')}",
+        f"- Must cover: {', '.join(brief.get('must_cover', []))}",
+        f"- Must avoid: {', '.join(brief.get('must_avoid', []))}",
+        "",
+        "Rules:",
+    ]
+    for rule in rules:
+        lines.append(f"- {rule}")
+    lines.extend(
+        [
+            "",
+            "Important:",
+            "- Do not mention the internal analysis process.",
+            "- Do not mention citation patterns or what the cited pages are doing.",
+            "- Mention the brand only where it naturally fits the reader decision.",
+            "- Write like a normal blog post for humans.",
+        ]
+    )
+    return "\n".join(lines)
 
 
 def article_generation_payload(
@@ -1728,7 +1779,7 @@ def article_generation_payload(
         "Rewrite the article to feel more natural and human while preserving the chosen title, the article type, the key comparison or recommendation logic, and the real citation-derived structure cues."
     )
 
-    return {
+    payload = {
         "generated_at": datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
         "status": "ok",
         "backlog_row": {
@@ -1771,6 +1822,8 @@ def article_generation_payload(
         "quality_review_prompt": quality_review_prompt,
         "quality_rewrite_prompt": quality_rewrite_prompt,
     }
+    payload["writer_prompt"] = _writer_prompt_from_payload(payload)
+    return payload
 
 
 def daily_publish_ready_package(
