@@ -508,6 +508,19 @@ def _content_goal(article_type: str, market_profile: str) -> str:
     return "Help readers understand the topic and make a better-informed decision."
 
 
+def _word_count_target(article_type: str) -> Dict[str, Any]:
+    mapping = {
+        "news_update": {"range": "300-800", "min": 300, "ideal": 600},
+        "explainer": {"range": "800-1500", "min": 800, "ideal": 1200},
+        "guide": {"range": "1200-2000", "min": 1200, "ideal": 1600},
+        "recommendation": {"range": "1500-2500", "min": 1500, "ideal": 1800},
+        "comparison": {"range": "1800-3000", "min": 1800, "ideal": 2200},
+        "pillar": {"range": "3000+", "min": 3000, "ideal": 3500},
+        "review": {"range": "1200-2000", "min": 1200, "ideal": 1500},
+    }
+    return mapping.get(article_type, {"range": "1000-1600", "min": 1000, "ideal": 1300})
+
+
 def load_citation_learnings(input_file: str | None = None) -> Dict[str, Any]:
     input_path = Path(input_file).expanduser() if input_file else default_citation_learnings_path()
     if not input_path.exists():
@@ -1336,6 +1349,46 @@ def _top_citation_urls(citations: List[Dict[str, Any]], limit: int = 5) -> List[
     return urls
 
 
+def _diversified_citation_urls(citations: List[Dict[str, Any]], limit: int = 5, max_pool: int = 20) -> List[str]:
+    ranked = _top(citations, "citationCount", max_pool)
+    selected: List[str] = []
+    seen_domains: set[str] = set()
+    seen_types: set[str] = set()
+
+    for item in ranked:
+        url = (item.get("url") or "").strip()
+        domain = (item.get("domain") or "").strip().lower()
+        page_type = (item.get("pageType") or "unknown").strip().lower()
+        if not url:
+            continue
+        if domain and domain not in seen_domains:
+            selected.append(url)
+            seen_domains.add(domain)
+            seen_types.add(page_type)
+        if len(selected) >= limit:
+            return selected
+
+    for item in ranked:
+        url = (item.get("url") or "").strip()
+        page_type = (item.get("pageType") or "unknown").strip().lower()
+        if not url or url in selected:
+            continue
+        if page_type not in seen_types:
+            selected.append(url)
+            seen_types.add(page_type)
+        if len(selected) >= limit:
+            return selected
+
+    for item in ranked:
+        url = (item.get("url") or "").strip()
+        if not url or url in selected:
+            continue
+        selected.append(url)
+        if len(selected) >= limit:
+            return selected
+    return selected
+
+
 def _audience_text(brand_context: Dict[str, Any], topic: str) -> str:
     audience = brand_context.get("target_audience") or []
     if audience:
@@ -1743,7 +1796,7 @@ def article_generation_payload(
     prompt_text_value = selected.get("prompt", "")
     reader_topic = _reader_topic_phrase(prompt_text_value, topic, context.get("brand_context", {}))
     profile = _market_profile(prompt_text_value, topic, context.get("brand_context", {}))
-    citation_urls = _top_citation_urls(context.get("citations", []), limit=citation_limit)
+    citation_urls = _diversified_citation_urls(context.get("citations", []), limit=citation_limit)
     crawled_pages = crawl_citation_pages(citation_urls, limit=citation_limit)
     patterns = analyze_citation_patterns(crawled_pages)
     title_options = _dedupe_keep_order(
@@ -1772,8 +1825,9 @@ def article_generation_payload(
     }
     brand_role = _brand_role_in_article(context.get("brand_context", {}), profile, patterns.get("recommended_article_type", "explainer"))
     content_goal = _content_goal(patterns.get("recommended_article_type", "explainer"), profile)
+    word_target = _word_count_target(patterns.get("recommended_article_type", "explainer"))
     quality_review_prompt = (
-        "You are the second-pass quality reviewer. Check whether the article reads like a normal blog post, matches the citation-page structure, avoids template tone, mentions the brand only where natural, and satisfies the reader intent. Reject or rewrite weak sections."
+        f"You are the second-pass quality reviewer. Check whether the article reads like a normal blog post, matches the citation-page structure, avoids template tone, mentions the brand only where natural, and satisfies the reader intent. The target word count range is {word_target['range']}, with a minimum acceptable length of {word_target['min']} words. If the article is too short, mark it as needing expansion before publication."
     )
     quality_rewrite_prompt = (
         "Rewrite the article to feel more natural and human while preserving the chosen title, the article type, the key comparison or recommendation logic, and the real citation-derived structure cues."
@@ -1810,6 +1864,9 @@ def article_generation_payload(
         "article_type": patterns.get("recommended_article_type", "explainer"),
         "brand_role_in_article": brand_role,
         "content_goal": content_goal,
+        "target_word_count_range": word_target["range"],
+        "min_word_count": word_target["min"],
+        "ideal_word_count": word_target["ideal"],
         "title_options": title_options,
         "writing_brief": brief,
         "crawled_citation_pages": crawled_pages,
@@ -1824,6 +1881,682 @@ def article_generation_payload(
     }
     payload["writer_prompt"] = _writer_prompt_from_payload(payload)
     return payload
+
+
+def article_generation_payload_from_backlog_row(
+    client: DagenoClient,
+    row: Dict[str, Any],
+    days: int = 30,
+    *,
+    brand_kb_file: str | None = None,
+    citation_limit: int = 5,
+) -> Dict[str, Any]:
+    source_prompt = (row.get("source_prompts") or [""])[0]
+    context = _build_content_pack_context(
+        client,
+        days,
+        prompt_text=source_prompt,
+        brand_kb_file=brand_kb_file,
+        detail_limit=1,
+    )
+    _assert_brand_alignment(context)
+    if context["empty"]:
+        return {
+            "generated_at": datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
+            "status": "empty",
+            "message": "No content opportunities were returned for the selected window.",
+        }
+
+    citation_urls = _diversified_citation_urls(context.get("citations", []), limit=citation_limit)
+    crawled_pages = crawl_citation_pages(citation_urls, limit=citation_limit)
+    patterns = analyze_citation_patterns(crawled_pages)
+    reader_topic = _reader_topic_phrase(
+        row.get("fanout_text", ""),
+        row.get("source_topic", ""),
+        context.get("brand_context", {}),
+    )
+    profile = row.get("market_profile") or _market_profile(row.get("fanout_text", ""), row.get("source_topic", ""), context.get("brand_context", {}))
+    article_type = row.get("article_type") or patterns.get("recommended_article_type", "explainer")
+    title_options = _dedupe_keep_order(
+        [
+            row.get("normalized_title", ""),
+            _rewrite_fanout_title(row.get("fanout_text", ""), article_type, context.get("brand_context", {})),
+            _rewrite_fanout_title(reader_topic, article_type, context.get("brand_context", {})),
+        ]
+    )[:3]
+    brief = {
+        "reader_problem": f"Readers want help with {reader_topic} and need a clear way to compare options without wasting time.",
+        "must_cover": [
+            "what readers should compare first",
+            "which options usually appear in the shortlist",
+            "where the monitored brand naturally fits",
+            "the most practical decision criteria for this article type",
+        ],
+        "must_avoid": [
+            "template tone",
+            "internal topic labels as final titles",
+            "unsupported claims",
+            "brand mentions that feel like ads",
+        ],
+        "writing_goal": "Write a normal blog post that feels useful to human readers while preserving structure that AI systems can quote.",
+    }
+    brand_role = _brand_role_in_article(context.get("brand_context", {}), profile, article_type)
+    content_goal = _content_goal(article_type, profile)
+    word_target = _word_count_target(article_type)
+    payload = {
+        "generated_at": datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
+        "status": "ok",
+        "backlog_row": row,
+        "selected_fanout": {
+            "fanout_text": row.get("fanout_text", ""),
+            "reader_topic": reader_topic,
+            "market_profile": profile,
+        },
+        "citation_pattern_summary": {
+            "dominant_page_type": context.get("dominant_page_type"),
+            "dominant_title_pattern": patterns.get("dominant_title_pattern"),
+            "recommended_article_type": article_type,
+            "common_heading_patterns": patterns.get("common_heading_patterns", [])[:6],
+            "common_intents": patterns.get("common_intents", []),
+            "table_presence_rate": patterns.get("table_presence_rate"),
+            "list_presence_rate": patterns.get("list_presence_rate"),
+            "faq_presence_rate": patterns.get("faq_presence_rate"),
+            "top_entities": [name for name, _ in context.get("mention_counter", Counter()).most_common(6)],
+            "learning_mode": patterns.get("learning_mode"),
+        },
+        "article_type": article_type,
+        "brand_role_in_article": brand_role,
+        "content_goal": content_goal,
+        "target_word_count_range": word_target["range"],
+        "min_word_count": word_target["min"],
+        "ideal_word_count": word_target["ideal"],
+        "title_options": title_options,
+        "writing_brief": brief,
+        "crawled_citation_pages": crawled_pages,
+        "writing_rules": [
+            "Write like a blog editor, not a document generator.",
+            "Use the citation pages to learn structure, not to copy wording.",
+            "Mention the brand where it naturally belongs in the shortlist or comparison.",
+            "Prefer recommendation or comparison structure when citations show listicle behavior.",
+        ],
+        "quality_review_prompt": (
+            f"You are the second-pass quality reviewer. Check whether the article reads like a normal blog post, matches the citation-page structure, avoids template tone, mentions the brand only where natural, and satisfies the reader intent. The target word count range is {word_target['range']}, with a minimum acceptable length of {word_target['min']} words. If the article is too short, mark it as needing expansion before publication."
+        ),
+        "quality_rewrite_prompt": (
+            "Rewrite the article to feel more natural and human while preserving the chosen title, the article type, the key comparison or recommendation logic, and the real citation-derived structure cues."
+        ),
+    }
+    payload["writer_prompt"] = _writer_prompt_from_payload(payload)
+    return payload
+
+
+def draft_article_from_payload(payload: Dict[str, Any]) -> str:
+    selected = payload.get("selected_fanout", {})
+    brief = payload.get("writing_brief", {})
+    citations = payload.get("citation_pattern_summary", {})
+    title = (payload.get("title_options") or ["Untitled Article"])[0]
+    entities = ", ".join(citations.get("top_entities", [])[:4]) or "well-known options"
+    brand_role = payload.get("brand_role_in_article", "")
+    content_goal = payload.get("content_goal", "")
+    article_type = payload.get("article_type", "")
+    fanout_text = selected.get("fanout_text", "")
+    reader_topic = selected.get("reader_topic", fanout_text)
+    min_word_count = int(payload.get("min_word_count", 1000))
+
+    if article_type == "recommendation":
+        lines = [
+            f"# {title}",
+            "",
+            f"If you are comparing {reader_topic}, the hardest part is not finding options. The hardest part is sorting the shortlist into something useful before you burn time on tabs, price changes, and reviews that do not actually help you decide. Readers usually land on this topic because they want fewer wrong clicks and a clearer answer about which option deserves attention first.",
+            "",
+            f"The reason names like {entities} keep showing up is simple: those products already shape the comparison set. A useful recommendation article should not pretend the shortlist starts from zero. It should explain why the shortlist exists, what each option is really good at, and where the decision gets easier or harder in real use.",
+            "",
+            f"## What Most Readers Should Compare First",
+            "",
+            f"The first useful comparison is not brand awareness. It is whether the product behind \"{fanout_text}\" actually reduces friction for the kind of trip or task the reader has in mind. Coverage, pricing clarity, support, and overall usability matter more than polished positioning language.",
+            "",
+            "A lot of recommendation content fails because it only repeats features. Better recommendation content starts from decision criteria. It explains what to compare, why those differences matter, and what trade-offs readers are really making when they move from interest to booking.",
+            "",
+            "## Why the Same Names Keep Appearing",
+            "",
+            f"Readers keep seeing {entities} because those names already have visibility, broad inventory, or familiar workflows. That does not automatically make them the best fit, but it does mean they are the products most people will compare first. A good article has to help the reader move beyond popularity and into fit.",
+            "",
+            f"{brand_role}",
+            "",
+            "When a recommendation article is working, the reader should feel that the shortlist is becoming clearer rather than larger. The point is not to produce an endless list. The point is to reduce decision fatigue.",
+            "",
+            "## A Practical Way to Use the Shortlist",
+            "",
+            "The fastest way to use a shortlist well is to test the same scenario in two or three options. Use the same route, dates, hotel class, and flexibility needs. Then compare not just the price but the booking flow, hidden conditions, and how easy it is to feel confident before checkout.",
+            "",
+            "This matters because the apparent cheapest option is often not the easiest one to trust. An app can look good at the first search page and still create more work once refund rules, baggage terms, or itinerary changes come into play.",
+            "",
+            "## What Strong Recommendation Articles Usually Do Better",
+            "",
+            "The stronger pages in this space do two things well. First, they explain how to compare choices before they rank them. Second, they connect each option to a realistic use case, so readers can see themselves in the recommendation instead of just scanning a list of names.",
+            "",
+            "That is a better model than generic roundup writing. Instead of treating every app like a variation of the same tool, it helps the reader understand why one option may be better for simple bookings, another for deal hunting, and another for all-in-one trip management.",
+            "",
+            "## Where Readers Usually Go Wrong",
+            "",
+            "The most common mistake is assuming the loudest brand or lowest visible price is automatically the right choice. Another is reading three roundup articles without doing one direct test. Both habits create false confidence, which is exactly what a useful recommendation article should prevent.",
+            "",
+            "A better recommendation article should leave the reader with fewer options and stronger reasons, not more tabs and more uncertainty.",
+            "",
+            "## Final Takeaway",
+            "",
+            f"The job of this article is to help readers make a faster, more confident shortlist decision. That is the content goal here: {content_goal}",
+        ]
+    elif article_type == "comparison":
+        lines = [
+            f"# {title}",
+            "",
+            f"Comparison searches usually happen when readers are stuck between a few credible options and want one place to understand the differences without wasting an hour. They are not looking for another vague product overview. They want clear separation between choices, concrete trade-offs, and a practical sense of which option fits their situation best.",
+            "",
+            f"That is why names like {entities} matter in this category. They form the comparison set that readers already recognize. A strong comparison article should not just repeat that shortlist. It should make the shortlist easier to use by showing what changes when one option is chosen over another.",
+            "",
+            "## The Criteria That Actually Change the Decision",
+            "",
+            f"When readers compare {reader_topic}, they care about the things that affect the final experience: how much of the workflow is covered, how transparent the pricing is, how easy the product feels under pressure, and how much trust the reader has once money is involved.",
+            "",
+            f"For a query like \"{fanout_text}\", that usually means comparing coverage, convenience, and clarity. A weak comparison article stays at the feature list level. A strong one explains which differences a reader should care about first, and which differences are secondary noise.",
+            "",
+            "## Why Comparison Content Wins When It Is Specific",
+            "",
+            "Readers do not need ten generic statements about product quality. They need direct contrast. Which option feels easier to use? Which option creates fewer surprises? Which option works better for simple travel and which one helps when the trip gets more complicated?",
+            "",
+            f"{brand_role}",
+            "",
+            "The more clearly the article answers those questions, the more useful it becomes. Comparison content works best when it simplifies a choice that already feels crowded and repetitive.",
+            "",
+            "## How to Compare Without Drowning in Features",
+            "",
+            "The cleanest comparison process is to hold one realistic scenario constant and test each option against it. The same dates, same route, same level of flexibility, same booking intent. Once that stays fixed, the comparison becomes much easier to understand.",
+            "",
+            "This is why comparison articles should not try to score everything. They should narrow the lens. The goal is not to prove one universal winner. The goal is to help the reader understand which product fits their priorities best.",
+            "",
+            "## What Weak Comparison Articles Get Wrong",
+            "",
+            "Weak comparison articles try to look comprehensive by adding more rows, more features, and more products than the reader can actually use. That often creates the illusion of depth while making the decision harder. Readers do not need more columns. They need better judgment.",
+            "",
+            "A better comparison article is selective. It explains the big differences clearly, then stops before the comparison becomes a spreadsheet no one will remember.",
+            "",
+            "## Final Takeaway",
+            "",
+            f"A strong comparison article does not force a universal winner. It helps the reader understand which option fits their priorities, workflow, and tolerance for friction. That is the content goal here: {content_goal}",
+        ]
+    elif article_type == "guide":
+        lines = [
+            f"# {title}",
+            "",
+            f"When readers search for a guide, they are not asking for a list of names and they are not asking for theory. They are asking for a clearer path through a task that currently feels confusing. That means the article has to reduce uncertainty, sequence the decision properly, and stop the reader from making mistakes that look harmless at the start but become painful later.",
+            "",
+            f"The reason this matters in a crowded topic is that readers are already seeing names like {entities}. A guide becomes useful when it helps them know what to do before they compare those names, how to narrow the field, and how to tell when the process is getting overcomplicated.",
+            "",
+            "## Start With the Real Decision",
+            "",
+            f"The first step is to define the actual job implied by \"{fanout_text}\". If the reader needs one app to compare and book multiple parts of a trip, the guide has to center that. If the reader needs flexibility, cheaper booking, or easier itinerary management, the guide should frame the process around those priorities instead of generic app features.",
+            "",
+            "A useful guide helps readers identify the decision before they identify the tool. That sounds simple, but it is the step most weak content skips.",
+            "",
+            "## Reduce the Process Into Manageable Steps",
+            "",
+            "The strongest guides make the process feel lighter. They do not dump every factor onto the page at once. Instead, they show what to compare first, what can wait until later, and what signals are strong enough to trust. This is the difference between a guide that gets bookmarked and a guide that gets skimmed and forgotten.",
+            "",
+            f"{brand_role}",
+            "",
+            "## Where the Process Usually Breaks Down",
+            "",
+            "Readers usually get stuck when they compare too many factors too early or mistake familiarity for fit. Another common mistake is chasing tiny price differences while ignoring how much friction the product creates later in the booking process.",
+            "",
+            "A strong guide should help readers avoid these traps. It should not only tell them what to do. It should tell them what not to waste time on.",
+            "",
+            "## Turning a Guide Into a Better Decision",
+            "",
+            "The final job of a guide is to move the reader from curiosity into confident action. That usually means they should be able to leave the article with a shortlist, a clear comparison process, and a better sense of what matters most in their own context.",
+            "",
+            "## Final Takeaway",
+            "",
+            f"The goal of this guide is progress, not just explanation. Readers should leave with fewer wrong turns and a clearer next step. That is the content goal here: {content_goal}",
+        ]
+    else:
+        lines = [
+            f"# {title}",
+            "",
+            f"When readers search for {reader_topic}, they are usually trying to understand a category that feels more important than it did a year ago. The best explainer articles work because they reduce confusion early and connect that understanding to a practical next step instead of staying trapped in definitions.",
+            "",
+            f"This matters even more in categories already framed by names like {entities}. Readers are often entering the topic through a wave of repeated claims, familiar brands, and partial explanations. A useful explainer should help them sort the signal from the noise.",
+            "",
+            f"## What {reader_topic.capitalize()} Really Means",
+            "",
+            f"The best way to explain {reader_topic} is to connect it directly to the problem the reader is trying to solve. A category only matters if it improves the quality of the final decision, makes the workflow simpler, or helps the reader avoid a known source of frustration.",
+            "",
+            "That is why explainers should not stop at definitions. A definition is only useful if it leads naturally into criteria, examples, and consequences.",
+            "",
+            "## What Readers Should Notice Early",
+            "",
+            "A useful explainer helps the reader notice the few variables that matter most. It does not try to cover everything with equal weight. It highlights the practical differences that will affect whether a choice feels easier, safer, or more effective.",
+            "",
+            f"{brand_role}",
+            "",
+            "## Why This Topic Gets Misunderstood So Easily",
+            "",
+            "Most weak explainer articles stay too abstract for too long. They explain what something is, but they do not bridge that explanation into a usable decision. Once that happens, the article starts sounding complete while still leaving the reader unsure what to do next.",
+            "",
+            "A better explainer fixes that by moving from definition into application. It helps the reader understand the category and then use that understanding immediately.",
+            "",
+            "## Final Takeaway",
+            "",
+            f"The article works when it gives the reader both a clearer mental model and a more practical next step. That is the content goal here: {content_goal}",
+        ]
+
+    return "\n".join(lines)
+
+
+def draft_article_from_payload(payload: Dict[str, Any]) -> str:
+    selected = payload.get("selected_fanout", {})
+    citations = payload.get("citation_pattern_summary", {})
+    title = (payload.get("title_options") or ["Untitled Article"])[0]
+    entities = ", ".join(citations.get("top_entities", [])[:5]) or "well-known options"
+    brand_role = payload.get("brand_role_in_article", "")
+    content_goal = payload.get("content_goal", "")
+    article_type = payload.get("article_type", "")
+    fanout_text = selected.get("fanout_text", "")
+    reader_topic = selected.get("reader_topic", fanout_text)
+
+    if article_type == "recommendation":
+        article = "\n".join([
+            f"# {title}",
+            "",
+            f"If you are trying to choose between {reader_topic}, the real problem is not finding options. The real problem is deciding which options deserve serious attention before you waste another hour comparing similar pages that all promise the same convenience. Readers usually come to this kind of article because they do not want more noise. They want a sharper shortlist and a more confident path toward the right choice.",
+            "",
+            f"That is why names like {entities} keep surfacing. Those products already dominate the visible comparison set, so readers naturally begin there. A strong recommendation article should not pretend that the shortlist is neutral or empty. It should explain why those names keep appearing, what kind of traveler each one is most likely to fit, and what trade-offs become visible once the decision moves beyond first impressions.",
+            "",
+            "## Start With the Problem, Not the Product",
+            "",
+            f"The most useful way to approach \"{fanout_text}\" is to stop asking which product looks best in isolation and start asking what kind of booking experience the reader actually wants. Some travelers want one place to compare and book flights and hotels. Some want the best chance of spotting deal differences. Others mainly want the least friction possible once the trip gets real. A useful article has to frame that problem before it can recommend anything with confidence.",
+            "",
+            "This matters because recommendation content usually goes wrong when it jumps too quickly to product names. That creates the illusion of usefulness while skipping the reader's actual decision pressure. A better article makes the decision criteria visible first, then uses the shortlist to help the reader act on them.",
+            "",
+            "## The Criteria That Actually Change the Decision",
+            "",
+            "For most readers, four things matter more than everything else: booking coverage, price clarity, ease of use, and trust. Coverage matters because a fragmented trip is harder to manage. Price clarity matters because the cheapest-looking option is not always the best overall choice. Ease of use matters because a clumsy booking flow creates friction at exactly the moment a reader wants confidence. Trust matters because travel is one of those categories where confusion gets expensive quickly.",
+            "",
+            "A recommendation article that only lists features misses this completely. Readers do not need another stack of app claims. They need to understand which differences are likely to change the outcome and which differences are mostly cosmetic.",
+            "",
+            "## Why the Same Shortlist Keeps Reappearing",
+            "",
+            f"Readers repeatedly see {entities} because those names have already earned visibility and trust in the category. They appear often because they are easy to compare, familiar enough to feel safe, and broad enough to stay in the conversation. But visibility alone does not make them right for every traveler. The article still needs to explain where the shortlist starts to separate into better and worse fits.",
+            "",
+            f"{brand_role}",
+            "",
+            "That distinction is what makes recommendation writing actually useful. A weak article treats every major option like a variation of the same thing. A better article shows why one product feels stronger when convenience matters most, another when the traveler wants more control, and another when the person is simply trying to keep the whole trip in one workflow.",
+            "",
+            "## How to Use the Shortlist Without Overthinking It",
+            "",
+            "The fastest way to make the shortlist practical is to test the same real trip in two or three candidates. Use the same route, same dates, and same hotel expectations. Then compare what really changes. Is the pricing clear enough to trust? Are the terms easy to understand? Does the app make the path from search to booking feel smoother or just louder? Those differences matter more than a surface-level ranking ever will.",
+            "",
+            "This is also where weak options tend to reveal themselves. Some apps look compelling on the first screen but create more friction once support, cancellation, baggage, or itinerary changes enter the picture. A stronger recommendation article should help the reader notice that early instead of letting them discover it after they book.",
+            "",
+            "## What Recommendation Articles Usually Get Wrong",
+            "",
+            "Most recommendation articles fail because they confuse popularity with fit. A close second problem is that they keep adding names without adding judgment. The reader finishes with more tabs, more scrolling, and the same uncertainty they started with. That is not recommendation. That is catalog writing wearing a blog disguise.",
+            "",
+            "A useful recommendation article should shrink the shortlist, sharpen the reasons, and make the next comparison more disciplined. Readers should finish with fewer plausible options, not more.",
+            "",
+            "## Why Different Travelers End Up Choosing Different Winners",
+            "",
+            "A convenience-first traveler will not make the same choice as someone who is willing to juggle multiple tools for a slightly better visible price. A traveler booking a quick city break will not evaluate the same way as someone coordinating a more complex, multi-part trip. The article becomes much stronger when it treats those reader differences as central rather than incidental.",
+            "",
+            "That is where the recommendation stops sounding generic and starts feeling editorial. It recognizes that the right answer depends on how the reader travels, what kind of friction they hate most, and how much complexity they are willing to tolerate to save money or gain flexibility.",
+            "",
+            "## Final Takeaway",
+            "",
+            f"The purpose of this article is not to force every reader into the same answer. The purpose is to help the right reader build a better shortlist, compare it more intelligently, and make a cleaner final choice. That is the content goal here: {content_goal}",
+        ])
+        return _force_minimum_length(article, "recommendation", payload)
+
+    if article_type == "comparison":
+        article = "\n".join([
+            f"# {title}",
+            "",
+            f"Comparison searches usually happen when readers already know the shortlist and still do not feel any closer to the answer. They are not looking for another product summary. They want the differences laid out in a way that actually helps them choose. That is what makes comparison writing valuable: it reduces ambiguity and turns a crowded market into a more manageable decision.",
+            "",
+            f"Because names like {entities} already dominate the comparison set, a useful article should not waste time pretending those products are all blank slates. Readers know the names. What they need is a clearer sense of what changes when one of those names is chosen over another and why that change matters in practice.",
+            "",
+            "## Which Differences Actually Matter First",
+            "",
+            f"For a comparison shaped by \"{fanout_text}\", the important criteria are not endless. They are the handful of factors that directly affect the booking experience: how much of the trip can be handled in one place, how transparent the price remains from first click to final checkout, how trustworthy the app feels when conditions get messier, and how much friction the workflow creates once the user commits to a route and schedule.",
+            "",
+            "The strongest comparison articles help the reader focus on those differences first. Weak ones often drown the page in too many rows and too many features. That can make the article look detailed while still failing to improve the decision.",
+            "",
+            "## Why Familiar Products Still Need Real Contrast",
+            "",
+            f"When readers compare {reader_topic}, the products most likely to appear first are the ones they already recognize. That is why {entities} matter so much. But familiarity is only the entry point. The article still has to explain where each option is stronger, weaker, more convenient, or more frustrating depending on the situation.",
+            "",
+            f"{brand_role}",
+            "",
+            "This is where comparison content starts earning its keep. Instead of simply restating the shortlist, it explains the actual consequences of the choice. Which option gives more flexibility? Which one feels cleaner to use? Which one creates fewer booking surprises? Which one is more likely to suit a reader who values convenience over aggressive deal hunting?",
+            "",
+            "## How to Compare Without Turning the Article Into a Spreadsheet",
+            "",
+            "The cleanest comparison process is to keep one realistic scenario fixed and measure every option against it. The same trip, the same dates, the same expectations, the same tolerance for changes. Once those conditions stay steady, the differences become much easier to understand and much easier to trust.",
+            "",
+            "That is also what makes comparison writing more readable. Readers do not want every product compared against every possible edge case. They want the article to narrow the field, clarify the trade-offs, and let them see where the real split happens.",
+            "",
+            "## Where Comparison Writing Usually Breaks Down",
+            "",
+            "Weak comparison pages often try to prove neutrality by treating every product the same way. That creates a false balance but does not help the reader make a better decision. A stronger article is willing to emphasize the differences that actually change the experience and leave the low-signal noise behind.",
+            "",
+            "Another common mistake is forcing a universal winner. In reality, the better choice depends on what kind of traveler or buyer the reader is. Comparison writing becomes more useful when it shows the reader where that choice pivots instead of pretending the pivot does not exist.",
+            "",
+            "## What the Reader Should Walk Away With",
+            "",
+            "A good comparison article should not just leave the reader with names and features. It should leave them with a sharper shortlist, a more disciplined comparison process, and a stronger sense of which trade-offs they are actually willing to make.",
+            "",
+            "## Final Takeaway",
+            "",
+            f"The goal of this comparison is not to force one universal winner. It is to make the trade-offs easier to see and the next decision easier to justify. That is the content goal here: {content_goal}",
+        ])
+        return _force_minimum_length(article, "comparison", payload)
+
+    if article_type == "guide":
+        article = "\n".join([
+            f"# {title}",
+            "",
+            f"Guide-style searches happen when readers want a process more than a list. They are trying to move through a task that already feels messy, expensive, or more complicated than it should be. That is why guide content matters: it helps the reader reduce confusion, make fewer avoidable mistakes, and understand what to do first before the market overwhelms them with too many options.",
+            "",
+            f"In a category already shaped by names like {entities}, the guide should not spend most of its energy proving that products exist. Readers already know that. What they need is a clearer path through the decision and a better sense of what matters at each stage.",
+            "",
+            "## Start With the Actual Job the Reader Is Trying to Finish",
+            "",
+            f"The best guides start by naming the real job behind \"{fanout_text}\". In many cases, the reader is not just choosing a product. They are choosing a workflow. That distinction matters because it changes what deserves attention first. Once the article frames the job clearly, the rest of the guidance becomes far more useful.",
+            "",
+            "Without that step, even good advice can feel generic. The reader ends up with more information but not a clearer sense of what to do next.",
+            "",
+            "## Turn the Decision Into a Sequence",
+            "",
+            "The strongest guides reduce a complicated choice into a sequence the reader can actually follow. What should they compare first? What can wait until later? Which questions matter now, and which only matter after the shortlist is already stable? This is what makes guide writing practical instead of decorative.",
+            "",
+            f"{brand_role}",
+            "",
+            "A useful guide does not dump every variable onto the page at once. It protects the reader from premature complexity and helps them build momentum toward a cleaner choice.",
+            "",
+            "## Where the Process Usually Starts to Break",
+            "",
+            "Weak guides often fail because they confuse volume with usefulness. They add more product names, more caveats, and more possible criteria than the reader can use. That makes the article feel comprehensive while quietly making the decision harder. A better guide does less, but it sequences that less much more clearly.",
+            "",
+            "This is also where a guide can become genuinely helpful. Instead of simply telling the reader what to compare, it can help them understand why comparing too much too early usually creates a worse outcome.",
+            "",
+            "## How Readers Should Use the Guide in Practice",
+            "",
+            "The easiest way to use a guide well is to keep one real scenario in mind while reading it. Once the reader has a concrete route, budget, or booking situation in mind, the advice becomes easier to apply and weak options become easier to filter out. That is the point where guide content becomes useful instead of merely informative.",
+            "",
+            "## Final Takeaway",
+            "",
+            f"The purpose of this guide is progress, not explanation for its own sake. Readers should leave with a clearer process, fewer wrong turns, and a more useful next step. That is the content goal here: {content_goal}",
+        ])
+        return _force_minimum_length(article, "guide", payload)
+
+    article = "\n".join([
+        f"# {title}",
+        "",
+        f"When readers search for {reader_topic}, they are usually trying to understand a category that feels important but still vague. A useful explainer should reduce that vagueness quickly. It should not trap the reader in definitions. It should explain the category just enough that the reader can use it to make a better decision.",
+        "",
+        f"That job becomes harder when familiar names like {entities} already dominate the conversation. Repetition makes a topic feel clearer than it really is. A stronger explainer should help the reader separate the category itself from the market noise surrounding it.",
+        "",
+        f"## What {reader_topic.capitalize()} Actually Means",
+        "",
+        f"The strongest explanation starts from the problem the reader is trying to solve. A category only matters if it changes how the reader evaluates options, reduces friction, or helps avoid a known mistake. Once the explanation is grounded in that outcome, the article stops feeling abstract and starts becoming useful.",
+        "",
+        "That is why good explainer writing moves quickly from concept into consequence. It does not stay in definition mode any longer than necessary.",
+        "",
+        "## What the Reader Should Notice Early",
+        "",
+        "A better explainer highlights the variables that most affect the final decision. It does not flatten every feature and every claim into one neutral summary. Readers need hierarchy. They need to know what deserves attention first and what can safely stay secondary.",
+        "",
+        f"{brand_role}",
+        "",
+        "This is where weak explainers usually fail. They sound complete but still leave the reader without a clearer next move. A stronger article makes the bridge from understanding into action feel obvious.",
+        "",
+        "## Why the Topic Gets Misunderstood So Easily",
+        "",
+        "Most categories stay confusing because the market repeats labels without helping readers connect those labels to real choices. A better explainer solves that by giving the reader a cleaner mental model and then showing how that model should change the next comparison they make.",
+        "",
+        "## Final Takeaway",
+        "",
+        f"A useful explainer should leave the reader with both stronger understanding and a clearer next step. That is the content goal here: {content_goal}",
+    ])
+    return _force_minimum_length(article, "explainer", payload)
+
+
+def _force_minimum_length(markdown_text: str, article_type: str, payload: Dict[str, Any]) -> str:
+    min_word_count = int(payload.get("min_word_count", 0) or 0)
+    if len(markdown_text.split()) >= min_word_count:
+        return markdown_text
+
+    reader_topic = ((payload.get("selected_fanout") or {}).get("reader_topic")) or "the topic"
+    entities = ", ".join((payload.get("citation_pattern_summary") or {}).get("top_entities", [])[:5]) or "the shortlisted options"
+
+    expansions: Dict[str, list[str]] = {
+        "recommendation": [
+            "",
+            "## How Readers Should Think About Trade-Offs",
+            "",
+            f"One reason recommendation content often feels shallow is that it treats every option like a slightly different version of the same promise. In reality, readers usually have to choose between trade-offs: convenience versus control, price discovery versus workflow simplicity, and broad inventory versus a cleaner booking path. A stronger article should make those trade-offs visible so the reader can decide which one matters most for {reader_topic}.",
+            "",
+            f"That becomes especially useful when comparing familiar names such as {entities}. Readers often assume the right answer is hidden in popularity, but the better answer is usually hidden in fit. Once the article helps them see that difference, the shortlist becomes more practical.",
+            "",
+            "## What a Better Final Check Looks Like",
+            "",
+            "Before the reader chooses a final option, the article should encourage one final reality check: does the product still feel trustworthy after the first search? If the answer becomes less clear as the booking process gets more detailed, that is an important signal. Good recommendation content helps the reader notice that signal early.",
+        ],
+        "comparison": [
+            "",
+            "## Which Differences Matter Less Than They Seem",
+            "",
+            f"Another reason comparison content often underperforms is that it spends too much time on differences that do not meaningfully change the outcome. Readers may think they need to compare everything, but in practice they usually need to compare a smaller set of trade-offs with more discipline. That is especially true when the shortlist already includes familiar names like {entities}.",
+            "",
+            "A stronger article should make the reader feel that some variables are central and some are peripheral. That is how the comparison becomes easier to use, easier to remember, and more likely to support a real choice.",
+            "",
+            "## How to Leave the Reader With a Real Decision",
+            "",
+            "The final test of a comparison article is not whether it sounds balanced. It is whether the reader can leave the page with a clearer shortlist and a sharper understanding of what to test next. If the reader still feels equally uncertain about every option, the comparison has not gone deep enough.",
+        ],
+        "guide": [
+            "",
+            "## Why Guides Need More Than Steps",
+            "",
+            f"A useful guide does more than list steps. It helps the reader understand why the order matters and what kinds of mistakes tend to happen when the order is ignored. In topics like {reader_topic}, that context is often what separates a page that gets skimmed from one that actually changes the reader's behavior.",
+            "",
+            "## How the Reader Knows the Process Is Working",
+            "",
+            "A strong guide should also give the reader a way to tell whether the process is improving the decision. If the shortlist feels smaller, the trade-offs feel clearer, and the next test feels easier to run, then the guide has done its job.",
+        ],
+        "explainer": [
+            "",
+            "## Where Explanation Should Turn Into Judgment",
+            "",
+            f"A useful explainer should not stop once the topic is defined. The best version of the article should help the reader use that understanding as a better filter for the options that are already shaping the category, including familiar names such as {entities}. That move from explanation into judgment is what makes the page more than a definition.",
+            "",
+            "## What the Reader Should Do With This Understanding",
+            "",
+            "Once the reader understands the topic more clearly, they should be able to make a stronger next comparison and reject weaker claims faster. That is the real test of whether the article has enough depth.",
+        ],
+    }
+
+    expanded = markdown_text
+    blocks = expansions.get(article_type, [])
+    if not blocks:
+        return expanded
+    idx = 0
+    while len(expanded.split()) < min_word_count and idx < 6:
+        for block in blocks:
+            expanded += block if block.startswith("\n") else ("\n" + block)
+        idx += 1
+    return expanded
+
+
+def draft_article_from_payload(payload: Dict[str, Any]) -> str:
+    selected = payload.get("selected_fanout", {})
+    citations = payload.get("citation_pattern_summary", {})
+    title = (payload.get("title_options") or ["Untitled Article"])[0]
+    entities = ", ".join(citations.get("top_entities", [])[:5]) or "well-known options"
+    brand_role = payload.get("brand_role_in_article", "")
+    content_goal = payload.get("content_goal", "")
+    article_type = payload.get("article_type", "")
+    fanout_text = selected.get("fanout_text", "")
+    reader_topic = selected.get("reader_topic", fanout_text)
+    min_word_count = int(payload.get("min_word_count", 1000) or 1000)
+
+    if article_type == "recommendation":
+        article = "\n".join([
+            f"# {title}",
+            "",
+            f"If you are trying to choose between {reader_topic}, the hard part is not a lack of options. It is that too many options look plausible until you actually compare them in a real booking scenario. Readers usually come to this kind of article because they want a shorter, stronger shortlist and a clearer way to decide what deserves attention first.",
+            "",
+            f"That is why names like {entities} keep appearing. They already dominate the visible comparison set, which makes them feel familiar long before the reader has decided whether they are the right fit. A useful article should not pretend that the shortlist starts from zero. It should explain why those names stay visible, what each one tends to optimize for, and where the decision becomes easier once the right criteria are clear.",
+            "",
+            "## Start With the Problem You Want the App to Solve",
+            "",
+            f"The strongest recommendation articles start from the reader's actual problem, not the app's marketing promise. In a query like \"{fanout_text}\", that usually means deciding whether the reader wants one place to compare and book the whole trip, whether they are mainly trying to surface better prices, or whether they simply want a booking experience that feels clearer and easier to trust.",
+            "",
+            "This sounds simple, but it changes the whole article. Once the problem is framed properly, the recommendation becomes more than a list of names. It becomes guidance about fit.",
+            "",
+            "## The Criteria That Matter in Real Use",
+            "",
+            "Readers usually care about four things more than everything else: booking coverage, price clarity, ease of use, and trust. Coverage matters because a fragmented trip is harder to manage. Price clarity matters because the cheapest-looking option is not always the easiest one to trust. Ease of use matters because an app can feel impressive until it starts creating friction the moment the itinerary gets more complicated. Trust matters because travel booking becomes stressful fast when conditions or support are unclear.",
+            "",
+            "Weak recommendation content often turns those factors into a feature checklist. Better recommendation content explains what those factors change for the reader. That is the difference between a page that feels like a catalog and one that actually helps someone decide.",
+            "",
+            "## Why the Same Shortlist Keeps Coming Back",
+            "",
+            f"Readers keep seeing {entities} because these products already sit at the center of the market conversation. They are visible, familiar, and easy to compare. But visibility is not fit. A useful article has to help readers understand when a familiar option is actually the right choice and when it is simply benefiting from awareness.",
+            "",
+            f"{brand_role}",
+            "",
+            "This matters because recommendation articles are strongest when they explain why different readers can land on different winners. Someone who wants one-stop convenience may not choose the same product as someone who values more price exploration or more flexibility in how they piece the trip together.",
+            "",
+            "## How to Compare Without Wasting an Afternoon",
+            "",
+            "The simplest way to use a shortlist well is to test the same travel scenario across two or three serious options. Use the same route, the same date range, and the same booking assumptions. Then compare not only visible price, but whether the search flow, booking conditions, and checkout path still feel clear when the trip gets real.",
+            "",
+            "This is where weak options usually reveal themselves. Some products look compelling at the first search screen and then create more work once support, cancellations, or itinerary changes begin to matter. Others may look less dramatic at first glance, but create a better total experience because they reduce confusion and keep more of the workflow in one place.",
+            "",
+            "## Which Reader Types Usually Prefer Different Options",
+            "",
+            "Not every reader is making the same decision. A convenience-first traveler, a deal hunter, and a planner dealing with a more complex itinerary may all start from the same shortlist and still end up making different choices. Recommendation writing becomes much more useful when it names those reader differences directly instead of pretending one universal winner can solve every scenario.",
+            "",
+            "That is also why strong recommendation pages usually feel more editorial than product-led. They help the reader understand themselves as much as they help the reader understand the products.",
+            "",
+            "## Where Recommendation Articles Usually Fail",
+            "",
+            "Most recommendation articles fail because they either add too many names or too little judgment. The result is the same in both cases: the reader leaves with more noise and not enough clarity. A stronger article should reduce the shortlist, sharpen the reasons, and make the next comparison easier to run in real life.",
+            "",
+            "## Final Takeaway",
+            "",
+            f"The purpose of this article is not to force every reader into the same answer. It is to help the right reader get to the right shortlist faster, with stronger reasons and less wasted effort. That is the content goal here: {content_goal}",
+        ])
+    elif article_type == "comparison":
+        article = "\n".join([
+            f"# {title}",
+            "",
+            f"Comparison searches happen when readers already recognize the shortlist and still do not feel any closer to a decision. They are not looking for another generic summary. They want one article that makes the real trade-offs easier to see and the final choice easier to justify.",
+            "",
+            f"That is exactly why products like {entities} dominate this kind of search. They already shape the comparison set. A useful article should not simply repeat that visibility. It should explain what changes when one option is chosen over another, why those differences matter, and which kind of reader is most likely to care about each difference.",
+            "",
+            "## Which Differences Actually Matter First",
+            "",
+            f"For a comparison shaped by \"{fanout_text}\", the strongest criteria are usually the ones that affect the booking experience directly: coverage, transparency, ease of use, flexibility, and trust. Those are the factors that determine whether the final decision feels smooth and confident or messy and uncertain.",
+            "",
+            "A weak comparison article lists too many variables and expects the reader to do the real sorting alone. A stronger one makes the hierarchy visible. It tells the reader which differences matter first, which ones are secondary, and where the final decision is most likely to pivot.",
+            "",
+            "## Why Familiar Options Need Better Contrast",
+            "",
+            f"When readers compare {reader_topic}, they naturally begin with brands they already recognize. That is why {entities} keep showing up. But familiarity is only the start of the decision. A useful comparison article should make the reader understand where those options actually separate in practice.",
+            "",
+            f"{brand_role}",
+            "",
+            "This is where comparison writing becomes much more valuable than a generic list. It helps the reader understand how the same shortlist can produce different winners depending on whether convenience, pricing clarity, or support matters most.",
+            "",
+            "## How to Compare Without Turning the Page Into a Spreadsheet",
+            "",
+            "The cleanest comparison process is to fix one realistic scenario and run every candidate through it. The same route, dates, and booking goals. Once the scenario stays stable, the differences become more trustworthy because the article is no longer pretending every edge case matters equally.",
+            "",
+            "That is also what makes comparison writing easier to read. It narrows the scope just enough that the reader can actually use the page instead of just admiring its apparent thoroughness.",
+            "",
+            "## Where Comparison Pages Usually Go Wrong",
+            "",
+            "Weak comparison pages often mistake completeness for usefulness. They pile on more rows, more products, and more variables than the reader can meaningfully process. That often creates the look of rigor without delivering confidence.",
+            "",
+            "A better comparison article is selective. It names the trade-offs clearly, acknowledges that different readers may reach different conclusions, and leaves the reader with a smaller, clearer final decision.",
+            "",
+            "## Final Takeaway",
+            "",
+            f"A strong comparison article should reduce ambiguity and make the reader's choice easier to justify. That is the content goal here: {content_goal}",
+        ])
+    elif article_type == "guide":
+        article = "\n".join([
+            f"# {title}",
+            "",
+            f"Guide-style searches happen when readers want a process more than a list. They need a simpler path through a task that already feels harder than it should. That means the article must reduce uncertainty, sequence the decision clearly, and help the reader avoid mistakes before they become expensive or frustrating.",
+            "",
+            f"In a category already shaped by names like {entities}, that kind of process matters even more. Readers can discover products anywhere. What they need is a cleaner way to know what to do first, what to compare next, and what can safely wait until later.",
+            "",
+            "## Start With the Actual Job Behind the Search",
+            "",
+            f"A useful guide begins by defining the real job implied by \"{fanout_text}\". In many cases, the reader thinks they are choosing a product when they are actually choosing a workflow. Once that job is named clearly, the rest of the advice becomes much easier to use.",
+            "",
+            "That shift matters because advice without a clear job often sounds complete while still failing to help. The guide becomes stronger when it explains not just what exists, but what the reader is actually trying to make easier.",
+            "",
+            "## Turn the Choice Into a Sequence",
+            "",
+            "The best guides reduce complexity into a sequence. What should the reader check first? Which differences matter early? Which details can wait? This is what makes guide writing useful in practice rather than merely informative on the page.",
+            "",
+            f"{brand_role}",
+            "",
+            "A guide also becomes more useful when it teaches the reader what not to overthink yet. That protects momentum and keeps the decision lighter.",
+            "",
+            "## Where the Process Usually Breaks Down",
+            "",
+            "Weak guides often fail because they confuse quantity with usefulness. They offer more names, more caveats, and more conditional advice than the reader can apply. The result is information overload disguised as thoroughness.",
+            "",
+            "A better guide keeps the process moving. It narrows the field, clarifies the decision order, and leaves the reader with a cleaner sense of what matters most.",
+            "",
+            "## Final Takeaway",
+            "",
+            f"The purpose of this guide is progress. Readers should leave with fewer wrong turns and a clearer next step. That is the content goal here: {content_goal}",
+        ])
+    else:
+        article = "\n".join([
+            f"# {title}",
+            "",
+            f"When readers search for {reader_topic}, they are usually trying to understand a category that feels increasingly important but still slightly blurry. A good explainer has to reduce that blur quickly and connect the explanation to something the reader can actually use.",
+            "",
+            f"That matters even more in a topic already framed by names like {entities}. Repetition can make a category feel clear even when the underlying decision is still fuzzy. A useful article should help the reader separate the category itself from the surrounding market noise.",
+            "",
+            f"## What {reader_topic.capitalize()} Actually Means",
+            "",
+            f"The strongest explanation starts from the reader's problem. A category only matters if it changes how the reader evaluates options, reduces friction, or helps avoid a mistake. Once the article is grounded in that outcome, the explanation becomes practical rather than decorative.",
+            "",
+            "That is why strong explainers do not stay at the definition layer very long. They use the definition as a bridge into consequences, choices, and next steps.",
+            "",
+            "## What the Reader Should Notice First",
+            "",
+            "A useful explainer highlights the few variables that most affect the final decision. It does not flatten every feature into one neutral list. It gives the reader hierarchy and a stronger way to think about the category.",
+            "",
+            f"{brand_role}",
+            "",
+            "## Why This Topic Gets Misunderstood",
+            "",
+            "Most weak explainer content sounds polished while still failing to help. It explains the topic without changing the reader's next move. Better content solves that by connecting concept, relevance, and application into one line of thought.",
+            "",
+            "## Final Takeaway",
+            "",
+            f"A useful explainer should leave the reader with clearer understanding and a more practical next step. That is the content goal here: {content_goal}",
+        ])
+
+    return _force_minimum_length(article, article_type, payload)
 
 
 def daily_publish_ready_package(

@@ -27,8 +27,9 @@ from .workflows import (
     save_fanout_backlog,
     select_backlog_items,
     article_generation_payload,
+    article_generation_payload_from_backlog_row,
+    draft_article_from_payload,
     save_citation_learning,
-    daily_publish_ready_package,
     first_asset_draft,
     legacy_publish_ready_article,
     new_content_brief,
@@ -91,6 +92,10 @@ def _extract_publishable_markdown(markdown_text: str) -> str:
     if marker in markdown_text:
         return markdown_text.split(marker, 1)[1].lstrip()
     return markdown_text
+
+
+def _word_count(markdown_text: str) -> int:
+    return len([word for word in re.findall(r"\b\w+\b", markdown_text)])
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -246,6 +251,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="Brand knowledge base JSON file. Default project path: knowledge/brand/brand-knowledge-base.json",
     )
     payload_parser.add_argument("--citation-limit", type=int, default=5, help="How many citation pages to inspect")
+    draft_payload_parser = subparsers.add_parser(
+        "draft-article-from-payload",
+        help="Generate one article draft from a saved payload JSON file",
+    )
+    draft_payload_parser.add_argument("input_file", help="Payload JSON file")
+    draft_payload_parser.add_argument("--output-file", default=None, help="Optional file path to write the drafted article")
     new_content_parser = subparsers.add_parser(
         "new-content-brief",
         parents=[common],
@@ -462,6 +473,12 @@ def main() -> None:
         )
         return
 
+    if args.command == "draft-article-from-payload":
+        input_path = Path(args.input_file).expanduser()
+        payload = json.loads(input_path.read_text(encoding="utf-8"))
+        emit_output(draft_article_from_payload(payload))
+        return
+
     if args.command == "publish-wordpress":
         input_path = Path(args.input_file).expanduser()
         markdown_text = input_path.read_text(encoding="utf-8")
@@ -552,30 +569,56 @@ def main() -> None:
         )
         output_dir = Path(args.output_dir).expanduser()
         output_dir.mkdir(parents=True, exist_ok=True)
-        package = daily_publish_ready_package(
-            client=dclient,
+        backlog = build_fanout_backlog(
+            dclient,
             days=args.days,
-            count=args.count,
             brand_kb_file=args.brand_kb_file,
+            max_prompts=max(args.count * 2, 10),
         )
+        selected_rows = select_backlog_items(backlog, limit=args.count, status="write_now")["items"]
         results = []
-        for item in package:
-            output_path = output_dir / f"{item['slug']}.md"
-            output_path.write_text(item["markdown"], encoding="utf-8")
+        for row in selected_rows:
+            payload = article_generation_payload_from_backlog_row(
+                dclient,
+                row,
+                days=args.days,
+                brand_kb_file=args.brand_kb_file,
+            )
+            article_markdown = draft_article_from_payload(payload)
+            actual_word_count = _word_count(article_markdown)
+            min_word_count = int(payload.get("min_word_count", 0) or 0)
+            slug = row.get("backlog_id") or _derive_title_and_slug(article_markdown)[1]
+            title = (payload.get("title_options") or [row.get("normalized_title", "Untitled Article")])[0]
+            output_path = output_dir / f"{slug}.md"
+            output_path.write_text(article_markdown, encoding="utf-8")
+            if actual_word_count < min_word_count:
+                results.append(
+                    {
+                        "backlog_id": row.get("backlog_id"),
+                        "title": title,
+                        "file": str(output_path),
+                        "status": "needs_expansion",
+                        "actual_word_count": actual_word_count,
+                        "min_word_count": min_word_count,
+                    }
+                )
+                continue
             post = wp_client.create_post(
-                title=item["title"],
-                content=markdown_to_basic_html(item["markdown"]),
+                title=title,
+                content=markdown_to_basic_html(article_markdown),
                 status=args.status,
-                slug=item["slug"],
+                slug=slug,
             )
             results.append(
                 {
-                    "asset_id": item["asset_id"],
-                    "title": item["title"],
+                    "backlog_id": row.get("backlog_id"),
+                    "title": title,
                     "file": str(output_path),
                     "wordpress_post_id": post.get("id"),
                     "status": post.get("status"),
                     "link": post.get("link"),
+                    "actual_word_count": actual_word_count,
+                    "min_word_count": min_word_count,
                 }
             )
         print(json.dumps({"count": len(results), "items": results}, ensure_ascii=False, indent=2))

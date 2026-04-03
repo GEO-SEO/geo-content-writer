@@ -1,0 +1,155 @@
+{
+  "generated_at": "2026-04-03T00:55:18Z",
+  "status": "ok",
+  "backlog_row": {
+    "asset_id": "A1",
+    "asset_title": "Best Travel Booking Apps in One Place",
+    "article_type": "explainer",
+    "source_prompt": "best app for travel bookings in one place",
+    "source_topic": "Top Rated Travel Apps",
+    "target_query_cluster": "Top Rated Travel Apps",
+    "primary_intention": "Commercial"
+  },
+  "selected_fanout": {
+    "fanout_text": "best app for travel bookings in one place",
+    "reader_topic": "travel booking apps",
+    "market_profile": "consumer_travel"
+  },
+  "citation_pattern_summary": {
+    "dominant_page_type": "Listicle",
+    "dominant_title_pattern": "unknown",
+    "recommended_article_type": "explainer",
+    "common_heading_patterns": [],
+    "common_intents": [],
+    "table_presence_rate": 0.0,
+    "list_presence_rate": 0.0,
+    "faq_presence_rate": 0.0,
+    "top_entities": [
+      "Google",
+      "Hopper",
+      "Booking.com",
+      "TripAdvisor",
+      "Skyscanner",
+      "Kayak"
+    ]
+  },
+  "article_type": "explainer",
+  "brand_role_in_article": "Trip should appear as one credible shortlist option, not as the automatic winner.",
+  "content_goal": "Help readers understand the topic and make a better-informed decision.",
+  "title_options": [
+    "Best Travel Booking Apps in One Place",
+    "Best App for Travel Bookings in One Place",
+    "Travel Booking Apps"
+  ],
+  "writing_brief": {
+    "reader_problem": "Readers want help with travel booking apps and need a clear way to compare options without wasting time.",
+    "must_cover": [
+      "what readers should compare first",
+      "how current cited pages structure the topic",
+      "which products or options usually appear in the shortlist",
+      "where the monitored brand naturally fits"
+    ],
+    "must_avoid": [
+      "template tone",
+      "internal topic labels as final titles",
+      "unsupported claims",
+      "brand mentions that feel like ads"
+    ],
+    "writing_goal": "Write a normal blog post that feels useful to human readers while preserving structure that AI systems can quote."
+  },
+  "crawled_citation_pages": [
+    {
+      "url": "https://play.google.com/store/apps/details?id=net.skyscanner.android.main&hl=en_US",
+      "status": "ok",
+      "title": "Skyscanner Flights Hotels Cars - Apps on Google Play",
+      "meta_description": "The travel app that makes booking cheap flights, hotels, and car rentals easy.",
+      "h1": "Skyscanner Flights Hotels Cars",
+      "headings": [
+        "About this app",
+        "Data safety",
+        "Ratings and reviews",
+        "What’s new",
+        "App support",
+        "Similar apps"
+      ],
+      "paragraph_preview": "Play Pass Play Points Gift cards",
+      "has_table": false,
+      "has_list": true,
+      "has_faq_signal": false,
+      "word_count": 1435,
+      "page_kind": "app_listing",
+      "is_article_like": false
+    },
+    {
+      "url": "https://www.pcmag.com/picks/best-travel-apps",
+      "status": "error",
+      "error": "403 Client Error: Forbidden for url: https://www.pcmag.com/picks/best-travel-apps",
+      "title": "",
+      "meta_description": "",
+      "h1": "",
+      "headings": [],
+      "paragraph_preview": "",
+      "has_table": false,
+      "has_list": false,
+      "has_faq_signal": false,
+      "word_count": 0,
+      "is_article_like": false,
+      "page_kind": "error"
+    },
+    {
+      "url": "https://activetraveladventures.com/best-travel-apps-2026/#:~:text=Popular%20across%20Europe%20and%20Africa,Careem&text=Long%2DDistance%20Logistics,especially%20strong%20coverage%20across%20Europe.",
+      "status": "ok",
+      "title": "",
+      "meta_description": "",
+      "h1": "",
+      "headings": [],
+      "paragraph_preview": "",
+      "has_table": false,
+      "has_list": false,
+      "has_faq_signal": false,
+      "word_count": 0,
+      "page_kind": "unknown",
+      "is_article_like": false
+    },
+    {
+      "url": "https://qz.com/best-travel-apps-readers-digest",
+      "status": "error",
+      "error": "403 Client Error: Forbidden for url: https://qz.com/best-travel-apps-readers-digest",
+      "title": "",
+      "meta_description": "",
+      "h1": "",
+      "headings": [],
+      "paragraph_preview": "",
+      "has_table": false,
+      "has_list": false,
+      "has_faq_signal": false,
+      "word_count": 0,
+      "is_article_like": false,
+      "page_kind": "error"
+    },
+    {
+      "url": "https://www.reddit.com/r/AussieFrugal/comments/18xd9ba/best_travel_and_booking_app/",
+      "status": "ok",
+      "title": "Reddit - Please wait for verification",
+      "meta_description": "",
+      "h1": "",
+      "headings": [],
+      "paragraph_preview": "",
+      "has_table": false,
+      "has_list": false,
+      "has_faq_signal": false,
+      "word_count": 6,
+      "page_kind": "forum",
+      "is_article_like": false
+    }
+  ],
+  "writing_rules": [
+    "Write like a blog editor, not a document generator.",
+    "Use the citation pages to learn structure, not to copy wording.",
+    "Mention the brand where it naturally belongs in the shortlist or comparison.",
+    "Prefer recommendation or comparison structure when citations show listicle behavior."
+  ],
+  "quality_review_prompt": "You are the second-pass quality reviewer. Check whether the article reads like a normal blog post, matches the citation-page structure, avoids template tone, mentions the brand only where natural, and satisfies the reader intent. Reject or rewrite weak sections.",
+  "quality_rewrite_prompt": "Rewrite the article to feel more natural and human while preserving the chosen title, the article type, the key comparison or recommendation logic, and the real citation-derived structure cues.",
+  "writer_prompt": "You are a blog editor, not a document generator.\n\nWrite one complete blog article for publication.\n\nUse these inputs:\n- Selected fanout: best app for travel bookings in one place\n- Reader-facing topic: travel booking apps\n- Market profile: consumer_travel\n- Recommended article type: explainer\n- Content goal: Help readers understand the topic and make a better-informed decision.\n- Brand role: Trip should appear as one credible shortlist option, not as the automatic winner.\n- Title options: Best Travel Booking Apps in One Place, Best App for Travel Bookings in One Place, Travel Booking Apps\n\nCitation pattern summary:\n- Dominant page type: Listicle\n- Dominant title pattern: unknown\n- Common intents: \n- Common heading patterns: \n\nWriting brief:\n- Reader problem: Readers want help with travel booking apps and need a clear way to compare options without wasting time.\n- Must cover: what readers should compare first, how current cited pages structure the topic, which products or options usually appear in the shortlist, where the monitored brand naturally fits\n- Must avoid: template tone, internal topic labels as final titles, unsupported claims, brand mentions that feel like ads\n\nRules:\n- Write like a blog editor, not a document generator.\n- Use the citation pages to learn structure, not to copy wording.\n- Mention the brand where it naturally belongs in the shortlist or comparison.\n- Prefer recommendation or comparison structure when citations show listicle behavior.\n\nImportant:\n- Do not mention the internal analysis process.\n- Do not mention citation patterns or what the cited pages are doing.\n- Mention the brand only where it naturally fits the reader decision.\n- Write like a normal blog post for humans."
+}
