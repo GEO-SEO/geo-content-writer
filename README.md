@@ -1,50 +1,153 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Skill](https://img.shields.io/badge/skill-Content%20Writer-blue)](skills/content-writer.md)
 [![Workflow](https://img.shields.io/badge/workflow-Backlog%20Row%20%E2%86%92%20Editorial%20Brief%20%E2%86%92%20Draft%20%2B%20Review-blue)](references/pipeline-spec.md)
+[![Outputs](https://img.shields.io/badge/output-Backlog%20%7C%20Brief%20%7C%20Draft%20%7C%20Review-orange)](schemas/article_generation_payload_schema.json)
 
 # GEO Content Writer
 
-> Turn Dageno prompt opportunities into a fanout backlog, then turn one selected backlog row into an editorial brief, draft contract, and review contract for publishable GEO articles.
+![GEO Content Writer Cover](assets/cover-v3.png)
 
-## What Works Today
+> Turn Dageno prompt opportunities into a fanout backlog, then turn one selected backlog row into an editorial brief, a draft contract, a review contract, and publishable GEO content.
 
-- discover high-value prompts from Dageno
-- extract real fanout into a reusable backlog
-- mark backlog rows as `write_now` or `needs_cleanup`
-- generate backlog-row-first editorial payloads for selected backlog items
-- generate section-by-section draft and review contracts for external agents
-- publish drafts to WordPress and WordPress.com
+**Positioning**
 
-## Current Limitation
+GEO Content Writer is a backlog-row-first content production system for teams that want more than one-shot article generation.
 
-The project does **not** yet perform full citation-page body crawling inside the main runtime.
+It is designed for a practical workflow:
 
-Current behavior:
+- find real prompt opportunities in Dageno
+- extract real fanout instead of guessing article ideas
+- organize those ideas into a reusable backlog
+- choose one row to write next
+- generate an editorial package that external agents can actually execute
 
-- it uses Dageno citation URLs and citation metadata
-- it now performs lightweight article-first citation crawling
-- it does **not** yet perform full browser-rendered or Firecrawl-based extraction
+This project is built to answer a practical growth question:
 
-So the project has already shifted to a fanout-backlog-first architecture, but the citation crawl step is still a partial implementation in the writing layer.
+> If I already have Dageno data, how do I turn it into a repeatable article-production workflow without producing thin, repetitive, template-like content?
 
-## Citation Learning Policy
+**Outcome**
 
-- prefer article-like pages first
-- ignore app-store, forum, and similar non-article pages for primary structure learning
-- if article-like pages are fewer than 3, switch to `article_first_fallback`
-- in fallback mode, keep article pages as the primary learning source and use support pages only as secondary context
+Instead of jumping from prompt data straight into article text, this project creates a production layer in between:
 
-## What This Project Is
+- backlog row
+- editorial brief
+- draft package
+- review package
+- final gate before publish
 
-This is no longer a prompt-to-article shortcut.
+That makes it better suited for:
 
-It is a GEO writing system with one core idea:
+- AI agents
+- human editors
+- multi-article content calendars
+- teams that care about repeatability, differentiation, and QA
 
-- Dageno finds high-value prompts
-- real fanout becomes the content backlog
-- one backlog row becomes one editorial brief
-- the editorial brief becomes a draft contract and review contract
-- external agents can write section by section instead of improvising from one loose prompt
+## Best For
+
+- GEO and SEO teams turning Dageno data into real content workflows
+- agencies that need a repeatable content operating system, not isolated prompts
+- SaaS, ecommerce, industrial, and B2B brands building article pipelines from AI-answer opportunity data
+- operators who want to generate briefs and review contracts before writing
+- teams that want external agents to write section by section instead of improvising from one giant prompt
+
+## Why It Feels Different
+
+Most AI content workflows start too late.
+
+They jump from:
+
+- keyword or prompt
+- into article generation
+
+That usually creates:
+
+- topic-label articles that do not sound like real buyer language
+- repeated listicles and comparisons
+- prompt-shaped content instead of editorially chosen angles
+- weak QA because the system never made the writing object explicit
+
+This project starts earlier and gets more specific before writing begins:
+
+- earlier with Dageno opportunity discovery
+- more specific with real fanout extraction
+- more controlled with backlog rows and cluster roles
+- more operational with draft contracts, review contracts, and final gates
+
+## What You Get
+
+- a reusable fanout backlog built from real Dageno data
+- cluster-role planning before article generation
+- an `editorial_brief` with audience, angle, differentiation targets, and E-E-A-T guidance
+- a `draft_package` with section-by-section writing contracts
+- a `review_package` with section review, assembly review, and final-gate checks
+- publish-ready markdown or WordPress handoff
+
+## Start With These Commands
+
+```bash
+PYTHONPATH=src python -m geo_content_writer.cli build-fanout-backlog --days 7 --max-prompts 10
+```
+
+```bash
+PYTHONPATH=src python -m geo_content_writer.cli select-backlog-items --top-n 10
+```
+
+```bash
+PYTHONPATH=src python -m geo_content_writer.cli publish-ready-article --backlog-id <row-id>
+```
+
+```bash
+PYTHONPATH=src python -m geo_content_writer.cli draft-article-from-payload examples/publish-ready-payload.json
+```
+
+## External Access And Minimum Credentials
+
+This project can use several external layers:
+
+- Dageno API for prompts, fanout, citations, and opportunity discovery
+- optional citation crawling for structure learning
+- optional web research for E-E-A-T evidence and comparison checks
+- optional WordPress publishing
+
+Recommended minimum setup:
+
+- `DAGENO_API_KEY`: required
+- local brand knowledge base: strongly recommended
+- citation crawling access: optional
+- WordPress credentials: optional
+
+Access policy:
+
+- real Dageno fanout is required for the main workflow
+- guessed fanout should not be used as the production seed
+- citation crawling is helpful but not required
+- live external research can be handled by a downstream agent using the payload’s `external_research_tasks`
+
+## What This Project Produces
+
+For one selected backlog row, the system can produce:
+
+- a structured writing seed
+- a differentiated editorial brief
+- section drafting instructions
+- section review instructions
+- assembly review guidance
+- final-gate checks before publishing
+- markdown suitable for publishing or editor handoff
+
+## Workflow
+
+```mermaid
+flowchart LR
+    A["Dageno Prompt Opportunities"] --> B["Real Fanout Extraction"]
+    B --> C["Fanout Backlog"]
+    C --> D["Cluster Role Planning"]
+    D --> E["Editorial Brief"]
+    E --> F["Draft Package"]
+    F --> G["Review Package"]
+    G --> H["Final Gate"]
+    H --> I["Publish / Handoff"]
+```
 
 ## Core Workflow
 
@@ -58,67 +161,107 @@ It is a GEO writing system with one core idea:
 
 4. mark overlap / merge / duplicate items
 5. keep one prioritized backlog with statuses
-6. choose which fanout item to write next
+6. assign a cluster role to each row
+7. choose which backlog row to write next
 
 ### C. Writing Layer
 
-7. crawl top citation pages for the selected fanout
-8. analyze citation patterns
-9. build one editorial brief from one selected backlog row
-10. generate section-by-section draft instructions
-11. generate section-by-section review instructions
-12. assemble one publish-ready article
+8. crawl top citation pages for the selected fanout
+9. analyze citation patterns
+10. build one editorial brief from one selected backlog row
+11. generate section-by-section draft instructions
+12. generate section-by-section review instructions
+13. assemble one publish-ready article
 
 ### D. Distribution Layer
 
-13. publish to WordPress draft or publish status
+14. publish to WordPress draft or publish status
+
+## What Makes The Production Object Different
+
+The main production object is no longer a loose prompt.
+
+It is a machine-readable payload designed for agent execution:
+
+- `backlog_row`
+- `selected_fanout`
+- `editorial_brief`
+- `draft_package`
+- `review_package`
+- `writer_prompt`
+
+That gives agents and editors a clearer workflow:
+
+- what to write
+- why this angle exists
+- what nearby articles to avoid overlapping with
+- what evidence is still needed
+- what QA checks need to pass before publishing
+
+## Official Path
+
+The recommended production path is:
+
+1. `build-fanout-backlog`
+2. `select-backlog-items`
+3. `publish-ready-article --backlog-id <row-id>`
+4. `draft-article-from-payload`
+5. run section reviews from `review_package.section_review_contract`
+6. run assembly review from `review_package.assembly_review_prompt`
+7. clear the final gate in `review_package.final_gate`
+8. `publish-wordpress`
+
+Commands still present for compatibility but no longer recommended as the main entrypoint:
+
+- `legacy-publish-ready-article`
+- `content-pack`
+- `first-asset-draft`
+
+## Why Teams Use It
+
+### Typical AI Content Workflow
+
+- prompt chosen ad hoc
+- article generated too early
+- little differentiation between related pages
+- weak evidence and no scoped QA
+
+### With GEO Content Writer
+
+- real fanout becomes backlog
+- backlog rows become the article production unit
+- cluster roles reduce content collisions
+- external agents get a structured brief instead of one vague prompt
+- section review and final-gate checks improve consistency before publishing
+
+## Citation Learning Policy
+
+- prefer article-like pages first
+- ignore app-store, forum, and similar non-article pages for primary structure learning
+- if article-like pages are fewer than 3, switch to `article_first_fallback`
+- in fallback mode, keep article pages as the primary learning source and use support pages only as secondary context
 
 ## Non-Negotiable Rules
 
 - only use real Dageno fanout
-- do not generate guessed fanout
+- do not generate guessed fanout for production writing
 - do not write directly from Dageno `topic` labels
 - do not publish from prompt alone
 - one selected fanout should map to one article
 - if brand knowledge base and Dageno brand snapshot do not match, block publish-ready generation
-
-## Why This Is Better
-
-This design avoids three common failure modes:
-
-- writing from internal topic labels that do not sound like human search language
-- repeating near-duplicate articles because different prompts expand into similar fanout
-- copying one universal article template across every industry
-
-It also gives external agents a cleaner interface:
-
-- a stable backlog row as the production object
-- an editorial brief with audience, angle, and differentiation targets
-- a section drafting contract instead of one giant article prompt
-- a section review contract and assembly review prompt for quality control
-
-## Required Knowledge Base
-
-The project expects a local brand knowledge base at:
-
-```text
-knowledge/brand/brand-knowledge-base.json
-```
-
-If the Dageno account belongs to a different brand than the local knowledge base, publish-ready generation should stop until the knowledge base is corrected.
 
 ## Quick Start
 
 ### 1. Discover prompt candidates
 
 ```bash
-PYTHONPATH=src python -m geo_content_writer.cli discover-prompts --days 1 --max-prompts 20
+PYTHONPATH=src python -m geo_content_writer.cli discover-prompts --days 7 --max-prompts 20
 ```
 
-### 2. Build the real fanout backlog
+### 2. Build the fanout backlog
 
 ```bash
-PYTHONPATH=src python -m geo_content_writer.cli build-fanout-backlog --days 1 --max-prompts 20
+PYTHONPATH=src python -m geo_content_writer.cli build-fanout-backlog --days 7 --max-prompts 20
 ```
 
 Default backlog file:
@@ -149,7 +292,7 @@ PYTHONPATH=src python -m geo_content_writer.cli publish-ready-article \
   --output-file examples/publish-ready-payload.json
 ```
 
-This now outputs a structured payload with:
+This outputs a structured payload with:
 
 - `editorial_brief`
 - `draft_package`
@@ -182,24 +325,13 @@ export WORDPRESS_CLIENT_ID="your-client-id"
 export WORDPRESS_CLIENT_SECRET="your-client-secret"
 ```
 
-## Key Commands
-
-```bash
-PYTHONPATH=src python -m geo_content_writer.cli discover-prompts
-PYTHONPATH=src python -m geo_content_writer.cli build-fanout-backlog
-PYTHONPATH=src python -m geo_content_writer.cli select-backlog-items --top-n 10
-PYTHONPATH=src python -m geo_content_writer.cli publish-ready-article --backlog-id <row-id>
-PYTHONPATH=src python -m geo_content_writer.cli draft-article-from-payload examples/publish-ready-payload.json
-PYTHONPATH=src python -m geo_content_writer.cli publish-wordpress examples/publish-ready-article.md --status draft
-```
-
 ## Payload Shape
 
-The primary production payload is no longer a loose writer prompt. It is a machine-readable object for external agents:
+The primary production payload is a machine-readable object for external agents:
 
 - `backlog_row`: the selected production unit
 - `selected_fanout`: normalized writing seed
-- `editorial_brief`: audience, article angle, differentiation targets, adjacent rows to avoid, and evidence guardrails
+- `editorial_brief`: audience, angle, differentiation targets, adjacent rows to avoid, evidence guidance, and E-E-A-T layer
 - `draft_package`: target word counts, `draft_sections`, and assembly notes
 - `review_package`: final review prompts plus `section_review_contract`
 - `writer_prompt`: a convenience prompt derived from the structured payload
@@ -208,25 +340,6 @@ See:
 
 - `schemas/article_generation_payload_schema.json`
 - `examples/publish-ready-payload-trip.json`
-
-## Official Path
-
-The recommended production flow is now:
-
-1. `build-fanout-backlog`
-2. `select-backlog-items`
-3. `publish-ready-article --backlog-id <row-id>`
-4. `draft-article-from-payload`
-5. run section reviews from `review_package.section_review_contract`
-6. run assembly review from `review_package.assembly_review_prompt`
-7. clear the final gate in `review_package.final_gate`
-8. `publish-wordpress`
-
-Commands still present for compatibility but no longer recommended as the main entrypoint:
-
-- `legacy-publish-ready-article`
-- `content-pack`
-- `first-asset-draft`
 
 ## Cluster Roles
 
@@ -247,7 +360,7 @@ A lightweight benchmark suite now lives in:
 - `examples/benchmarks/README.md`
 - `examples/benchmarks/benchmark_manifest.json`
 
-It uses 4 real project examples across travel and enterprise software to evaluate:
+It uses real examples across multiple content roles to evaluate:
 
 - distinctness
 - naturalness
@@ -278,11 +391,11 @@ geo-content-writer/
 
 ## Technical Notes
 
-- the project keeps Dageno as the opportunity discovery layer
-- the backlog is the core production object
-- fanout is the main writing seed
+- Dageno remains the opportunity discovery layer
+- the backlog row is the core production object
+- fanout remains the writing seed, but only after backlog selection
 - citation crawl is still lightweight and not yet a full browser-rendered implementation
-- `publish-ready-article` is now a backlog-row-first payload builder for model-driven writing
+- `publish-ready-article` is the main backlog-row-first payload builder
 - the main writing interface is designed for external agents that can draft and review section by section
 - WordPress publishing is a lightweight distribution example, not the center of the system
 
