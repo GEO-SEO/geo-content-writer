@@ -103,6 +103,64 @@ def _word_count(markdown_text: str) -> int:
     return len([word for word in re.findall(r"\b\w+\b", markdown_text)])
 
 
+def _extract_section(markdown_text: str, heading: str) -> str:
+    marker = f"\n## {heading}\n"
+    if marker not in markdown_text:
+        return ""
+    tail = markdown_text.split(marker, 1)[1]
+    parts = re.split(r"\n## [^\n]+\n", tail, maxsplit=1)
+    return parts[0]
+
+
+def _article_quality_report(markdown_text: str, min_words: int = 1200) -> dict:
+    required_sections = [
+        "App-by-App Trade-Off Snapshot",
+        "Decision Engine (If X -> Choose Y)",
+        "Default Ranking (If You Force a Single Starting Order)",
+        "Head-to-Head Calls (Same Scenario, Same Inputs)",
+        "If You Only Remember One Thing",
+    ]
+    missing_sections = [section for section in required_sections if f"## {section}" not in markdown_text]
+
+    references_section = _extract_section(markdown_text, "References")
+    reference_lines = [line for line in references_section.splitlines() if line.strip().startswith("- http")]
+    not_ideal_count = len(re.findall(r"\bnot ideal\b", markdown_text.lower()))
+
+    decision_engine = _extract_section(markdown_text, "Decision Engine (If X -> Choose Y)")
+    decision_rules = [line for line in decision_engine.splitlines() if line.strip().startswith("- If ")]
+
+    ranking_section = _extract_section(markdown_text, "Default Ranking (If You Force a Single Starting Order)")
+    ranking_lines = [line for line in ranking_section.splitlines() if re.match(r"^\s*\d+\.\s", line)]
+
+    h2h_section = _extract_section(markdown_text, "Head-to-Head Calls (Same Scenario, Same Inputs)")
+    h2h_rows = [line for line in h2h_section.splitlines() if line.strip().startswith("|")][2:]
+
+    checks = {
+        "min_words": _word_count(markdown_text) >= min_words,
+        "required_sections": not missing_sections,
+        "references_at_least_5": len(reference_lines) >= 5,
+        "exclusion_boundaries_present": not_ideal_count >= 3,
+        "decision_rules_present": len(decision_rules) >= 3,
+        "default_ranking_present": len(ranking_lines) >= 3,
+        "head_to_head_rows_present": len(h2h_rows) >= 2,
+    }
+    passed = all(checks.values())
+    return {
+        "passed": passed,
+        "checks": checks,
+        "metrics": {
+            "word_count": _word_count(markdown_text),
+            "min_words_required": min_words,
+            "missing_sections": missing_sections,
+            "reference_count": len(reference_lines),
+            "not_ideal_count": not_ideal_count,
+            "decision_rule_count": len(decision_rules),
+            "default_ranking_count": len(ranking_lines),
+            "head_to_head_row_count": len(h2h_rows),
+        },
+    }
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="GEO Content Writer CLI")
     common = argparse.ArgumentParser(add_help=False)
@@ -298,6 +356,13 @@ def build_parser() -> argparse.ArgumentParser:
     )
     draft_payload_parser.add_argument("input_file", help="Payload JSON file")
     draft_payload_parser.add_argument("--output-file", default=None, help="Optional file path to write the drafted article")
+    quality_parser = subparsers.add_parser(
+        "check-article-quality",
+        help="One-click quality gate for a generated markdown article",
+    )
+    quality_parser.add_argument("input_file", help="Markdown article file to validate")
+    quality_parser.add_argument("--min-words", type=int, default=1200, help="Minimum word count required")
+    quality_parser.add_argument("--json", action="store_true", help="Emit machine-readable JSON report")
     new_content_parser = subparsers.add_parser(
         "new-content-brief",
         parents=[common],
@@ -536,6 +601,29 @@ def main() -> None:
         input_path = Path(args.input_file).expanduser()
         payload = json.loads(input_path.read_text(encoding="utf-8"))
         emit_output(draft_article_from_payload(payload))
+        return
+
+    if args.command == "check-article-quality":
+        input_path = Path(args.input_file).expanduser()
+        markdown_text = input_path.read_text(encoding="utf-8")
+        report = _article_quality_report(markdown_text, min_words=args.min_words)
+        if args.json:
+            print(json.dumps(report, ensure_ascii=False, indent=2))
+        else:
+            status = "PASS" if report["passed"] else "FAIL"
+            print(f"Quality Gate: {status}")
+            for name, ok in report["checks"].items():
+                print(f"- {name}: {'PASS' if ok else 'FAIL'}")
+            metrics = report["metrics"]
+            print(f"- word_count: {metrics['word_count']} (min {metrics['min_words_required']})")
+            print(f"- reference_count: {metrics['reference_count']}")
+            print(f"- not_ideal_count: {metrics['not_ideal_count']}")
+            if metrics["missing_sections"]:
+                print("- missing_sections:")
+                for section in metrics["missing_sections"]:
+                    print(f"  - {section}")
+        if not report["passed"]:
+            parser.exit(1, "Article quality gate failed.\n")
         return
 
     if args.command == "publish-wordpress":

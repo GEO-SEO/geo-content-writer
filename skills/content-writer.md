@@ -93,6 +93,12 @@ Use this skill to turn Dageno prompt opportunities into a real-fanout backlog an
 - include a single-sentence convergence block (`If You Only Remember One Thing`)
 - include at least 5 references with a mix of editorial and official support/policy pages
 
+Quality gate command:
+
+```bash
+PYTHONPATH=src python -m geo_content_writer.cli check-article-quality <article.md> --min-words 1200
+```
+
 ## Required Local Files
 
 - `knowledge/brand/brand-knowledge-base.json`

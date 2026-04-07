@@ -202,6 +202,7 @@ flowchart TD
 | `select-backlog-items` | ranked shortlist of write-ready rows |
 | `publish-ready-article` | one full publish-ready payload |
 | `draft-article-from-payload` | one markdown draft |
+| `check-article-quality` | pass/fail quality gate report for one markdown draft |
 | `publish-wordpress` | one WordPress post (draft/publish) |
 
 ## Core Workflow
@@ -378,6 +379,23 @@ For `wordpress.com` hosted sites, also set:
 ```bash
 export WORDPRESS_CLIENT_ID="your-client-id"
 export WORDPRESS_CLIENT_SECRET="your-client-secret"
+```
+
+### 7. Run One-Click Article Quality Gate
+
+```bash
+PYTHONPATH=src python -m geo_content_writer.cli check-article-quality \
+  examples/publish-ready-article.md \
+  --min-words 1200
+```
+
+Optional JSON report for CI:
+
+```bash
+PYTHONPATH=src python -m geo_content_writer.cli check-article-quality \
+  examples/publish-ready-article.md \
+  --min-words 1200 \
+  --json
 ```
 
 ## Payload Shape
