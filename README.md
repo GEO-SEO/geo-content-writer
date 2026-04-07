@@ -99,6 +99,17 @@ To keep output quality stable at decision-grade level (not skeleton SEO content)
 PYTHONPATH=src python -m geo_content_writer.cli build-fanout-backlog --days 7 --max-prompts 10
 ```
 
+Optional low-inventory fallback mode:
+
+```bash
+PYTHONPATH=src python -m geo_content_writer.cli build-fanout-backlog \
+  --days 7 \
+  --max-prompts 100 \
+  --allow-exploratory-fallback \
+  --exploratory-min-write-now 8 \
+  --exploratory-max-items 30
+```
+
 ```bash
 PYTHONPATH=src python -m geo_content_writer.cli select-backlog-items --top-n 10
 ```
@@ -133,6 +144,7 @@ Access policy:
 - guessed fanout should not be used as the production seed
 - citation crawling is helpful but not required
 - live external research can be handled by a downstream agent using the payload’s `external_research_tasks`
+- when write-now inventory is low, exploratory fallback can be enabled; fallback rows are tagged `status=exploratory` and are not publish-ready by default
 
 ## What This Project Produces
 
@@ -301,6 +313,7 @@ Commands still present for compatibility but no longer recommended as the main e
 
 - only use real Dageno fanout
 - do not generate guessed fanout for production writing
+- exploratory fallback candidates are allowed only as `status=exploratory` and must be validated against fresh GEO data before promotion
 - do not write directly from Dageno `topic` labels
 - do not publish from prompt alone
 - one selected fanout should map to one article

@@ -69,7 +69,7 @@ Use this skill to turn Dageno prompt opportunities into a real-fanout backlog an
 
 ### Outputs
 
-- fanout backlog JSON (real fanout only)
+- fanout backlog JSON (real fanout first; optional exploratory fallback rows are explicitly tagged)
 - one publish-ready payload JSON (`editorial_brief`, `draft_package`, `review_package`)
 - one decision-grade markdown article
 - optional WordPress draft/publish handoff
@@ -77,7 +77,8 @@ Use this skill to turn Dageno prompt opportunities into a real-fanout backlog an
 ## Non-Negotiable Rules
 
 - only use real Dageno fanout
-- do not generate guessed fanout
+- do not generate guessed fanout as publish-ready seed
+- exploratory fallback is allowed only when write_now inventory is low, and must stay `status=exploratory` until validated against fresh GEO data
 - do not write directly from Dageno `topic`
 - one selected fanout should map to one article
 - one backlog row should map to one editorial brief

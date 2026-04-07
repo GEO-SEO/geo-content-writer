@@ -3782,6 +3782,11 @@ def build_fanout_backlog(
     *,
     brand_kb_file: str | None = None,
     max_prompts: int = 20,
+    published_keys: set[str] | None = None,
+    allow_exploratory_fallback: bool = False,
+    exploratory_min_write_now: int = 5,
+    exploratory_max_items: int = 20,
+    exploratory_per_prompt: int = 3,
 ) -> Dict[str, Any]:
     collection_warnings: List[str] = []
     local_kb = _load_brand_kb(brand_kb_file)
@@ -3792,6 +3797,7 @@ def build_fanout_backlog(
     prompt_candidates = discover_prompt_candidates(client, days, max_prompts=max_prompts)
     start_at, end_at = date_window(days)
     backlog_rows: List[Dict[str, Any]] = []
+    published_lookup = {(key or "").strip().lower() for key in (published_keys or set()) if (key or "").strip()}
     for prompt_row in prompt_candidates:
         prompt_id = prompt_row.get("prompt_id")
         if not prompt_id:
@@ -3806,13 +3812,17 @@ def build_fanout_backlog(
             fanout_text = (item.get("name") or "").strip()
             if not fanout_text:
                 continue
+            backlog_id = _slugify(f"{prompt_row.get('prompt_text', '')}-{fanout_text}")[:80]
+            canonical_key = _canonical_fanout_key(fanout_text)
+            if published_lookup and (backlog_id.lower() in published_lookup or canonical_key in published_lookup):
+                continue
             article_type = _article_type_from_fanout(
                 fanout_text,
                 "Listicle" if "best " in fanout_text.lower() or "compare" in fanout_text.lower() else "Article",
             )
             backlog_rows.append(
                 {
-                    "backlog_id": _slugify(f"{prompt_row.get('prompt_text', '')}-{fanout_text}")[:80],
+                    "backlog_id": backlog_id,
                     "fanout_text": fanout_text,
                     "source_prompt_ids": [prompt_id],
                     "source_prompts": [prompt_row.get("prompt_text", "")],
@@ -3832,9 +3842,21 @@ def build_fanout_backlog(
                     "overlap_status": "new",
                     "first_seen_at": datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
                     "notes": "",
+                    "generation_mode": "real_fanout",
                 }
             )
     deduped = _dedupe_rows_by_text(backlog_rows)
+    if published_lookup:
+        before = len(deduped)
+        deduped = [
+            row
+            for row in deduped
+            if ((row.get("backlog_id") or "").strip().lower() not in published_lookup)
+            and (_canonical_fanout_key(row.get("fanout_text", "")) not in published_lookup)
+        ]
+        removed = before - len(deduped)
+        if removed > 0:
+            collection_warnings.append(f"Filtered {removed} rows that already exist in published registry.")
     article_type_rank = {"comparison": 0, "recommendation": 1, "guide": 2, "review": 3, "explainer": 4}
     for row in deduped:
         row["source_count"] = len(row.get("source_prompt_ids", []))
@@ -3848,10 +3870,83 @@ def build_fanout_backlog(
             row["overlap_status"] = "merge"
         else:
             row["overlap_status"] = "new"
+
+    write_now_count = sum(1 for row in deduped if row.get("status") == "write_now")
+    exploratory_rows: List[Dict[str, Any]] = []
+    if allow_exploratory_fallback and write_now_count < max(0, exploratory_min_write_now):
+        target_new = min(exploratory_max_items, max(0, exploratory_min_write_now - write_now_count))
+        existing_keys = {
+            _canonical_fanout_key(row.get("fanout_text", ""))
+            for row in deduped
+            if row.get("fanout_text")
+        }
+        existing_keys.update(published_lookup)
+        for prompt_row in prompt_candidates:
+            prompt_text = (prompt_row.get("prompt_text") or "").strip()
+            if not prompt_text:
+                continue
+            guesses = _keyword_cluster_guesses(prompt_text, prompt_row.get("topic", ""), brand_context)[: max(1, exploratory_per_prompt)]
+            for guess in guesses:
+                fanout_text = (guess or "").strip()
+                if not fanout_text:
+                    continue
+                canonical_key = _canonical_fanout_key(fanout_text)
+                backlog_id = _slugify(f"explore-{prompt_text}-{fanout_text}")[:80]
+                if canonical_key in existing_keys or backlog_id.lower() in existing_keys:
+                    continue
+                article_type = _article_type_from_fanout(
+                    fanout_text,
+                    "Listicle" if "best " in fanout_text.lower() or "compare" in fanout_text.lower() else "Article",
+                )
+                row = {
+                    "backlog_id": backlog_id,
+                    "fanout_text": fanout_text,
+                    "source_prompt_ids": [prompt_row.get("prompt_id")] if prompt_row.get("prompt_id") else [],
+                    "source_prompts": [prompt_text],
+                    "source_topic": prompt_row.get("topic", ""),
+                    "market_profile": _market_profile(fanout_text, prompt_row.get("topic", ""), brand_context),
+                    "article_type": article_type,
+                    "normalized_title": _rewrite_fanout_title(fanout_text, article_type, brand_context),
+                    "brand_gap": prompt_row.get("brand_gap", "-"),
+                    "source_gap": prompt_row.get("source_gap", "-"),
+                    "brand_gap_score": prompt_row.get("brand_gap_score", 0),
+                    "source_gap_score": prompt_row.get("source_gap_score", 0),
+                    "response_count": prompt_row.get("response_count", 0),
+                    "priority_score": prompt_row.get("score", 0),
+                    "funnel": prompt_row.get("funnel", "-"),
+                    "primary_intention": prompt_row.get("primary_intention", "-"),
+                    "status": "exploratory",
+                    "overlap_status": "new",
+                    "first_seen_at": datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
+                    "notes": "Exploratory fallback candidate. Validate against fresh GEO data before promotion to write_now.",
+                    "generation_mode": "exploratory_fallback",
+                    "requires_real_validation": True,
+                    "source_count": 1,
+                }
+                row.update(_cluster_role_plan(row))
+                exploratory_rows.append(row)
+                existing_keys.add(canonical_key)
+                existing_keys.add(backlog_id.lower())
+                if len(exploratory_rows) >= target_new:
+                    break
+            if len(exploratory_rows) >= target_new:
+                break
+        if exploratory_rows:
+            collection_warnings.append(
+                f"Added {len(exploratory_rows)} exploratory fallback rows because write_now count ({write_now_count}) is below threshold ({exploratory_min_write_now})."
+            )
+
+    final_rows = deduped + exploratory_rows
     ordered = sorted(
-        deduped,
+        final_rows,
         key=lambda row: (
-            0 if row["status"] == "write_now" else 1 if row["status"] == "needs_merge" else 2,
+            0
+            if row["status"] == "write_now"
+            else 1
+            if row["status"] == "needs_merge"
+            else 2
+            if row["status"] == "exploratory"
+            else 3,
             -_row_priority_score(row),
             -row.get("source_count", 1),
             article_type_rank.get(row.get("article_type", "explainer"), 9),
@@ -3864,6 +3959,12 @@ def build_fanout_backlog(
         "brand_knowledge_base": brand_kb,
         "brand_context_summary": _brand_context_summary(brand_context),
         "collection_warnings": collection_warnings,
+        "backlog_summary": {
+            "total_rows": len(ordered),
+            "write_now_count": sum(1 for row in ordered if row.get("status") == "write_now"),
+            "needs_merge_count": sum(1 for row in ordered if row.get("status") == "needs_merge"),
+            "exploratory_count": sum(1 for row in ordered if row.get("status") == "exploratory"),
+        },
         "prompt_candidates": prompt_candidates,
         "fanout_backlog": ordered,
     }

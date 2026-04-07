@@ -197,6 +197,34 @@ def build_parser() -> argparse.ArgumentParser:
     )
     backlog_parser.add_argument("--max-prompts", type=int, default=20, help="How many prompt candidates to inspect")
     backlog_parser.add_argument(
+        "--published-file",
+        default=str(default_published_registry_path()),
+        help="Published registry JSON used to avoid re-adding already published topics",
+    )
+    backlog_parser.add_argument(
+        "--allow-exploratory-fallback",
+        action="store_true",
+        help="If write_now items are insufficient, add exploratory fallback candidates (still non-publishable by default)",
+    )
+    backlog_parser.add_argument(
+        "--exploratory-min-write-now",
+        type=int,
+        default=5,
+        help="Trigger fallback when write_now count is below this threshold",
+    )
+    backlog_parser.add_argument(
+        "--exploratory-max-items",
+        type=int,
+        default=20,
+        help="Maximum fallback exploratory rows to add in one run",
+    )
+    backlog_parser.add_argument(
+        "--exploratory-per-prompt",
+        type=int,
+        default=3,
+        help="How many fallback exploratory candidates to derive per prompt",
+    )
+    backlog_parser.add_argument(
         "--output-file",
         default=str(_default_fanout_backlog_path()),
         help="Where to write the fanout backlog JSON",
@@ -509,11 +537,17 @@ def main() -> None:
 
     if args.command == "build-fanout-backlog":
         client = DagenoClient(api_key=args.api_key, base_url=args.base_url)
+        published_keys = published_keys_from_registry(load_published_registry(args.published_file))
         backlog = build_fanout_backlog(
             client,
             days=args.days,
             brand_kb_file=args.brand_kb_file,
             max_prompts=args.max_prompts,
+            published_keys=published_keys,
+            allow_exploratory_fallback=args.allow_exploratory_fallback,
+            exploratory_min_write_now=args.exploratory_min_write_now,
+            exploratory_max_items=args.exploratory_max_items,
+            exploratory_per_prompt=args.exploratory_per_prompt,
         )
         save_fanout_backlog(backlog, args.output_file)
         print(json.dumps(backlog, ensure_ascii=False, indent=2))
