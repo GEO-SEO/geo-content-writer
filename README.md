@@ -82,6 +82,17 @@ This project starts earlier and gets more specific before writing begins:
 - a `review_package` with section review, assembly review, and final-gate checks
 - publish-ready markdown or WordPress handoff
 
+## Output Quality Contract
+
+To keep output quality stable at decision-grade level (not skeleton SEO content), publish-ready drafts should always include:
+
+- explicit exclusion boundaries per major option (`not ideal when ...`)
+- a forced default ranking fallback
+- head-to-head competitive calls (same scenario, same inputs)
+- an `If X -> Choose Y` decision engine
+- a one-line convergence summary (`If You Only Remember One Thing`)
+- at least 5 references including both editorial and official support/policy sources
+
 ## Start With These Commands
 
 ```bash
@@ -148,6 +159,50 @@ flowchart LR
     G --> H["Final Gate"]
     H --> I["Publish / Handoff"]
 ```
+
+## Skill Logic (Input -> Output)
+
+```mermaid
+flowchart TD
+    IN["Inputs: DAGENO_API_KEY + date window + optional backlog_id + optional brand KB"] --> OPP["Opportunity Discovery"]
+    OPP --> FAN["Real Fanout Extraction"]
+    FAN --> BL["Prioritized Backlog"]
+    BL --> SEL["Select One Backlog Row"]
+    SEL --> BRIEF["Editorial Brief + Draft/Review Contracts"]
+    BRIEF --> DRAFT["Draft Article Generation"]
+    DRAFT --> GATE["Quality Contract + Final Gate"]
+    GATE --> OUT["Outputs: payload JSON + publish-ready markdown + optional WordPress draft"]
+```
+
+### Input Surface
+
+| Input | Required | Purpose |
+|---|---|---|
+| `DAGENO_API_KEY` | Yes | Fetch opportunities, prompts, fanout, and citations from Dageno |
+| `--days` | Yes | Define the data window for discovery and ranking |
+| `knowledge/brand/brand-knowledge-base.json` | Recommended | Keep brand positioning and claims consistent |
+| `--backlog-id` | Optional | Force one exact production row |
+| `--backlog-file` | Optional | Reuse an existing backlog snapshot |
+| `WORDPRESS_*` env vars | Optional | Publish markdown to WordPress |
+
+### Output Surface
+
+| Output | Format | Description |
+|---|---|---|
+| Fanout backlog | JSON | Real-fanout production queue with status and priority |
+| Publish-ready payload | JSON | `backlog_row`, `editorial_brief`, `draft_package`, `review_package`, `writer_prompt` |
+| Draft article | Markdown | Decision-grade article generated from one payload |
+| WordPress post | Remote draft/publish | Optional distribution layer |
+
+### Command To Output Mapping
+
+| Command | Primary Output |
+|---|---|
+| `build-fanout-backlog` | `knowledge/backlog/fanout-backlog.json` |
+| `select-backlog-items` | ranked shortlist of write-ready rows |
+| `publish-ready-article` | one full publish-ready payload |
+| `draft-article-from-payload` | one markdown draft |
+| `publish-wordpress` | one WordPress post (draft/publish) |
 
 ## Core Workflow
 

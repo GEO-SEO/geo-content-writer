@@ -5,7 +5,7 @@ description: >
   write one publish-ready article from one selected fanout item.
 metadata:
   author: GEO-SEO
-  version: "0.6.0"
+  version: "0.7.0"
   homepage: https://github.com/GEO-SEO/geo-content-writer
   primaryEnv: DAGENO_API_KEY
   tags:
@@ -57,6 +57,23 @@ Use this skill to turn Dageno prompt opportunities into a real-fanout backlog an
 
 13. publish to WordPress draft or publish status
 
+## Input -> Output Contract
+
+### Inputs
+
+- required: `DAGENO_API_KEY`
+- required: one date window (`days`) for opportunity discovery
+- optional: `knowledge/brand/brand-knowledge-base.json`
+- optional: one explicit `backlog_id`
+- optional: existing backlog file path
+
+### Outputs
+
+- fanout backlog JSON (real fanout only)
+- one publish-ready payload JSON (`editorial_brief`, `draft_package`, `review_package`)
+- one decision-grade markdown article
+- optional WordPress draft/publish handoff
+
 ## Non-Negotiable Rules
 
 - only use real Dageno fanout
@@ -66,6 +83,15 @@ Use this skill to turn Dageno prompt opportunities into a real-fanout backlog an
 - one backlog row should map to one editorial brief
 - use the section drafting and review contracts when integrating with external agents
 - if local brand knowledge base and Dageno brand snapshot do not match, block publish-ready output
+
+## Output Quality Contract (Required)
+
+- include explicit exclusion boundaries (`not ideal when ...`) for major options
+- include a default recommendation hierarchy (forced ranking fallback)
+- include at least one head-to-head comparison block between major options
+- include an `If X -> Choose Y` decision engine section
+- include a single-sentence convergence block (`If You Only Remember One Thing`)
+- include at least 5 references with a mix of editorial and official support/policy pages
 
 ## Required Local Files
 

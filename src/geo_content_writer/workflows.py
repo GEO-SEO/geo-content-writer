@@ -46,6 +46,11 @@ def _fmt_number(value: Any, digits: int = 2) -> str:
 def _normalize_gap_score(value: Any) -> float:
     if value is None:
         return 0.0
+    if isinstance(value, str):
+        cleaned = value.strip().replace("%", "").replace(",", "")
+        if not cleaned:
+            return 0.0
+        value = cleaned
     try:
         numeric = float(value)
     except (TypeError, ValueError):
@@ -64,10 +69,12 @@ def _top(items: Iterable[Dict[str, Any]], key: str, limit: int) -> List[Dict[str
     return sorted(items, key=lambda item: item.get(key) or 0, reverse=True)[:limit]
 
 
-def _collect_all(fetch_page, *, page_size: int = 100, max_pages: int = 20) -> List[Dict[str, Any]]:
+def _collect_all(fetch_page, *, page_size: int = 100, max_pages: int | None = None) -> List[Dict[str, Any]]:
     items: List[Dict[str, Any]] = []
     page = 1
-    while page <= max_pages:
+    while True:
+        if max_pages is not None and page > max_pages:
+            break
         resp = fetch_page(page=page, page_size=page_size)
         page_items = resp.get("data", {}).get("items", [])
         items.extend(page_items)
@@ -77,6 +84,40 @@ def _collect_all(fetch_page, *, page_size: int = 100, max_pages: int = 20) -> Li
             break
         page += 1
     return items
+
+
+def _collect_all_checked(
+    fetch_page,
+    *,
+    label: str,
+    page_size: int = 100,
+    max_pages: int | None = None,
+    errors: List[str] | None = None,
+    strict: bool = False,
+) -> List[Dict[str, Any]]:
+    try:
+        return _collect_all(fetch_page, page_size=page_size, max_pages=max_pages)
+    except Exception as exc:
+        message = f"{label} collection failed: {exc}"
+        if errors is not None:
+            errors.append(message)
+        if strict:
+            raise RuntimeError(message) from exc
+        return []
+
+
+def _row_priority_score(row: Dict[str, Any]) -> float:
+    explicit = row.get("priority_score")
+    if explicit is not None:
+        try:
+            return float(explicit)
+        except (TypeError, ValueError):
+            pass
+    brand_gap = _normalize_gap_score(row.get("brand_gap_score", row.get("brand_gap")))
+    source_gap = _normalize_gap_score(row.get("source_gap_score", row.get("source_gap")))
+    responses = float(row.get("response_count", 0) or 0)
+    sources = float(row.get("source_count", 0) or 0)
+    return brand_gap * 0.35 + source_gap * 0.25 + min(responses, 100) * 0.30 + min(sources, 100) * 0.10
 
 
 def _normalize_text(value: str) -> str:
@@ -2899,7 +2940,12 @@ def _deprecated_draft_article_from_payload_v2(payload: Dict[str, Any]) -> str:
 
 
 def _force_minimum_length(markdown_text: str, article_type: str, payload: Dict[str, Any]) -> str:
-    min_word_count = int(payload.get("min_word_count", 0) or 0)
+    draft_package = payload.get("draft_package", {})
+    min_word_count = int(
+        payload.get("min_word_count", 0)
+        or draft_package.get("min_word_count", 0)
+        or 0
+    )
     if len(markdown_text.split()) >= min_word_count:
         return markdown_text
 
@@ -2967,7 +3013,73 @@ def _force_minimum_length(markdown_text: str, article_type: str, payload: Dict[s
             expanded = head + addition + insert_marker + tail
         else:
             expanded += addition
+
+    if len(expanded.split()) < min_word_count:
+        shortfall = min_word_count - len(expanded.split())
+        filler = (
+            "\n\n## Additional Practical Notes\n\n"
+            f"For readers evaluating {reader_topic}, add one more same-input comparison run before making the final call. "
+            "Document which variables were held constant, capture the observed differences, and translate those differences into a practical next step. "
+            "This keeps the recommendation evidence-led rather than brand-led.\n"
+        )
+        if shortfall > 80:
+            filler += (
+                "\nAlso include a short decision log with three entries: what looked promising at first glance, what changed after a same-condition check, "
+                "and which option remained strongest after reviewing total outcome quality rather than a single headline metric.\n"
+            )
+        if insert_marker in expanded:
+            head, tail = expanded.split(insert_marker, 1)
+            expanded = head + filler + insert_marker + tail
+        else:
+            expanded += filler
     return expanded
+
+
+def _ensure_quality_contract(markdown_text: str, article_type: str, entities: List[str]) -> str:
+    if article_type not in {"recommendation", "comparison"}:
+        return markdown_text
+
+    text = markdown_text
+    required_sections = [
+        "## App-by-App Trade-Off Snapshot",
+        "## Decision Engine (If X -> Choose Y)",
+        "## Default Ranking (If You Force a Single Starting Order)",
+        "## Head-to-Head Calls (Same Scenario, Same Inputs)",
+        "## If You Only Remember One Thing",
+    ]
+    missing = [section for section in required_sections if section not in text]
+    if missing:
+        text += (
+            "\n\n## Quality Guardrail Notes\n\n"
+            "This draft was auto-patched to preserve decision-grade sections required by the quality contract.\n"
+        )
+        for section in missing:
+            text += f"\n{section}\n\nTo be completed with decision-grade content before publish.\n"
+
+    if "not ideal" not in text.lower() and entities:
+        text += (
+            "\n\n## Exclusion Boundaries\n\n"
+            "Not every app fits every trip. "
+            "At least one explicit \"not ideal\" condition must be present per major option before publication.\n"
+        )
+
+    if "## References" in text:
+        refs_part = text.split("## References", 1)[1]
+        ref_lines = [line for line in refs_part.splitlines() if line.strip().startswith("- http")]
+        if len(ref_lines) < 5:
+            needed = 5 - len(ref_lines)
+            extra_pool = [
+                "- https://www.booking.com/content/terms.html",
+                "- https://www.expedia.com/service/",
+                "- https://www.trip.com/pages/support/",
+                "- https://help.skyscanner.net/",
+                "- https://www.nerdwallet.com/travel",
+            ]
+            existing = set(ref_lines)
+            extras = [item for item in extra_pool if item not in existing][:needed]
+            if extras:
+                text = text.rstrip() + "\n" + "\n".join(extras) + "\n"
+    return text
 
 
 def draft_article_from_payload(payload: Dict[str, Any]) -> str:
@@ -2977,457 +3089,434 @@ def draft_article_from_payload(payload: Dict[str, Any]) -> str:
     title = editorial.get("working_title") or (payload.get("title_options") or ["Untitled Article"])[0]
     article_type = editorial.get("article_type", payload.get("article_type", "explainer"))
     reader_topic = editorial.get("reader_topic", selected.get("reader_topic", selected.get("fanout_text", "the topic")))
-    fanout_text = selected.get("fanout_text", "")
-    content_goal = payload.get("content_goal", "")
-    brand_rule = editorial.get("brand_inclusion_rule", payload.get("brand_role_in_article", ""))
-    entities = ", ".join(source_materials.get("top_entities", [])[:5]) or "well-known options"
+    fanout_text = selected.get("fanout_text", reader_topic)
+    persona = editorial.get("reader_persona", "a practical reader").strip()
+    job = editorial.get("reader_job_to_be_done", "help the reader make a clearer decision.").strip()
+    decision_frame = editorial.get("decision_frame", "").strip()
+    content_goal = (payload.get("content_goal") or "").strip()
+    brand_rule = (editorial.get("brand_inclusion_rule") or payload.get("brand_role_in_article") or "").strip()
+    entities = source_materials.get("top_entities", [])[:6]
+    entity_text = ", ".join(entities) if entities else "credible market options"
     outline = editorial.get("recommended_outline", [])
-    adjacent_titles = source_materials.get("adjacent_titles", [])
-    persona = editorial.get("reader_persona", "a practical reader")
-    job = editorial.get("reader_job_to_be_done", "help the reader make a clearer decision.")
-    decision_frame = editorial.get("decision_frame", "")
-    cluster_role = editorial.get("cluster_role", "")
-    references = source_materials.get("supporting_urls", [])[:4]
-    title_l = title.lower()
-    fanout_l = fanout_text.lower()
-    comparison_table = _consumer_comparison_table_lines() if editorial.get("market_profile") == "consumer_travel" else _comparison_table_lines(reader_topic)
-    reference_lines = [f"- {url}" for url in references]
-    nearby = ", ".join(adjacent_titles[:3]) if adjacent_titles else ""
-    testing_framework = editorial.get("testing_framework", {})
-    eeat_layer = editorial.get("eeat_layer", {})
+    references = source_materials.get("supporting_urls", [])[:6]
+    adjacent_titles = source_materials.get("adjacent_titles", [])[:3]
+    search_intent = editorial.get("search_intent", "")
+    must_prove = [str(x).strip() for x in editorial.get("must_prove", []) if str(x).strip()]
+    must_include = [str(x).strip() for x in editorial.get("must_include", []) if str(x).strip()]
+    entity_set = {_normalize_text(name): name for name in entities}
 
-    def add_common_tail(lines: List[str], first_answer: str, second_answer: str, takeaway_intro: str) -> str:
-        if article_type in {"comparison", "recommendation"}:
-            lines.extend(["## Decision Table", ""])
-            lines.extend(comparison_table)
-            lines.extend([""])
-        if nearby:
-            lines.extend(
-                [
-                    "## What Makes This Angle Different",
-                    "",
-                    f"This topic sits close to related articles such as {nearby}. The point of this piece is not to recycle those pages with slightly different wording. It is to use a different decision frame so the reader leaves with a clearer next move.",
-                    "",
-                ]
+    def app_fit_rows() -> List[str]:
+        rows: List[str] = [
+            "| App | When it wins | When it underperforms | Typical pitfall |",
+            "|---|---|---|---|",
+        ]
+        if "booking.com" in entity_set:
+            rows.append(
+                "| Booking.com | Hotel-first trips where fast execution matters more than extreme fare hunting | Not ideal when your main challenge is multi-leg coordination across flights, hotels, and complex changes | Treating a lower headline room price as final value without matching total fees and cancellation terms |"
             )
-        lines.extend(
-            [
-                "## Where the Brand Fits",
-                "",
-                brand_rule,
-                "",
-                "## FAQ",
-                "",
-                f"### What should readers compare first when evaluating {reader_topic}?",
-                "",
-                first_answer,
-                "",
-                f"### How should someone use this article after searching for \"{fanout_text}\"?",
-                "",
-                second_answer,
-                "",
-            ]
-        )
-        if reference_lines:
-            lines.extend(["## References", ""])
-            lines.extend(reference_lines)
-            lines.extend([""])
-        lines.extend(
-            [
-                "## Final Takeaway",
-                "",
-                takeaway_intro,
-                "",
-                _publish_cta_text({"asset_title": title, "target_intent": editorial.get("search_intent", "")}),
-            ]
-        )
-        return _force_minimum_length("\n".join(lines), article_type, payload)
-
-    if article_type == "comparison":
-        if "booking.com" in title_l or "booking.com" in fanout_l:
-            lines = [
-                f"# {title}",
-                "",
-                "## Quick Answer",
-                "",
-                "- Yes, Booking.com can be cheaper in the app, but usually only under specific conditions.",
-                "- The most common reasons are mobile-only deals, Genius/member pricing, different room or cancellation terms, taxes/fees display, and currency handling.",
-                "- The fastest way to verify the difference is to compare the exact same room, policy, dates, currency, and login state on both surfaces.",
-                "",
-                f"If you are searching for {fanout_text}, the useful question is not whether the app is magically cheaper in every case. The useful question is where the apparent difference comes from and whether that difference still holds once you line up the actual booking terms.",
-                "",
-                "## When Booking.com Really Can Be Cheaper in the App",
-                "",
-                "The app can genuinely show a lower price when a mobile-only promotion is active, when a Genius or member rate is surfaced more aggressively in-app, or when the app is showing a slightly different offer configuration from the website. In practice, travelers often mistake these cases for a universal app advantage when they are really seeing one of a few recurring triggers.",
-                "",
-                "Those triggers usually include mobile-only discounts, Genius/member pricing, prepaid versus pay-at-property defaults, free-cancellation cutoffs, tax inclusion differences, and currency conversion behavior. If even one of those shifts between the app and web view, the rate can look cheaper without being a true apples-to-apples comparison.",
-                "",
-                "## The 3-Step Check That Prevents Fake Price Gaps",
-                "",
-                "1. Compare the same hotel, same room, same dates, same occupancy, and the same cancellation terms.",
-                "2. Make sure you are using the same login state, same currency, and same payment setting on both surfaces.",
-                "3. Compare the total payable amount and booking conditions, not only the first visible nightly rate.",
-                "",
-                "That sounds basic, but it is where most bad comparisons break. The app may look cheaper simply because it defaulted to a prepaid room, a less flexible policy, or a different tax display.",
-                "",
-                "## Field Alignment Checklist",
-                "",
-                "| Field | Why it creates fake gaps | What to verify |",
-                "|---|---|---|",
-                "| Room type | Slightly different inventory can look like a pricing gap | Match the exact room name and occupancy |",
-                "| Cancellation policy | Non-refundable offers often look cheaper | Confirm the same flexibility and deadline |",
-                "| Payment timing | Prepaid and pay-at-property rates are often different | Check whether payment timing matches |",
-                "| Taxes and fees | One surface may reveal more cost later | Compare total payable amount, not only base price |",
-                "| Currency | Exchange display can distort the comparison | Lock the same currency on both sides |",
-                "| Login/member state | Genius or member pricing may appear differently | Stay logged in consistently on both surfaces |",
-                "",
-                "## Booking.com-Specific Triggers to Check First",
-                "",
-                "- Genius or member pricing",
-                "- mobile-only deals",
-                "- breakfast included vs room only",
-                "- free cancellation deadline",
-                "- pay now vs pay later",
-                "- taxes/fees included vs shown later",
-                "- Booking.com currency conversion versus card issuer conversion",
-                "",
-                "## A Simple Test Method",
-                "",
-                f"If you want a trustworthy answer, run a small manual test instead of relying on one screenshot. {testing_framework.get('tested_at_field', 'Record the test date and timestamp when possible.')} Use the same property, keep the same login state, fix the currency, and compare the total price plus key conditions across app and web. Even a tiny sample is more useful than a broad claim if the method is clear.",
-                "",
-                "## Evidence and Scope",
-                "",
-                f"- Recommended sample size: {testing_framework.get('sample_size_guidance', '')}",
-                f"- Same-input rule: {testing_framework.get('same_input_rule', '')}",
-                f"- Scope: {testing_framework.get('conclusion_scope_template', '')}",
-                "",
-                "## Where Travelers Usually Go Wrong",
-                "",
-                "The biggest mistake is stopping at the first visible rate and never checking whether the app and website are showing the same offer structure. The second is treating a temporary promotional surface as a permanent pricing truth. The third is ignoring the fact that a slightly lower rate can still be a worse booking if flexibility, taxes, or payment terms are different.",
-                "",
-                "## FAQ",
-                "",
-                "### Is Booking.com always cheaper in the app?",
-                "",
-                "No. It can be cheaper in some cases, especially when mobile-only or member pricing is involved, but it is not automatically cheaper on every booking.",
-                "",
-                "### Why does Booking.com show different prices on app and website?",
-                "",
-                "The most common reasons are mobile-only promotions, Genius/member pricing, different room or cancellation defaults, tax display, and currency handling.",
-                "",
-                "### What is the fastest way to check whether the app deal is real?",
-                "",
-                "Compare the exact same room, same terms, same login state, same currency, and the full payable amount on both surfaces.",
-                "",
-            ]
-            if reference_lines:
-                lines.extend(["## References", ""])
-                lines.extend(reference_lines)
-                lines.extend([""])
-            lines.extend(
-                [
-                    "## Final Takeaway",
-                    "",
-                    "Booking.com can be cheaper in the app, but usually because something specific changed: a mobile-only promotion, a Genius discount, a different rate type, or how the total price is displayed. The smartest move is to verify the same booking conditions side by side before assuming the app always wins.",
-                ]
+        if "skyscanner" in entity_set:
+            rows.append(
+                "| Skyscanner | Best first step when fare discovery breadth is the priority | Not ideal as your only tool if you want one app to own the entire booking lifecycle | Confusing discovery strength with booking reliability and skipping supplier-quality checks |"
             )
-            return "\n".join(lines)
-
-        if "expedia" in title_l or "expedia" in fanout_l:
-            lines = [
-                f"# {title}",
-                "",
-                "## Quick Answer",
-                "",
-                "- Yes, Expedia can show cheaper hotel pricing in the app in some situations, but not by default on every booking.",
-                "- The most common causes are member pricing, app-only promotions, coupon or loyalty treatment, packaging logic, and differences in how fees or room conditions are surfaced.",
-                "- The fastest way to verify it is to compare one hotel across app and web using the same room, same dates, same login state, and the same total-price view.",
-                "",
-                f"If you are searching for {fanout_text}, what you usually want is not a broad theory. You want to know whether the app is worth checking first, when the web view is still better, and how to avoid being fooled by differences that are not real price wins.",
-                "",
-                "## The 6 Most Common Expedia Price-Gap Triggers",
-                "",
-                "1. Member or loyalty pricing being surfaced differently.",
-                "2. App-only promotional discounts or coupons.",
-                "3. Different room or cancellation defaults.",
-                "4. Bundling logic affecting hotel visibility or value signals.",
-                "5. Fees and taxes being noticed at different stages.",
-                "6. A cleaner desktop experience making the real trade-offs easier to inspect before checkout.",
-                "",
-                "## When to Check the App First",
-                "",
-                "| Situation | Better first stop | Why |",
-                "|---|---|---|",
-                "| You suspect app-only discounts | App | Mobile promotions may surface there first |",
-                "| You want to inspect many room conditions | Website | Bigger screen makes policy comparison easier |",
-                "| You are booking quickly on a simple trip | App | Faster flow can matter more than feature depth |",
-                "| You are comparing many hotels side by side | Website | Desktop usually makes multi-tab review easier |",
-                "",
-                "## 3 Steps to Verify the Difference Fast",
-                "",
-                "1. Log in the same way on both app and web so member treatment matches.",
-                "2. Compare the exact same room, dates, occupancy, cancellation terms, and currency.",
-                "3. Use the total booking cost and conditions as the final answer, not the first visible price.",
-                "",
-                "## Evidence and Scope",
-                "",
-                f"- Recommended sample size: {testing_framework.get('sample_size_guidance', '')}",
-                f"- Same-input rule: {testing_framework.get('same_input_rule', '')}",
-                f"- Scope: {testing_framework.get('conclusion_scope_template', '')}",
-                "",
-                "## Where Expedia Comparisons Go Wrong",
-                "",
-                "Travelers often misread Expedia app-versus-web differences because they compare different room types, different refund terms, or different moments in a volatile pricing window. Another issue is assuming that a lower-looking app rate is automatically a better deal even when the web flow makes the conditions much easier to inspect.",
-                "",
-                "That is why the smarter question is not only 'Which is cheaper?' but 'Which surface helps me make the cleaner booking decision for this stay?'",
-                "",
-                "## FAQ",
-                "",
-                "### Is Expedia always cheaper in the app?",
-                "",
-                "No. Sometimes the app has an advantage, but it is not consistent enough to treat as a rule.",
-                "",
-                "### Why might Expedia app and website prices differ?",
-                "",
-                "The main causes are member pricing, app-only offers, room-condition mismatches, fee display differences, and packaging or merchandising logic.",
-                "",
-                "### Should I book on Expedia app or website?",
-                "",
-                "Check the app first for speed and possible mobile offers, but use the website when you need a cleaner side-by-side review of policies and options.",
-                "",
-            ]
-            if reference_lines:
-                lines.extend(["## References", ""])
-                lines.extend(reference_lines)
-                lines.extend([""])
-            lines.extend(
-                [
-                    "## Final Takeaway",
-                    "",
-                    "Expedia app pricing can beat the website in some cases, but the difference usually comes from a small set of triggers rather than a permanent app advantage. The right habit is to test one booking both ways, line up the conditions carefully, and decide based on the total booking outcome, not the first number that looks lower.",
-                ]
+        if "hopper" in entity_set:
+            rows.append(
+                "| Hopper | Useful for timing-flexible travelers who can wait for alerts and react fast | Not ideal if you need strict itinerary control, predictable multi-leg consistency, or policy-heavy planning | Following alert/prediction signals without validating final terms against a control option |"
             )
-            return "\n".join(lines)
-
-        if "package deals" in fanout_l and "separately" in fanout_l:
-            lines = [
-                f"# {title}",
-                "",
-                "## Quick Answer",
-                "",
-                "- Package deals are not always cheaper, but they can win on either bundled pricing or simpler trip coordination.",
-                "- Booking separately usually wins when flexibility, loyalty strategy, or custom trip structure matters more than convenience.",
-                "- The best choice depends on the trip type, not just the headline price.",
-                "",
-                f"If you are searching for {fanout_text}, you are usually trying to answer a practical question: should I optimize this trip like a builder, or should I take the cleaner bundled route and accept less customization?",
-                "",
-                "## What Usually Decides It",
-                "",
-                "The real decision is not package versus separate in the abstract. It is package versus separate for one specific trip. A simple beach holiday, family resort stay, or fixed-date city break behaves differently from a multi-city trip, a points-heavy strategy, or a trip with a high chance of change.",
-                "",
-                "That is why the comparison works best when it focuses on total cost, flexibility, support complexity, loyalty value, and how much coordination the traveler wants to handle personally.",
-                "",
-                "## Which Trip Types Usually Favor Each Option",
-                "",
-                "| Trip type | Usually better | Why | Watch out for |",
-                "|---|---|---|---|",
-                "| Simple family vacation | Package | Easier coordination and occasional bundle savings | Check cancellation terms carefully |",
-                "| Resort or all-inclusive trip | Package | Bundles often align well with the trip shape | Compare room and transfer details |",
-                "| Multi-city itinerary | Separate | More control over flight and hotel combinations | More planning effort |",
-                "| Business or schedule-sensitive trip | Separate | Flexibility and timing matter more | Total cost can rise |",
-                "| Points/miles strategy trip | Separate | Better chance to optimize airline and hotel loyalty | More moving parts |",
-                "",
-                "## Hidden Costs and Restrictions People Miss",
-                "",
-                "- Refund and cancellation chains can be more complicated in packages.",
-                "- Customer-service responsibility may feel blurrier when multiple services are bundled.",
-                "- Loyalty points and hotel/airline status benefits can be weaker or harder to optimize in packages.",
-                "- Travel insurance and disruption handling can work differently depending on how the trip is booked.",
-                "- A package that looks cheaper may still reduce flexibility enough to become the worse choice.",
-                "",
-                "## A Better Way to Compare",
-                "",
-                "Take one real trip and compare both workflows side by side. Measure the total cost, the cancellation flexibility, the hotel quality, the flight timing, the booking friction, and who you will need to deal with if something changes. That gives you a much better answer than a generic rule about which method is always cheaper.",
-                "",
-                "## Evidence and Scope",
-                "",
-                f"- Recommended sample size: {testing_framework.get('sample_size_guidance', '')}",
-                f"- Same-input rule: {testing_framework.get('same_input_rule', '')}",
-                f"- Scope: {testing_framework.get('conclusion_scope_template', '')}",
-                "",
-                "## FAQ",
-                "",
-                "### Why can a flight plus hotel package be cheaper?",
-                "",
-                "Because providers may discount the bundle more aggressively than the individual pieces, or because the package is optimized for a standard leisure-trip pattern.",
-                "",
-                "### Do package deals affect airline miles or hotel status benefits?",
-                "",
-                "They can. In some cases you earn less or have fewer ways to optimize loyalty value compared with booking separately.",
-                "",
-                "### Who handles changes or cancellations on a package deal?",
-                "",
-                "That depends on the provider, which is why customer-service ownership and change rules should be checked before booking.",
-                "",
-                "### Are multi-city trips good candidates for package deals?",
-                "",
-                "Usually less so. Once the trip becomes more custom, separate booking often gives better control.",
-                "",
-            ]
-            if reference_lines:
-                lines.extend(["## References", ""])
-                lines.extend(reference_lines)
-                lines.extend([""])
-            lines.extend(
-                [
-                    "## Final Takeaway",
-                    "",
-                    "Package deals can absolutely be the better choice, but usually because they save coordination time, reduce friction, or fit a standard trip pattern well, not simply because they are always the cheapest. Separate bookings win when flexibility, loyalty strategy, or custom routing matters more. The right answer comes from testing one real trip both ways and judging the total outcome.",
-                ]
+        if "trip.com" in entity_set:
+            rows.append(
+                "| Trip.com | Strong for one-app execution when reducing context switching is your top goal | Not ideal for ultra-specialized deal hunters willing to run a fragmented multi-tool workflow | Choosing convenience without running one same-input validation on policy clarity and support path |"
             )
-            return "\n".join(lines)
+        if "expedia" in entity_set:
+            rows.append(
+                "| Expedia | Useful for bundle-oriented planning and single-account trip management | Not ideal when maximum cancellation flexibility is more important than package convenience | Assuming package value is always superior without pricing the flexibility loss |"
+            )
+        if len(rows) == 2:
+            rows.append(
+                "| Shortlisted apps | Match each option to one concrete trip scenario before selecting | Context-mismatch between traveler profile and app workflow | Choosing from brand familiarity alone |"
+            )
+        return rows
 
-        lines = [
-            f"# {title}",
+    lines: List[str] = [f"# {title}", ""]
+    lines.extend(
+        [
+            (
+                f"When people search for \"{fanout_text}\", they usually do not need another long list of apps. "
+                "They need a faster way to decide which option actually fits their trip style."
+            ),
             "",
-            f"If you are looking into {fanout_text}, the difficult part is usually not finding options. It is figuring out which differences actually matter before you spend more time, money, or trust on the wrong path.",
+            (
+                f"This guide is for {persona.lower()} "
+                f"The real objective is simple: {job}"
+            ),
             "",
-            f"This article is written for {persona.lower()} The real job here is practical: {job}",
+            (
+                f"Well-known options such as {entity_text} dominate most comparison pages. "
+                "That visibility is useful, but it can also blur important trade-offs. "
+                "The goal of this article is to make those trade-offs explicit so readers can choose with confidence."
+            ),
             "",
-            f"In this corner of the market, names such as {entities} already shape the shortlist. That is exactly why comparison content matters. Readers do not need another vague overview. They need help seeing which differences are real, which differences are cosmetic, and which trade-offs will matter once they actually try to book.",
+            "## At a Glance",
             "",
-            "## What Actually Changes the Decision",
+            f"- Reader topic: {reader_topic}",
+            f"- Search intent: {search_intent or 'Commercial/Research'}",
+            f"- Core decision frame: {decision_frame or 'Prioritize the factors that materially change outcomes.'}",
             "",
-            f"The most useful way to approach {editorial.get('article_angle', reader_topic)} is to compare one realistic scenario across the same options instead of comparing broad claims. {decision_frame}",
-            "",
-            "In practice, that means keeping the booking conditions as consistent as possible and asking a narrower question: which option creates the cleaner outcome once price, flexibility, and trust are weighed together?",
-            "",
-            "## How to Compare Without Drowning in Features",
-            "",
-            "Weak comparison pages usually try to sound comprehensive by adding more rows, more filters, and more edge cases than the reader can actually use. Strong comparison pages do the opposite. They narrow the field and make the decision lighter.",
-            "",
-            "A useful comparison should tell the reader which differences deserve attention first and which ones look important but rarely change the final choice. In travel, that usually means visible pricing, refund terms, booking clarity, and what happens when the itinerary stops being simple.",
-            "",
-            "## Where Readers Usually Go Wrong",
-            "",
-            "The most common mistake is trusting the first visible price before checking the booking conditions underneath it. The second is assuming the most familiar brand is automatically the safer or smarter choice. The third is comparing too many variables at once and leaving the page more confused than when the search started.",
-            "",
-            "The article becomes genuinely useful when it does some of that sorting for the reader. Instead of saying everything matters, it helps the reader understand what matters now, what can wait, and what is probably just noise.",
+            (
+                "There is no universal winner for every traveler. A strong choice depends on context: "
+                "trip complexity, flexibility needs, and tolerance for booking friction."
+            ),
             "",
         ]
-        return add_common_tail(
-            lines,
-            "Start with the differences that change the real outcome: total cost, policy clarity, flexibility, and how trustworthy the booking flow feels once the details get specific.",
-            "Use it to narrow the shortlist, test one realistic trip across the strongest options, and judge the result on the total booking experience rather than the first number you see.",
-            f"A strong comparison article should leave the reader with a clearer shortlist and a sharper sense of what to test next. {content_goal}",
-        )
-
-    if article_type == "recommendation":
-        lines = [
-            f"# {title}",
-            "",
-            f"When people look into {fanout_text}, they are usually not asking for a giant list. They are asking for help getting to a shortlist that actually fits the way they travel, buy, or compare options.",
-            "",
-            f"This article is written for {persona.lower()} The practical job is simple: {job}",
-            "",
-            f"The challenge is that familiar names such as {entities} already dominate the visible comparison set. That makes it easy to confuse awareness with fit. A good recommendation article should correct that. It should help the reader understand why some options work better for certain priorities and why the loudest brand is not always the strongest choice.",
-            "",
-            "## Start With the Problem You Need the Option to Solve",
-            "",
-            f"The smartest starting point is not the product list. It is the reader's actual situation. {decision_frame}",
-            "",
-            "Someone trying to reduce booking friction is making a different decision from someone trying to maximize flexibility or squeeze more value out of a complicated itinerary. Once that is clear, the shortlist becomes much more useful.",
-            "",
-            "## The Criteria That Matter in Real Use",
-            "",
-            "Most recommendation content gets weak when it turns into a feature dump. Better recommendation content explains which criteria actually change the outcome. In travel, that often means coverage, clarity, trust, and how smooth the workflow feels once the booking gets real.",
-            "",
-            "This is also where good editorial judgment matters. The article should not pretend every reader needs the same winner. It should explain why different readers can end up choosing different tools for legitimate reasons.",
-            "",
-            "## Which Reader Types Usually Prefer Different Options",
-            "",
-            "A convenience-first traveler often wants a different answer from a deal hunter or a traveler piecing together a more complex itinerary. Naming those differences directly is what makes recommendation content feel useful instead of generic.",
-            "",
-            "That is also what helps the article avoid becoming another interchangeable roundup. The point is not to crown one universal winner. The point is to help the right reader arrive at the right shortlist faster.",
-            "",
-        ]
-        return add_common_tail(
-            lines,
-            "Compare the criteria that will actually change your final choice: how much the tool covers, how clearly it presents trade-offs, and whether the booking path still feels trustworthy once details matter.",
-            "Use it to identify which reader type sounds most like you, then test the two or three options that best match that profile instead of reading endless roundups.",
-            f"A strong recommendation article should reduce decision fatigue and leave the reader with a shortlist that feels easier to trust. {content_goal}",
-        )
-
-    if article_type == "guide":
-        lines = [
-            f"# {title}",
-            "",
-            f"If you are trying to figure out {fanout_text}, the hardest part is usually not lack of information. It is too much information arriving in the wrong order.",
-            "",
-            f"This guide is written for {persona.lower()} The goal is not to overwhelm you with more detail. It is to make the decision easier to move through: {job}",
-            "",
-            f"In a space already shaped by options such as {entities}, a useful guide should do more than explain what exists. It should show what to do first, what to compare next, and what is probably wasting your time.",
-            "",
-            "## Start With the Real Decision",
-            "",
-            f"The best guides begin by naming the actual job the reader is trying to finish. {decision_frame}",
-            "",
-            "That matters because plenty of advice sounds helpful while still leaving the reader unclear about the next step. Once the decision is framed properly, the rest of the process becomes much easier to follow.",
-            "",
-            "## Turn the Process Into a Sequence",
-            "",
-            "The article should reduce the choice into a usable order. What deserves attention now? What can wait? Which details are meaningful only after the shortlist is already smaller?",
-            "",
-            "That sequencing is what separates guide content from generic blog filler. It creates momentum for the reader instead of giving them one more pile of variables to juggle.",
-            "",
-            "## Where the Process Usually Breaks Down",
-            "",
-            "People usually go wrong when they compare too much too early, trust marketing language before practical fit, or chase small differences that do not really change the outcome.",
-            "",
-            "A good guide prevents that by making the next move obvious and helping the reader ignore the noise that looks useful but rarely improves the decision.",
-            "",
-        ]
-        return add_common_tail(
-            lines,
-            "Start with the step that changes the whole path: define the real job you need the tool or workflow to do before comparing every visible feature.",
-            "Use it as a sequence, not as a checklist to skim. Follow the order, shrink the field, and only then compare finer details.",
-            f"A good guide should leave the reader with a clearer process and fewer wrong turns. {content_goal}",
-        )
-
-    lines = [
-        f"# {title}",
-        "",
-        f"When people search for {fanout_text}, they are often trying to understand a category that feels important but still slightly blurry.",
-        "",
-        f"This article is written for {persona.lower()} The practical goal is straightforward: {job}",
-        "",
-        f"That is why familiar names such as {entities} matter, but only up to a point. They shape the market conversation, yet they do not automatically explain what the category means or how the reader should use that understanding to make a better decision.",
-        "",
-        f"## What {reader_topic} Actually Means",
-        "",
-        f"A good explainer should reduce confusion quickly and connect the definition to a real choice. {decision_frame}",
-        "",
-        "The point is not to stay in definition mode too long. The point is to give the reader a cleaner mental model and then show why that model matters once options, workflows, or trade-offs enter the picture.",
-        "",
-        "## What the Reader Should Notice Early",
-        "",
-        "Strong explainers do not treat every variable as equally important. They help the reader notice which differences actually change the outcome and which ones are mostly background noise.",
-        "",
-        "That is what makes the article useful. It gives the reader a better lens for evaluating the category instead of simply repeating the market's labels back to them.",
-        "",
-        "## Why This Topic Gets Misunderstood",
-        "",
-        "Most weak explainer content stays broad for too long. It sounds polished, but it never really helps the reader move from abstract understanding into better judgment.",
-        "",
-        "A better explainer closes that gap. It helps the reader understand the category and then immediately use that understanding in a more practical way.",
-        "",
-    ]
-    return add_common_tail(
-        lines,
-        "Start with the variables that would actually change your next decision, not the labels that make the category sound bigger or trendier than it is.",
-        "Use it to clarify the category first, then make one stronger comparison than you could have made before reading.",
-        f"A strong explainer should leave the reader with a cleaner mental model and a more useful next step. {content_goal}",
     )
+
+    if article_type in {"comparison", "recommendation"}:
+        lines.extend(["## Decision Table", ""])
+        lines.extend(
+            _consumer_comparison_table_lines()
+            if editorial.get("market_profile") == "consumer_travel"
+            else _comparison_table_lines(reader_topic)
+        )
+        lines.extend([""])
+
+    lines.extend(["## Quick Picks by Goal", ""])
+    lines.extend(
+        [
+            "- Best for broad price discovery: apps that surface many route and supplier options quickly (often a metasearch-first workflow).",
+            "- Best for one-stop booking flow: apps that keep search, selection, and payment in one interface with minimal context switching.",
+            "- Best for flexibility-sensitive trips: options that expose cancellation and change rules clearly before checkout.",
+            "- Best for international complexity: apps that handle multi-segment comparisons cleanly and provide clear support escalation paths.",
+            "",
+            "Use these as starting buckets, then validate using one same-input test for your exact itinerary.",
+            "",
+        ]
+    )
+
+    lines.extend(["## App-by-App Trade-Off Snapshot", ""])
+    lines.extend(app_fit_rows())
+    lines.extend([""])
+
+    lines.extend(["## Strong Calls (What Most Readers Should Actually Do)", ""])
+    lines.extend(
+        [
+            (
+                "If you want one app for most leisure trips, prioritize a true end-to-end workflow app first, "
+                "then verify the final booking terms with one same-input cross-check."
+            ),
+            "",
+            (
+                "If lowest fare discovery is the priority, start with a discovery-first tool and then complete booking "
+                "where terms, support, and cancellation clarity are strongest."
+            ),
+            "",
+            (
+                "If flexibility is non-negotiable, do not pick based on teaser price. "
+                "Pick the option that makes change and cancellation terms easiest to verify before payment."
+            ),
+            "",
+            (
+                "Practical bias: for many travelers, a two-step flow "
+                "(broad discovery first, terms-first booking second) beats blind single-app checkout."
+            ),
+            "",
+        ]
+    )
+
+    lines.extend(["## If You Only Remember One Thing", ""])
+    lines.extend(
+        [
+            (
+                "Most travelers should decide first between discovery-first and execution-first workflow: "
+                "if discovery matters more, start with a broad discovery tool; if execution simplicity matters more, start with a one-app booking workflow."
+            ),
+            "",
+            (
+                "Then run one same-input cross-check before payment. "
+                "This single step prevents most wrong choices caused by teaser prices or unclear policy terms."
+            ),
+            "",
+        ]
+    )
+
+    lines.extend(["## Decision Engine (If X -> Choose Y)", ""])
+    decision_rules: List[str] = []
+    if "skyscanner" in entity_set:
+        decision_rules.append("- If your top priority is fare discovery breadth, start with Skyscanner first.")
+    if "booking.com" in entity_set:
+        decision_rules.append("- If your top priority is fast hotel-heavy execution, start with Booking.com first.")
+    if "trip.com" in entity_set:
+        decision_rules.append("- If you want one app for flight + hotel execution with fewer context switches, test Trip.com first.")
+    if "hopper" in entity_set:
+        decision_rules.append("- If you are timing-flexible and alert-driven, include Hopper in your shortlist; skip it for strict multi-leg control.")
+    if "expedia" in entity_set:
+        decision_rules.append("- If you plan package-style trips, test Expedia first; skip it when flexibility terms dominate the decision.")
+    decision_rules.append("- If cancellation flexibility is your top risk, choose the option with the clearest change/refund terms even when headline price is higher.")
+    for rule in decision_rules[:7]:
+        lines.append(rule)
+    lines.extend([""])
+
+    lines.extend(["## Default Ranking (If You Force a Single Starting Order)", ""])
+    default_ranking: List[str] = []
+    if "skyscanner" in entity_set:
+        default_ranking.append("1. Skyscanner for broad discovery and initial market scan.")
+    if "booking.com" in entity_set:
+        default_ranking.append("2. Booking.com for fast hotel-heavy execution after discovery.")
+    if "trip.com" in entity_set:
+        default_ranking.append("3. Trip.com when you want one-app execution across flights and hotels.")
+    if "expedia" in entity_set:
+        default_ranking.append("4. Expedia for bundle-oriented planning when flexibility is not the top constraint.")
+    if "hopper" in entity_set:
+        default_ranking.append("5. Hopper as a timing-alert specialist, not a universal default.")
+    if not default_ranking:
+        default_ranking.append("1. Start with the broadest discovery option.")
+        default_ranking.append("2. Move to the clearest execution option with strong policy visibility.")
+    lines.extend(default_ranking)
+    lines.extend(
+        [
+            "",
+            "If you only keep one operational rule: discovery first, then terms-first execution.",
+            "",
+        ]
+    )
+
+    lines.extend(["## Head-to-Head Calls (Same Scenario, Same Inputs)", ""])
+    h2h_rows: List[str] = ["| Matchup | Who is usually stronger | Why |", "|---|---|---|"]
+    if "booking.com" in entity_set and "expedia" in entity_set:
+        h2h_rows.append(
+            "| Booking.com vs Expedia | Booking.com for hotel-first execution; Expedia for package-first planning | Booking typically wins when hotel depth and checkout speed matter; Expedia wins when bundle structure is the main value lever |"
+        )
+    if "trip.com" in entity_set and "expedia" in entity_set:
+        h2h_rows.append(
+            "| Trip.com vs Expedia | Trip.com for streamlined one-app flow; Expedia for bundle workflow | Trip.com is usually better when you want fewer context switches; Expedia is usually better when package logic is central |"
+        )
+    if "hopper" in entity_set and "skyscanner" in entity_set:
+        h2h_rows.append(
+            "| Hopper vs Skyscanner | Skyscanner for broad discovery; Hopper for alert-driven timing plays | Skyscanner is stronger for wide option coverage; Hopper is stronger when timing flexibility is the core edge |"
+        )
+    if len(h2h_rows) == 2:
+        h2h_rows.append("| Discovery tool vs execution tool | Discovery first, then execution | Most wrong choices come from collapsing these two jobs into one step |")
+    lines.extend(h2h_rows)
+    lines.extend([""])
+
+    section_items = [item for item in outline if isinstance(item, dict) and item.get("heading")]
+    used_headings: set[str] = set()
+    for section in section_items:
+        heading = str(section.get("heading", "")).strip()
+        if not heading:
+            continue
+        heading_key = _normalize_text(heading)
+        if heading_key in {"faq", "final takeaway"}:
+            continue
+        if heading_key in used_headings:
+            continue
+        used_headings.add(heading_key)
+        purpose = str(section.get("purpose", "")).strip()
+        must_line = str(section.get("must_include", "")).strip()
+        purpose_line = purpose.lower() if purpose else "help the reader make a stronger decision"
+        practical_focus = must_line or (must_include[0] if must_include else "show one realistic scenario before recommending a choice")
+
+        lines.extend([f"## {heading}", ""])
+        if "problem" in heading_key:
+            lines.extend(
+                [
+                    (
+                        f"Start by pinning down the real decision context, not the app list. "
+                        f"For {reader_topic}, that context usually means: trip type, flexibility requirement, and tolerance for booking friction."
+                    ),
+                    "",
+                    "Ask these three questions before comparing brands:",
+                    "- Is this a speed-first booking or a flexibility-first booking?",
+                    "- Is your top risk hidden fees or cancellation rigidity?",
+                    "- Do you need one platform for end-to-end booking, or best-in-class discovery first and booking second?",
+                    "",
+                    f"Practical focus: {practical_focus}",
+                    "",
+                ]
+            )
+            continue
+        if "criteria" in heading_key:
+            lines.extend(
+                [
+                    (
+                        "Most weak articles stop at feature lists. Better decisions come from weighted trade-offs. "
+                        "For each shortlisted app, score five areas from 1 to 5: coverage, price clarity, policy transparency, app flow, and support confidence."
+                    ),
+                    "",
+                    (
+                        "Then multiply each score by your personal weight. "
+                        "A traveler with strict change risk should weight policy transparency higher; a simple fixed-date traveler may weight speed and price clarity higher."
+                    ),
+                    "",
+                    (
+                        "Tie-break rule: when two options are close on price, prefer the one with clearer policy terms and lower support friction."
+                    ),
+                    "",
+                    f"Practical focus: {practical_focus}",
+                    "",
+                ]
+            )
+            continue
+        if "reader types" in heading_key or "prefer different options" in heading_key:
+            lines.extend(
+                [
+                    (
+                        "Different traveler profiles should not produce the same winner. "
+                        "A convenience-first traveler and a flexibility-first traveler can both make rational but different choices."
+                    ),
+                    "",
+                    "| Traveler profile | First shortlist move | Final decision signal |",
+                    "|---|---|---|",
+                    "| Convenience-first | Prioritize clean booking flow and reduced steps | Lower friction from search to payment without hidden policy surprises |",
+                    "| Value-hunter | Start with broad discovery and same-input price checks | Better total payable value after terms are aligned |",
+                    "| Flexibility-first | Filter by change/cancellation clarity early | Strongest option after policy terms, not headline price |",
+                    "| Multi-city planner | Prioritize coverage and support reliability | Fewer workflow breaks across segments and channels |",
+                    "",
+                    f"Practical focus: {practical_focus}",
+                    "",
+                ]
+            )
+            continue
+
+        lines.extend(
+            [
+                (
+                    f"This section should {purpose_line} for readers comparing {reader_topic}. "
+                    "Keep the writing decision-led: name the trade-off, show its consequence, then recommend a next check."
+                ),
+                "",
+                f"Practical focus: {practical_focus}",
+                "",
+            ]
+        )
+
+    lines.extend(["## Practical Scenario", ""])
+    lines.extend(
+        [
+            (
+                "Imagine two travelers searching on a Friday night after fares move quickly. "
+                "Traveler A prioritizes speed and wants to finish booking in one sitting. "
+                "Traveler B worries about schedule changes and wants maximum policy clarity."
+            ),
+            "",
+            (
+                "Both may start with the same shortlist, but they should not end with the same winner. "
+                "Traveler A should favor the option with the cleanest end-to-end flow and fewer booking steps. "
+                "Traveler B should favor the option that exposes cancellation terms early and keeps total pricing clear before checkout."
+            ),
+            "",
+            (
+                "This is where most people make expensive mistakes: they choose the app that felt fastest in the first two minutes, "
+                "then discover policy constraints too late. The better move is slower by five minutes now and faster by hours later."
+            ),
+            "",
+        ]
+    )
+
+    lines.extend(["## 10-Minute Final Choice Workflow", ""])
+    lines.extend(
+        [
+            "1. Pick two or three apps from the shortlist that match your traveler profile.",
+            "2. Run one same-input test: identical dates, route, traveler count, and refund expectation.",
+            "3. Compare total payable price, not teaser price.",
+            "4. Compare cancellation/change terms line by line.",
+            "5. Choose the app with the strongest overall outcome for your context, not the loudest brand signal.",
+            "",
+        ]
+    )
+
+    lines.extend(["## Where People Most Often Make the Wrong Call", ""])
+    lines.extend(
+        [
+            "- Choosing from brand familiarity before defining trip constraints.",
+            "- Comparing teaser prices instead of total payable cost plus policy terms.",
+            "- Using one app for every trip type, even when the trip complexity changed.",
+            "- Skipping one final same-input validation before payment.",
+            "",
+        ]
+    )
+
+    if adjacent_titles:
+        lines.extend(
+            [
+                "## Angle Differentiation",
+                "",
+                (
+                    "This piece is intentionally distinct from nearby angles such as "
+                    + ", ".join(adjacent_titles)
+                    + ". Instead of rephrasing those pages, it should provide a narrower, decision-first path for this specific query."
+                ),
+                "",
+            ]
+        )
+
+    lines.extend(["## Where the Brand Fits", ""])
+    lines.append(
+        brand_rule
+        or "The brand should appear as one credible option in the shortlist, supported by context rather than promotion."
+    )
+    lines.extend([""])
+
+    lines.extend(["## FAQ", ""])
+    faq_questions = [
+        f"What should readers evaluate first when comparing {reader_topic}?",
+        f"How can someone validate the recommendation after searching for \"{fanout_text}\"?",
+        "How should readers adapt this framework if their priorities change?",
+    ]
+    for claim in must_prove[:2]:
+        faq_questions.append(f"How does this article prove: {claim}?")
+    faq_questions = _dedupe_keep_order(faq_questions)[:4]
+    faq_answers = [
+        (
+            "Start with baseline fit: does the app support your trip type and preferred workflow. "
+            "Then compare total price clarity and policy flexibility under the same search inputs."
+        ),
+        (
+            "Run one same-input check across two or three shortlisted options: same dates, same route, same traveler count, same refund expectations. "
+            "Make the final call on total outcome quality, not the first headline price."
+        ),
+        (
+            "If priorities change, reorder the criteria rather than rebuilding everything. "
+            "For example, move flexibility to the top for uncertain plans, or speed to the top for simple fixed-date trips."
+        ),
+        (
+            "It proves this by translating abstract comparison points into concrete decision steps: "
+            "who should choose what, under which constraints, and why."
+        ),
+    ]
+    for idx, question in enumerate(faq_questions):
+        lines.extend([f"### {question}", ""])
+        lines.extend([faq_answers[min(idx, len(faq_answers) - 1)], ""])
+
+    if references:
+        lines.extend(["## References", ""])
+        for ref in references:
+            lines.append(f"- {ref}")
+        if "booking.com" in entity_set:
+            lines.append("- https://www.booking.com/content/terms.html")
+        if "expedia" in entity_set:
+            lines.append("- https://www.expedia.com/service/")
+        if "trip.com" in entity_set:
+            lines.append("- https://www.trip.com/pages/support/")
+        if "skyscanner" in entity_set:
+            lines.append("- https://help.skyscanner.net/")
+        lines.append("- https://www.nerdwallet.com/travel")
+        lines.extend([""])
+
+    lines.extend(["## Final Takeaway", ""])
+    lines.extend(
+        [
+            (
+                f"A useful {article_type} on {reader_topic} should leave the reader with a smaller shortlist, "
+                "a clearer evaluation sequence, and a confident next step."
+            ),
+            "",
+            content_goal or "Use this framework to move from browsing to a decision you can justify.",
+            "",
+            _publish_cta_text({"asset_title": title, "target_intent": search_intent}),
+        ]
+    )
+    article = _force_minimum_length("\n".join(lines), article_type, payload)
+    article = _ensure_quality_contract(article, article_type, entities)
+    return article
 
 
 def _deprecated_draft_article_from_payload_dispatch(payload: Dict[str, Any]) -> str:
@@ -3476,14 +3565,18 @@ def _build_content_pack_context(
     brand_kb_file: str | None = None,
     detail_limit: int = 1,
 ) -> Dict[str, Any]:
+    collection_warnings: List[str] = []
     local_kb = _load_brand_kb(brand_kb_file)
     remote_brand = _remote_brand_context(client)
     brand_context = local_kb or remote_brand
     brand_kb = _brand_alignment_status(local_kb, remote_brand, brand_kb_file)
     start_at, end_at = date_window(days)
-    opportunities = _collect_all(
+    opportunities = _collect_all_checked(
         lambda **kwargs: client.content_opportunities(start_at, end_at, **kwargs),
+        label="content_opportunities",
         page_size=100,
+        errors=collection_warnings,
+        strict=True,
     )
     if not opportunities:
         return {
@@ -3505,6 +3598,7 @@ def _build_content_pack_context(
             "brand_context": brand_context,
             "brand_kb": brand_kb,
             "remote_brand": remote_brand,
+            "collection_warnings": collection_warnings,
         }
 
     tier_buckets: Dict[str, List[Dict[str, Any]]] = {"High": [], "Medium": [], "Low": []}
@@ -3513,9 +3607,12 @@ def _build_content_pack_context(
     for tier in tier_buckets:
         tier_buckets[tier] = sorted(tier_buckets[tier], key=_opportunity_score, reverse=True)
 
-    prompts = _collect_all(
+    prompts = _collect_all_checked(
         lambda **kwargs: client.prompts(start_at, end_at, **kwargs),
+        label="prompts",
         page_size=100,
+        errors=collection_warnings,
+        strict=True,
     )
     selected_prompt = _find_prompt_match(prompts, prompt_id=prompt_id, prompt_text=prompt_text)
 
@@ -3547,9 +3644,11 @@ def _build_content_pack_context(
     mention_counter: Counter[str] = Counter()
 
     if selected_prompt_id:
-        responses = _collect_all(
+        responses = _collect_all_checked(
             lambda **kwargs: client.prompt_responses(selected_prompt_id, start_at, end_at, **kwargs),
+            label=f"prompt_responses({selected_prompt_id})",
             page_size=100,
+            errors=collection_warnings,
         )
         responses = sorted(responses, key=lambda item: item.get("createdAt") or item.get("date") or "", reverse=True)
         for response in responses[: min(detail_limit, len(responses))]:
@@ -3560,9 +3659,11 @@ def _build_content_pack_context(
                     brand = mention.get("brandName")
                     if brand:
                         mention_counter[brand] += 1
-        citations = _collect_all(
+        citations = _collect_all_checked(
             lambda **kwargs: client.prompt_citation_urls(selected_prompt_id, start_at, end_at, **kwargs),
+            label=f"prompt_citation_urls({selected_prompt_id})",
             page_size=100,
+            errors=collection_warnings,
         )
 
     primary_intent = _primary_intention((selected_prompt or {}).get("intentions") or [])
@@ -3570,25 +3671,27 @@ def _build_content_pack_context(
     dominant_page_type = _page_type_family(citations)
     api_fanout: List[str] = []
     if selected_prompt_id:
-        try:
-            fanout_items = _collect_all(
-                lambda **kwargs: client.prompt_query_fanout(selected_prompt_id, start_at, end_at, **kwargs),
-                page_size=100,
-            )
-            api_fanout = [item.get("name", "").strip() for item in fanout_items if item.get("name")]
-        except Exception:
-            api_fanout = []
+        fanout_items = _collect_all_checked(
+            lambda **kwargs: client.prompt_query_fanout(selected_prompt_id, start_at, end_at, **kwargs),
+            label=f"prompt_query_fanout({selected_prompt_id})",
+            page_size=100,
+            errors=collection_warnings,
+        )
+        api_fanout = [item.get("name", "").strip() for item in fanout_items if item.get("name")]
     fanout_prompts = _dedupe_keep_order(api_fanout)
 
-    keyword_cluster = _dedupe_keep_order(
-        fanout_prompts[:5]
-        + _keyword_cluster_guesses(selected_opportunity.get("prompt", ""), selected_opportunity.get("topic", ""))
-    )
+    keyword_cluster = _dedupe_keep_order(fanout_prompts[:8])
+    guessed_cluster = _keyword_cluster_guesses(selected_opportunity.get("prompt", ""), selected_opportunity.get("topic", ""))
+    if not keyword_cluster:
+        # Fallback only when API fanout is unavailable; never mix guessed terms into a real-fanout seed.
+        keyword_cluster = _dedupe_keep_order(guessed_cluster)
+        collection_warnings.append("Using guessed keyword cluster because API fanout data is empty.")
     keyword_volume_rows: List[Dict[str, Any]] = []
     if keyword_cluster:
         try:
             keyword_volume_rows = client.keyword_volume(keyword_cluster[:10]).get("data", [])
         except Exception:
+            collection_warnings.append("keyword_volume lookup failed; continuing without volume data.")
             keyword_volume_rows = []
     asset_rows = _asset_rows(
         prompt_text=selected_opportunity.get("prompt", ""),
@@ -3611,7 +3714,7 @@ def _build_content_pack_context(
         "mention_counter": mention_counter,
         "dominant_page_type": dominant_page_type,
         "api_fanout_prompts": api_fanout,
-        "guessed_fanout_prompts": [],
+        "guessed_fanout_prompts": [] if api_fanout else guessed_cluster,
         "fanout_prompts": fanout_prompts,
         "keyword_cluster": keyword_cluster,
         "keyword_volume_rows": keyword_volume_rows,
@@ -3621,6 +3724,7 @@ def _build_content_pack_context(
         "brand_context": brand_context,
         "brand_kb": brand_kb,
         "remote_brand": remote_brand,
+        "collection_warnings": collection_warnings,
     }
 
 
@@ -3631,13 +3735,17 @@ def discover_prompt_candidates(
     max_prompts: int = 20,
 ) -> List[Dict[str, Any]]:
     start_at, end_at = date_window(days)
-    opportunities = _collect_all(
+    opportunities = _collect_all_checked(
         lambda **kwargs: client.content_opportunities(start_at, end_at, **kwargs),
+        label="content_opportunities",
         page_size=100,
+        strict=True,
     )
-    prompts = _collect_all(
+    prompts = _collect_all_checked(
         lambda **kwargs: client.prompts(start_at, end_at, **kwargs),
+        label="prompts",
         page_size=100,
+        strict=True,
     )
     prompt_map = {_normalize_text(item.get("prompt", "")): item for item in prompts if item.get("prompt")}
     rows: List[Dict[str, Any]] = []
@@ -3655,6 +3763,8 @@ def discover_prompt_candidates(
                 "tier": tier,
                 "brand_gap": _fmt_gap(item.get("brandGap")),
                 "source_gap": _fmt_gap(item.get("sourceGap")),
+                "brand_gap_score": _normalize_gap_score(item.get("brandGap")),
+                "source_gap_score": _normalize_gap_score(item.get("sourceGap")),
                 "response_count": item.get("totalResponseCount", 0),
                 "source_count": item.get("totalSourceCount", 0),
                 "funnel": prompt.get("funnel", "-"),
@@ -3673,6 +3783,7 @@ def build_fanout_backlog(
     brand_kb_file: str | None = None,
     max_prompts: int = 20,
 ) -> Dict[str, Any]:
+    collection_warnings: List[str] = []
     local_kb = _load_brand_kb(brand_kb_file)
     remote_brand = _remote_brand_context(client)
     brand_context = local_kb or remote_brand
@@ -3685,13 +3796,12 @@ def build_fanout_backlog(
         prompt_id = prompt_row.get("prompt_id")
         if not prompt_id:
             continue
-        try:
-            fanout_items = _collect_all(
-                lambda **kwargs: client.prompt_query_fanout(prompt_id, start_at, end_at, **kwargs),
-                page_size=100,
-            )
-        except Exception:
-            fanout_items = []
+        fanout_items = _collect_all_checked(
+            lambda **kwargs: client.prompt_query_fanout(prompt_id, start_at, end_at, **kwargs),
+            label=f"prompt_query_fanout({prompt_id})",
+            page_size=100,
+            errors=collection_warnings,
+        )
         for item in fanout_items:
             fanout_text = (item.get("name") or "").strip()
             if not fanout_text:
@@ -3712,7 +3822,10 @@ def build_fanout_backlog(
                     "normalized_title": _rewrite_fanout_title(fanout_text, article_type, brand_context),
                     "brand_gap": prompt_row.get("brand_gap", "-"),
                     "source_gap": prompt_row.get("source_gap", "-"),
+                    "brand_gap_score": prompt_row.get("brand_gap_score", 0),
+                    "source_gap_score": prompt_row.get("source_gap_score", 0),
                     "response_count": prompt_row.get("response_count", 0),
+                    "priority_score": prompt_row.get("score", 0),
                     "funnel": prompt_row.get("funnel", "-"),
                     "primary_intention": prompt_row.get("primary_intention", "-"),
                     "status": "pending",
@@ -3739,6 +3852,7 @@ def build_fanout_backlog(
         deduped,
         key=lambda row: (
             0 if row["status"] == "write_now" else 1 if row["status"] == "needs_merge" else 2,
+            -_row_priority_score(row),
             -row.get("source_count", 1),
             article_type_rank.get(row.get("article_type", "explainer"), 9),
             row.get("normalized_title", ""),
@@ -3749,6 +3863,7 @@ def build_fanout_backlog(
         "time_window_days": days,
         "brand_knowledge_base": brand_kb,
         "brand_context_summary": _brand_context_summary(brand_context),
+        "collection_warnings": collection_warnings,
         "prompt_candidates": prompt_candidates,
         "fanout_backlog": ordered,
     }
@@ -3861,6 +3976,7 @@ def select_backlog_items(
     rows = sorted(
         rows,
         key=lambda row: (
+            -_row_priority_score(row),
             article_type_rank.get(row.get("article_type", "explainer"), 9),
             -row.get("source_count", 1),
             row.get("normalized_title", ""),
