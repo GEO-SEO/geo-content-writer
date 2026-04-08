@@ -1,6 +1,6 @@
 {
   "name": "geo-content-writer",
-  "version": "0.6.0",
+  "version": "0.7.1",
   "display_name": "GEO Content Writer",
   "description": "A fanout-backlog-first GEO writing workflow that turns Dageno prompt opportunities into backlog rows and then into publish-ready articles.",
   "author": {

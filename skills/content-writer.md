@@ -2,10 +2,21 @@
 name: content-writer
 description: >
   Use when the user wants to turn Dageno GEO opportunities into a real-fanout backlog and then
-  write one publish-ready article from one selected fanout item.
+  write one publish-ready article from one selected fanout item. Produces a backlog-row-first GEO
+  workflow with fanout extraction, editorial brief generation, draft and review contracts, and
+  publish-ready article output. For broad SEO article generation from keywords without Dageno
+  opportunity data, see a keyword-first SEO content workflow instead.
+compatibility: "Claude Code >=1.0, skills.sh marketplace, ClawHub marketplace, Vercel Labs skills ecosystem. Requires Python 3 and Dageno API access for full workflow execution."
 metadata:
+  openclaw:
+    primaryEnv: DAGENO_API_KEY
+    requires:
+      env:
+        - DAGENO_API_KEY
+      bins:
+        - python3
   author: GEO-SEO
-  version: "0.7.0"
+  version: "0.7.1"
   homepage: https://github.com/GEO-SEO/geo-content-writer
   primaryEnv: DAGENO_API_KEY
   tags:
