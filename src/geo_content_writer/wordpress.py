@@ -169,22 +169,31 @@ class WordPressClient:
 
 
 def markdown_to_basic_html(markdown_text: str) -> str:
-    """Convert simple markdown-like draft output into WordPress-friendly HTML."""
+    """Convert markdown into WordPress-friendly HTML to avoid raw markdown leaking."""
 
     lines = markdown_text.splitlines()
     if lines and lines[0].strip().startswith("# "):
         lines = lines[1:]
 
     blocks: List[str] = []
-    list_items: List[str] = []
+    ul_items: List[str] = []
+    ol_items: List[str] = []
     paragraph_lines: List[str] = []
     table_lines: List[str] = []
+    code_lines: List[str] = []
+    in_code = False
 
-    def flush_list() -> None:
-        nonlocal list_items
-        if list_items:
-            blocks.append("<ul>" + "".join(list_items) + "</ul>")
-            list_items = []
+    def flush_ul() -> None:
+        nonlocal ul_items
+        if ul_items:
+            blocks.append("<ul>" + "".join(ul_items) + "</ul>")
+            ul_items = []
+
+    def flush_ol() -> None:
+        nonlocal ol_items
+        if ol_items:
+            blocks.append("<ol>" + "".join(ol_items) + "</ol>")
+            ol_items = []
 
     def flush_paragraph() -> None:
         nonlocal paragraph_lines
@@ -196,27 +205,56 @@ def markdown_to_basic_html(markdown_text: str) -> str:
     def flush_table() -> None:
         nonlocal table_lines
         if table_lines:
-            blocks.append(_table_markdown_to_html(table_lines))
+            html_table = _table_markdown_to_html(table_lines)
+            if html_table:
+                blocks.append(html_table)
             table_lines = []
 
+    def flush_code() -> None:
+        nonlocal code_lines, in_code
+        if code_lines:
+            code_html = "\n".join(html.escape(line) for line in code_lines)
+            blocks.append(f"<pre><code>{code_html}</code></pre>")
+            code_lines = []
+        in_code = False
+
     for raw_line in lines:
-        line = raw_line.rstrip()
+        line = raw_line.rstrip("\n")
         stripped = line.strip()
+
+        if stripped.startswith("```"):
+            if in_code:
+                flush_code()
+            else:
+                flush_ul()
+                flush_ol()
+                flush_paragraph()
+                flush_table()
+                in_code = True
+            continue
+
+        if in_code:
+            code_lines.append(line)
+            continue
+
         if not stripped:
-            flush_list()
+            flush_ul()
+            flush_ol()
             flush_paragraph()
             flush_table()
             continue
 
         if stripped.startswith("|") and stripped.endswith("|"):
-            flush_list()
+            flush_ul()
+            flush_ol()
             flush_paragraph()
             table_lines.append(stripped)
             continue
 
         heading_match = re.match(r"^(#{1,6})\s+(.*)$", stripped)
         if heading_match:
-            flush_list()
+            flush_ul()
+            flush_ol()
             flush_paragraph()
             flush_table()
             level = len(heading_match.group(1))
@@ -224,18 +262,37 @@ def markdown_to_basic_html(markdown_text: str) -> str:
             blocks.append(f"<h{level}>{text}</h{level}>")
             continue
 
-        if stripped.startswith("- "):
+        if re.match(r"^[-*+]\s+", stripped):
+            flush_ol()
             flush_paragraph()
             flush_table()
-            item_text = _inline_markdown_to_html(stripped[2:].strip())
-            list_items.append(f"<li>{item_text}</li>")
+            ul_items.append(f"<li>{_inline_markdown_to_html(stripped[2:].strip())}</li>")
             continue
 
-        flush_list()
+        ol_match = re.match(r"^\d+\.\s+(.*)$", stripped)
+        if ol_match:
+            flush_ul()
+            flush_paragraph()
+            flush_table()
+            ol_items.append(f"<li>{_inline_markdown_to_html(ol_match.group(1).strip())}</li>")
+            continue
+
+        if stripped.startswith(">"):
+            flush_ul()
+            flush_ol()
+            flush_table()
+            text = stripped.lstrip(">").strip()
+            blocks.append(f"<blockquote>{_inline_markdown_to_html(text)}</blockquote>")
+            continue
+
+        flush_ul()
+        flush_ol()
         flush_table()
         paragraph_lines.append(stripped)
 
-    flush_list()
+    flush_code()
+    flush_ul()
+    flush_ol()
     flush_paragraph()
     flush_table()
     return "\n".join(blocks)
