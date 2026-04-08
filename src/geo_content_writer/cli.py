@@ -336,6 +336,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="Brand knowledge base JSON file. Default project path: knowledge/brand/brand-knowledge-base.json",
     )
     publish_ready_parser.add_argument(
+        "--allow-brand-mismatch",
+        action="store_true",
+        help="Proceed even if local brand KB and remote snapshot differ (adds warning)",
+    )
+    publish_ready_parser.add_argument(
         "--output-file",
         default=None,
         help="Optional file path to write the article-generation payload output",
@@ -352,6 +357,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--brand-kb-file",
         default=str(default_brand_kb_path()),
         help="Brand knowledge base JSON file. Default project path: knowledge/brand/brand-knowledge-base.json",
+    )
+    legacy_article_parser.add_argument(
+        "--allow-brand-mismatch",
+        action="store_true",
+        help="Proceed even if brand KB differs from remote snapshot",
     )
     legacy_article_parser.add_argument(
         "--output-file",
@@ -378,6 +388,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="Brand knowledge base JSON file. Default project path: knowledge/brand/brand-knowledge-base.json",
     )
     payload_parser.add_argument("--citation-limit", type=int, default=5, help="How many citation pages to inspect")
+    payload_parser.add_argument(
+        "--allow-brand-mismatch",
+        action="store_true",
+        help="Proceed even if brand KB differs from remote snapshot",
+    )
     draft_payload_parser = subparsers.add_parser(
         "draft-article-from-payload",
         help="Generate one article draft from a saved payload JSON file",
@@ -462,6 +477,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--output-dir",
         default="examples/daily-wordpress-batch",
         help="Directory to write generated article files before publishing",
+    )
+    batch_parser.add_argument(
+        "--allow-brand-mismatch",
+        action="store_true",
+        help="Proceed even if brand KB differs from remote snapshot",
     )
     citation_parser = subparsers.add_parser(
         "analyze-citation-patterns",
@@ -721,6 +741,7 @@ def main() -> None:
                     prompt_text=args.prompt_text,
                     asset_id=args.asset_id,
                     brand_kb_file=args.brand_kb_file,
+                    allow_brand_mismatch=args.allow_brand_mismatch,
                 ),
                 ensure_ascii=False,
                 indent=2,
@@ -737,6 +758,7 @@ def main() -> None:
                 prompt_text=args.prompt_text,
                 asset_id=args.asset_id,
                 brand_kb_file=args.brand_kb_file,
+                allow_brand_mismatch=args.allow_brand_mismatch,
             )
         )
         return
@@ -757,6 +779,7 @@ def main() -> None:
             days=args.days,
             brand_kb_file=args.brand_kb_file,
             max_prompts=max(args.count * 2, 10),
+            allow_exploratory_fallback=False,
         )
         selected_rows = select_backlog_items(backlog, limit=args.count, status="write_now")["items"]
         results = []
@@ -767,6 +790,7 @@ def main() -> None:
                 days=args.days,
                 brand_kb_file=args.brand_kb_file,
                 backlog_rows=backlog.get("fanout_backlog", []),
+                allow_brand_mismatch=args.allow_brand_mismatch,
             )
             article_markdown = draft_article_from_payload(payload)
             actual_word_count = _word_count(article_markdown)

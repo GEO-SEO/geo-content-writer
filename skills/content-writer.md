@@ -84,6 +84,7 @@ Use this skill to turn Dageno prompt opportunities into a real-fanout backlog an
 - one backlog row should map to one editorial brief
 - use the section drafting and review contracts when integrating with external agents
 - if local brand knowledge base and Dageno brand snapshot do not match, block publish-ready output
+  - you can override with `--allow-brand-mismatch`, but it will carry a warning; avoid unless you intentionally accept risk
 
 ## Output Quality Contract (Required)
 
