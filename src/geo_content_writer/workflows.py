@@ -3842,7 +3842,10 @@ def build_fanout_backlog(
             fanout_text = (item.get("name") or "").strip()
             if not fanout_text:
                 continue
-            backlog_id = _slugify(f"{prompt_row.get('prompt_text', '')}-{fanout_text}")[:80]
+            unique_seed = f"{prompt_row.get('prompt_text', '')}-{fanout_text}"
+            import hashlib
+            h = hashlib.sha1(unique_seed.encode("utf-8")).hexdigest()[:8]
+            backlog_id = _slugify(f"{fanout_text}-{h}")[:80]
             canonical_key = _canonical_fanout_key(fanout_text)
             if published_lookup and (backlog_id.lower() in published_lookup or canonical_key in published_lookup):
                 continue
