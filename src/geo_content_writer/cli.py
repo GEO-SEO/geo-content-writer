@@ -4,6 +4,7 @@ import argparse
 import json
 from pathlib import Path
 import re
+import time
 from datetime import datetime, timezone
 
 from jsonschema import ValidationError, validate
@@ -47,6 +48,19 @@ from .citation_crawl import analyze_citation_patterns, crawl_citation_pages
 from .wordpress import WordPressClient, markdown_to_basic_html
 
 
+def _retry(label: str, attempts: int, func, *, delay: float = 1.0):
+    last_exc: Exception | None = None
+    for attempt in range(1, attempts + 1):
+        try:
+            return func()
+        except Exception as exc:  # noqa: BLE001
+            last_exc = exc
+            if attempt == attempts:
+                break
+            time.sleep(delay * attempt)
+    if last_exc:
+        raise last_exc
+    raise RuntimeError(f"{label} failed without raising an exception")  # pragma: no cover
 def _default_output_schema_path() -> Path:
     return Path(__file__).resolve().parents[2] / "schemas" / "output_schema.json"
 
@@ -774,61 +788,95 @@ def main() -> None:
         )
         output_dir = Path(args.output_dir).expanduser()
         output_dir.mkdir(parents=True, exist_ok=True)
-        backlog = build_fanout_backlog(
-            dclient,
-            days=args.days,
-            brand_kb_file=args.brand_kb_file,
-            max_prompts=max(args.count * 2, 10),
-            allow_exploratory_fallback=False,
+        backlog = _retry(
+            "build_fanout_backlog",
+            attempts=2,
+            func=lambda: build_fanout_backlog(
+                dclient,
+                days=args.days,
+                brand_kb_file=args.brand_kb_file,
+                max_prompts=max(args.count * 2, 10),
+                allow_exploratory_fallback=False,
+            ),
         )
         selected_rows = select_backlog_items(backlog, limit=args.count, status="write_now")["items"]
         results = []
+        per_item_attempts = 3
+        per_item_delay = 1.2
+        min_words_floor = 1200
         for row in selected_rows:
-            payload = article_generation_payload_from_backlog_row(
-                dclient,
-                row,
-                days=args.days,
-                brand_kb_file=args.brand_kb_file,
-                backlog_rows=backlog.get("fanout_backlog", []),
-                allow_brand_mismatch=args.allow_brand_mismatch,
-            )
-            article_markdown = draft_article_from_payload(payload)
-            actual_word_count = _word_count(article_markdown)
-            min_word_count = int(payload.get("min_word_count", 0) or 0)
-            slug = row.get("backlog_id") or _derive_title_and_slug(article_markdown)[1]
-            title = (payload.get("title_options") or [row.get("normalized_title", "Untitled Article")])[0]
-            output_path = output_dir / f"{slug}.md"
-            output_path.write_text(article_markdown, encoding="utf-8")
-            if actual_word_count < min_word_count:
-                results.append(
-                    {
-                        "backlog_id": row.get("backlog_id"),
-                        "title": title,
-                        "file": str(output_path),
-                        "status": "needs_expansion",
-                        "actual_word_count": actual_word_count,
-                        "min_word_count": min_word_count,
-                    }
-                )
-                continue
-            post = wp_client.create_post(
-                title=title,
-                content=markdown_to_basic_html(article_markdown),
-                status=args.status,
-                slug=slug,
-            )
-            results.append(
-                {
-                    "backlog_id": row.get("backlog_id"),
-                    "title": title,
-                    "file": str(output_path),
-                    "wordpress_post_id": post.get("id"),
-                    "status": post.get("status"),
-                    "link": post.get("link"),
-                    "actual_word_count": actual_word_count,
-                    "min_word_count": min_word_count,
-                }
-            )
+            last_exc = None
+            for attempt in range(1, per_item_attempts + 1):
+                try:
+                    payload = article_generation_payload_from_backlog_row(
+                        dclient,
+                        row,
+                        days=args.days,
+                        brand_kb_file=args.brand_kb_file,
+                        backlog_rows=backlog.get("fanout_backlog", []),
+                        allow_brand_mismatch=args.allow_brand_mismatch,
+                    )
+                    article_markdown = draft_article_from_payload(payload)
+                    min_word_count = max(min_words_floor, int(payload.get("min_word_count", 0) or 0))
+                    quality = _article_quality_report(article_markdown, min_words=min_word_count)
+                    actual_word_count = quality["metrics"]["word_count"]
+                    slug = row.get("backlog_id") or _derive_title_and_slug(article_markdown)[1]
+                    title = (payload.get("title_options") or [row.get("normalized_title", "Untitled Article")])[0]
+                    output_path = output_dir / f"{slug}.md"
+                    output_path.write_text(article_markdown, encoding="utf-8")
+                    if not quality["passed"]:
+                        if attempt < per_item_attempts:
+                            time.sleep(per_item_delay * attempt)
+                            continue
+                        results.append(
+                            {
+                                "backlog_id": row.get("backlog_id"),
+                                "title": title,
+                                "file": str(output_path),
+                                "status": "quality_fail",
+                                "quality": quality,
+                            }
+                        )
+                        break
+                    post = _retry(
+                        "wordpress_create_post",
+                        attempts=2,
+                        delay=per_item_delay,
+                        func=lambda: wp_client.create_post(
+                            title=title,
+                            content=markdown_to_basic_html(article_markdown),
+                            status=args.status,
+                            slug=slug,
+                        ),
+                    )
+                    results.append(
+                        {
+                            "backlog_id": row.get("backlog_id"),
+                            "title": title,
+                            "file": str(output_path),
+                            "wordpress_post_id": post.get("id"),
+                            "status": post.get("status"),
+                            "link": post.get("link"),
+                            "actual_word_count": actual_word_count,
+                            "min_word_count": min_word_count,
+                            "quality": quality,
+                        }
+                    )
+                    break
+                except Exception as exc:  # noqa: BLE001
+                    last_exc = exc
+                    if attempt < per_item_attempts:
+                        time.sleep(per_item_delay * attempt)
+                        continue
+                    results.append(
+                        {
+                            "backlog_id": row.get("backlog_id"),
+                            "title": row.get("normalized_title", "Untitled Article"),
+                            "status": "error",
+                            "error": str(last_exc),
+                        }
+                    )
+                    break
         print(json.dumps({"count": len(results), "items": results}, ensure_ascii=False, indent=2))
         return
 
