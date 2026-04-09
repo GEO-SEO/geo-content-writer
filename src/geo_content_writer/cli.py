@@ -195,7 +195,7 @@ def build_parser() -> argparse.ArgumentParser:
         default=str(default_brand_kb_path()),
         help="Brand knowledge base JSON file. Default project path: knowledge/brand/brand-knowledge-base.json",
     )
-    backlog_parser.add_argument("--max-prompts", type=int, default=20, help="How many prompt candidates to inspect")
+    backlog_parser.add_argument("--max-prompts", type=int, default=100, help="How many prompt candidates to inspect (default 100)")
     backlog_parser.add_argument(
         "--published-file",
         default=str(default_published_registry_path()),

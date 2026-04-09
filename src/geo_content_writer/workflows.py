@@ -1105,11 +1105,21 @@ def _brand_alignment_status(local_kb: Dict[str, Any], remote_brand: Dict[str, An
 def _assert_brand_alignment(context: Dict[str, Any], allow_mismatch: bool = False) -> None:
     brand_kb = context.get("brand_kb", {})
     if brand_kb.get("loaded") and brand_kb.get("matches_remote_brand") is False:
-        if allow_mismatch:
-            warnings = context.setdefault("collection_warnings", [])
-            warnings.append(brand_kb.get("message", "Brand KB does not match remote snapshot; proceeding by user override."))
-            return
-        raise ValueError(brand_kb.get("message"))
+        warnings = context.setdefault("collection_warnings", [])
+        remote_brand = context.get("remote_brand") or {}
+        if remote_brand:
+            # Auto-fallback to remote snapshot but keep the warning.
+            context["brand_context"] = remote_brand
+            brand_kb["auto_fallback"] = "remote_brand"
+            warn_msg = brand_kb.get("message", "Brand KB mismatch; auto-switched to remote brand snapshot.")
+            warnings.append(warn_msg + " (using remote snapshot)")
+            if not allow_mismatch:
+                warnings.append("Set --allow-brand-mismatch to silence this warning explicitly.")
+        else:
+            if allow_mismatch:
+                warnings.append(brand_kb.get("message", "Brand KB mismatch; proceeding by override."))
+            else:
+                raise ValueError(brand_kb.get("message"))
 
 
 def _priority_rank(priority: str) -> int:
@@ -2449,7 +2459,7 @@ def article_generation_payload(
             client,
             days=days,
             brand_kb_file=brand_kb_file,
-            max_prompts=20,
+            max_prompts=100,
         )
 
     row = _select_backlog_row_for_writing(
