@@ -3842,7 +3842,7 @@ def build_fanout_backlog(
             fanout_text = (item.get("name") or "").strip()
             if not fanout_text:
                 continue
-            unique_seed = f"{prompt_row.get('prompt_text', '')}-{fanout_text}"
+            unique_seed = f"{prompt_row.get('prompt_id','')}-{fanout_text}"
             import hashlib
             h = hashlib.sha1(unique_seed.encode("utf-8")).hexdigest()[:8]
             backlog_id = _slugify(f"{fanout_text}-{h}")[:80]
