@@ -5,7 +5,7 @@
 
 # GEO Content Writer
 
-![GEO Content Writer Cover](assets/cover-v4.png)
+![GEO Content Writer Cover](assets/cover-v5.png)
 
 > Turn Dageno prompt opportunities into a fanout backlog, then turn one selected backlog row into an editorial brief, a draft contract, a review contract, and publishable GEO content.
 
