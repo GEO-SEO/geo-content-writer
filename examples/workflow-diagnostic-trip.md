@@ -1,6 +1,6 @@
 # Workflow Diagnostic: Trip.com Data Flow
 
-This file shows one real run of the workflow using the alternate Dageno API key.
+This file shows one real run of the workflow using the alternate [Dageno](https://dageno.ai/?utm_source=github&utm_medium=social&utm_campaign=official) API key.
 
 Goal:
 
@@ -8,11 +8,11 @@ Goal:
 - identify where the article quality breaks
 - separate data mismatch problems from writing-template problems
 
-## Step 0: Dageno Brand Snapshot
+## Step 0: [Dageno](https://dageno.ai/?utm_source=github&utm_medium=social&utm_campaign=official) Brand Snapshot
 
 Input:
 
-- Dageno API key: alternate key
+- [Dageno](https://dageno.ai/?utm_source=github&utm_medium=social&utm_campaign=official) API key: alternate key
 
 Output:
 
@@ -25,9 +25,9 @@ Tagline: Your Non-stop Travel Mate
 
 Interpretation:
 
-- the data source is not Dageno
+- the data source is not [Dageno](https://dageno.ai/?utm_source=github&utm_medium=social&utm_campaign=official)
 - the monitored brand is Trip.com
-- this means a Dageno-only local knowledge base is a mismatch
+- this means a [Dageno](https://dageno.ai/?utm_source=github&utm_medium=social&utm_campaign=official)-only local knowledge base is a mismatch
 
 ## Step 1: Local Brand Knowledge Base
 
@@ -39,7 +39,7 @@ Output:
 
 ```json
 {
-  "brand_name": "Dageno",
+  "brand_name": "[Dageno](https://dageno.ai/?utm_source=github&utm_medium=social&utm_campaign=official)",
   "domain": null,
   "category": "Answer Engine Optimization and GEO platform"
 }
@@ -48,25 +48,25 @@ Output:
 Interpretation:
 
 - this knowledge base is for the GEO-SEO product
-- it does not match the alternate Dageno account
+- it does not match the alternate [Dageno](https://dageno.ai/?utm_source=github&utm_medium=social&utm_campaign=official) account
 
 ## Step 2: Brand Alignment Check
 
 Rule:
 
-- if local brand KB and Dageno brand snapshot do not match
+- if local brand KB and [Dageno](https://dageno.ai/?utm_source=github&utm_medium=social&utm_campaign=official) brand snapshot do not match
 - block publish-ready generation
 
 Observed output:
 
 ```text
-ValueError: Brand knowledge base does not match the Dageno brand snapshot. Use a matching knowledge base before generating publish-ready output.
+ValueError: Brand knowledge base does not match the [Dageno](https://dageno.ai/?utm_source=github&utm_medium=social&utm_campaign=official) brand snapshot. Use a matching knowledge base before generating publish-ready output.
 ```
 
 Interpretation:
 
 - this protection is correct
-- it prevents the system from mixing Trip.com data with Dageno messaging
+- it prevents the system from mixing Trip.com data with [Dageno](https://dageno.ai/?utm_source=github&utm_medium=social&utm_campaign=official) messaging
 
 ## Step 3: Matched Brand Knowledge Base
 
@@ -94,7 +94,7 @@ Interpretation:
 
 Input:
 
-- Dageno account: Trip.com
+- [Dageno](https://dageno.ai/?utm_source=github&utm_medium=social&utm_campaign=official) account: Trip.com
 - matched KB: Trip
 
 Output:
@@ -187,7 +187,7 @@ Why this is weak:
 Conclusion:
 
 - title generation is the second major rule error
-- topic labels from Dageno cannot be treated as blog-ready titles
+- topic labels from [Dageno](https://dageno.ai/?utm_source=github&utm_medium=social&utm_campaign=official) cannot be treated as blog-ready titles
 
 ## Step 7: Publish-Ready Article Generation
 
@@ -223,7 +223,7 @@ These parts of the data flow are not the root issue:
 
 Interpretation:
 
-- the Dageno opportunity itself is coherent for Trip.com
+- the [Dageno](https://dageno.ai/?utm_source=github&utm_medium=social&utm_campaign=official) opportunity itself is coherent for Trip.com
 - the pipeline breaks when it converts that opportunity into B2B/GEO-style content structures
 
 ## Root Cause Summary

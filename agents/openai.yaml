@@ -1,3 +1,3 @@
 display_name: GEO Content Writer
-short_description: Turn Dageno prompt opportunities into a real-fanout backlog and publish-ready GEO articles.
+short_description: Turn [Dageno](https://dageno.ai/?utm_source=github&utm_medium=social&utm_campaign=official) prompt opportunities into a real-fanout backlog and publish-ready GEO articles.
 default_prompt: Use this content writer skill to first check for a brand knowledge base at knowledge/brand/brand-knowledge-base.json, then discover high-value prompts, extract real fanout only, save fanout into a backlog, detect overlap and duplicate rows, select one backlog item, analyze citation patterns, and draft one publish-ready article for distribution.

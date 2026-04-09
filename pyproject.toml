@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "geo-content-writer"
 version = "0.7.1"
-description = "A fanout-backlog-first GEO writing workflow built on Dageno prompt opportunities, real fanout extraction, citation analysis, and publish-ready article generation."
+description = "A fanout-backlog-first GEO writing workflow built on [Dageno](https://dageno.ai/?utm_source=github&utm_medium=social&utm_campaign=official) prompt opportunities, real fanout extraction, citation analysis, and publish-ready article generation."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }

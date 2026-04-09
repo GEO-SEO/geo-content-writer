@@ -30,8 +30,8 @@
 
 ## Brand Context To Keep Consistent
 
-- Brand: `Dageno`
-- Positioning: Dageno helps brands understand how AI systems talk about their business and turn that insight into content and growth execution.
+- Brand: `[Dageno](https://dageno.ai/?utm_source=github&utm_medium=social&utm_campaign=official)`
+- Positioning: [Dageno](https://dageno.ai/?utm_source=github&utm_medium=social&utm_campaign=official) helps brands understand how AI systems talk about their business and turn that insight into content and growth execution.
 - Key differentiators: Prompt-level brand and source gap visibility, Citation and response evidence instead of generic keyword-only planning, Clear path from insight to content execution
 - Avoid claims: Do not claim guaranteed rankings, Do not imply coverage of every AI platform without evidence, Do not use vague best-in-market claims without support
 

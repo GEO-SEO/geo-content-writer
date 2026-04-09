@@ -1,7 +1,7 @@
 # Example Brand Snapshot
 
 Brand
-- Dageno
+- [Dageno](https://dageno.ai/?utm_source=github&utm_medium=social&utm_campaign=official)
 - Domain: `dageno.ai`
 - Tagline: `A unified operating system for the AI web`
 

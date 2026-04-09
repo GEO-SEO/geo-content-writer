@@ -1,10 +1,10 @@
 # Live 30-Day Example
 
-Sample generated on `2026-03-30` using the included workflows and a Dageno API key.
+Sample generated on `2026-03-30` using the included workflows and a [Dageno](https://dageno.ai/?utm_source=github&utm_medium=social&utm_campaign=official) API key.
 
 ## Brand
 
-- Brand: `Dageno`
+- Brand: `[Dageno](https://dageno.ai/?utm_source=github&utm_medium=social&utm_campaign=official)`
 - Domain: `dageno.ai`
 - Tagline: `A unified operating system for the AI web`
 

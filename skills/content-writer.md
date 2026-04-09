@@ -1,12 +1,12 @@
 ---
 name: content-writer
 description: >
-  Use when the user wants to turn Dageno GEO opportunities into a real-fanout backlog and then
+  Use when the user wants to turn [Dageno](https://dageno.ai/?utm_source=github&utm_medium=social&utm_campaign=official) GEO opportunities into a real-fanout backlog and then
   write one publish-ready article from one selected fanout item. Produces a backlog-row-first GEO
   workflow with fanout extraction, editorial brief generation, draft and review contracts, and
-  publish-ready article output. For broad SEO article generation from keywords without Dageno
+  publish-ready article output. For broad SEO article generation from keywords without [Dageno](https://dageno.ai/?utm_source=github&utm_medium=social&utm_campaign=official)
   opportunity data, see a keyword-first SEO content workflow instead.
-compatibility: "Claude Code >=1.0, skills.sh marketplace, ClawHub marketplace, Vercel Labs skills ecosystem. Requires Python 3 and Dageno API access for full workflow execution."
+compatibility: "Claude Code >=1.0, skills.sh marketplace, ClawHub marketplace, Vercel Labs skills ecosystem. Requires Python 3 and [Dageno](https://dageno.ai/?utm_source=github&utm_medium=social&utm_campaign=official) API access for full workflow execution."
 metadata:
   openclaw:
     primaryEnv: DAGENO_API_KEY
@@ -39,7 +39,7 @@ metadata:
 
 # Content Writer
 
-Use this skill to turn Dageno prompt opportunities into a real-fanout backlog and then produce one backlog-row-first editorial package for one selected fanout item.
+Use this skill to turn [Dageno](https://dageno.ai/?utm_source=github&utm_medium=social&utm_campaign=official) prompt opportunities into a real-fanout backlog and then produce one backlog-row-first editorial package for one selected fanout item.
 
 ## Fixed Workflow
 
@@ -87,14 +87,14 @@ Use this skill to turn Dageno prompt opportunities into a real-fanout backlog an
 
 ## Non-Negotiable Rules
 
-- only use real Dageno fanout
+- only use real [Dageno](https://dageno.ai/?utm_source=github&utm_medium=social&utm_campaign=official) fanout
 - do not generate guessed fanout as publish-ready seed
 - exploratory fallback is allowed only when write_now inventory is low, and must stay `status=exploratory` until validated against fresh GEO data
-- do not write directly from Dageno `topic`
+- do not write directly from [Dageno](https://dageno.ai/?utm_source=github&utm_medium=social&utm_campaign=official) `topic`
 - one selected fanout should map to one article
 - one backlog row should map to one editorial brief
 - use the section drafting and review contracts when integrating with external agents
-- if local brand knowledge base and Dageno brand snapshot do not match, block publish-ready output
+- if local brand knowledge base and [Dageno](https://dageno.ai/?utm_source=github&utm_medium=social&utm_campaign=official) brand snapshot do not match, block publish-ready output
   - you can override with `--allow-brand-mismatch`, but it will carry a warning; avoid unless you intentionally accept risk
 
 ## Output Quality Contract (Required)

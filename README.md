@@ -7,7 +7,7 @@
 
 ![GEO Content Writer Cover](assets/cover-v5.png)
 
-> Turn Dageno prompt opportunities into a fanout backlog, then turn one selected backlog row into an editorial brief, a draft contract, a review contract, and publishable GEO content.
+> Turn [Dageno](https://dageno.ai/?utm_source=github&utm_medium=social&utm_campaign=official) prompt opportunities into a fanout backlog, then turn one selected backlog row into an editorial brief, a draft contract, a review contract, and publishable GEO content.
 
 **Positioning**
 
@@ -15,7 +15,7 @@ GEO Content Writer is a backlog-row-first content production system for teams th
 
 It is designed for a practical workflow:
 
-- find real prompt opportunities in Dageno
+- find real prompt opportunities in [Dageno](https://dageno.ai/?utm_source=github&utm_medium=social&utm_campaign=official)
 - extract real fanout instead of guessing article ideas
 - organize those ideas into a reusable backlog
 - choose one row to write next
@@ -23,7 +23,7 @@ It is designed for a practical workflow:
 
 This project is built to answer a practical growth question:
 
-> If I already have Dageno data, how do I turn it into a repeatable article-production workflow without producing thin, repetitive, template-like content?
+> If I already have [Dageno](https://dageno.ai/?utm_source=github&utm_medium=social&utm_campaign=official) data, how do I turn it into a repeatable article-production workflow without producing thin, repetitive, template-like content?
 
 **Outcome**
 
@@ -44,7 +44,7 @@ That makes it better suited for:
 
 ## Best For
 
-- GEO and SEO teams turning Dageno data into real content workflows
+- GEO and SEO teams turning [Dageno](https://dageno.ai/?utm_source=github&utm_medium=social&utm_campaign=official) data into real content workflows
 - agencies that need a repeatable content operating system, not isolated prompts
 - SaaS, ecommerce, industrial, and B2B brands building article pipelines from AI-answer opportunity data
 - operators who want to generate briefs and review contracts before writing
@@ -68,14 +68,14 @@ That usually creates:
 
 This project starts earlier and gets more specific before writing begins:
 
-- earlier with Dageno opportunity discovery
+- earlier with [Dageno](https://dageno.ai/?utm_source=github&utm_medium=social&utm_campaign=official) opportunity discovery
 - more specific with real fanout extraction
 - more controlled with backlog rows and cluster roles
 - more operational with draft contracts, review contracts, and final gates
 
 ## What You Get
 
-- a reusable fanout backlog built from real Dageno data
+- a reusable fanout backlog built from real [Dageno](https://dageno.ai/?utm_source=github&utm_medium=social&utm_campaign=official) data
 - cluster-role planning before article generation
 - an `editorial_brief` with audience, angle, differentiation targets, and E-E-A-T guidance
 - a `draft_package` with section-by-section writing contracts
@@ -126,7 +126,7 @@ PYTHONPATH=src python -m geo_content_writer.cli draft-article-from-payload examp
 
 This project can use several external layers:
 
-- Dageno API for prompts, fanout, citations, and opportunity discovery
+- [Dageno](https://dageno.ai/?utm_source=github&utm_medium=social&utm_campaign=official) API for prompts, fanout, citations, and opportunity discovery
 - optional citation crawling for structure learning
 - optional web research for E-E-A-T evidence and comparison checks
 - optional WordPress publishing
@@ -140,7 +140,7 @@ Recommended minimum setup:
 
 Access policy:
 
-- real Dageno fanout is required for the main workflow
+- real [Dageno](https://dageno.ai/?utm_source=github&utm_medium=social&utm_campaign=official) fanout is required for the main workflow
 - guessed fanout should not be used as the production seed
 - citation crawling is helpful but not required
 - live external research can be handled by a downstream agent using the payload’s `external_research_tasks`
@@ -162,7 +162,7 @@ For one selected backlog row, the system can produce:
 
 ```mermaid
 flowchart LR
-    A["Dageno Prompt Opportunities"] --> B["Real Fanout Extraction"]
+    A["[Dageno](https://dageno.ai/?utm_source=github&utm_medium=social&utm_campaign=official) Prompt Opportunities"] --> B["Real Fanout Extraction"]
     B --> C["Fanout Backlog"]
     C --> D["Cluster Role Planning"]
     D --> E["Editorial Brief"]
@@ -190,7 +190,7 @@ flowchart TD
 
 | Input | Required | Purpose |
 |---|---|---|
-| `DAGENO_API_KEY` | Yes | Fetch opportunities, prompts, fanout, and citations from Dageno |
+| `DAGENO_API_KEY` | Yes | Fetch opportunities, prompts, fanout, and citations from [Dageno](https://dageno.ai/?utm_source=github&utm_medium=social&utm_campaign=official) |
 | `--days` | Yes | Define the data window for discovery and ranking |
 | `knowledge/brand/brand-knowledge-base.json` | Recommended | Keep brand positioning and claims consistent |
 | `--backlog-id` | Optional | Force one exact production row |
@@ -311,13 +311,13 @@ Commands still present for compatibility but no longer recommended as the main e
 
 ## Non-Negotiable Rules
 
-- only use real Dageno fanout
+- only use real [Dageno](https://dageno.ai/?utm_source=github&utm_medium=social&utm_campaign=official) fanout
 - do not generate guessed fanout for production writing
 - exploratory fallback candidates are allowed only as `status=exploratory` and must be validated against fresh GEO data before promotion
-- do not write directly from Dageno `topic` labels
+- do not write directly from [Dageno](https://dageno.ai/?utm_source=github&utm_medium=social&utm_campaign=official) `topic` labels
 - do not publish from prompt alone
 - one selected fanout should map to one article
-- if brand knowledge base and Dageno brand snapshot do not match, block publish-ready generation
+- if brand knowledge base and [Dageno](https://dageno.ai/?utm_source=github&utm_medium=social&utm_campaign=official) brand snapshot do not match, block publish-ready generation
   - 可以显式传 `--allow-brand-mismatch` 覆盖，但会带警告，不建议常态化使用
 
 ## Quick Start
@@ -478,7 +478,7 @@ geo-content-writer/
 
 ## Technical Notes
 
-- Dageno remains the opportunity discovery layer
+- [Dageno](https://dageno.ai/?utm_source=github&utm_medium=social&utm_campaign=official) remains the opportunity discovery layer
 - the backlog row is the core production object
 - fanout remains the writing seed, but only after backlog selection
 - citation crawl is still lightweight and not yet a full browser-rendered implementation

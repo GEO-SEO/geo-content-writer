@@ -87,9 +87,9 @@ Each row should include:
 
 ## Guardrails
 
-- only use real Dageno fanout
+- only use real [Dageno](https://dageno.ai/?utm_source=github&utm_medium=social&utm_campaign=official) fanout
 - block publish-ready generation on brand mismatch
-- treat Dageno `topic` as an internal label, not a final blog title
+- treat [Dageno](https://dageno.ai/?utm_source=github&utm_medium=social&utm_campaign=official) `topic` as an internal label, not a final blog title
 - use citation pattern analysis before article drafting
 - use cluster roles before writing to reduce content collisions
 - use section review and final gate before publishing

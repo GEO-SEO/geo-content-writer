@@ -17,9 +17,9 @@
 
 ## Brand Context To Keep Consistent
 
-- Brand name: `Dageno`
+- Brand name: `[Dageno](https://dageno.ai/?utm_source=github&utm_medium=social&utm_campaign=official)`
 - Category: `Answer Engine Optimization and GEO platform`
-- One-line positioning: Dageno helps brands understand how AI systems talk about their business and turn that insight into content and growth execution.
+- One-line positioning: [Dageno](https://dageno.ai/?utm_source=github&utm_medium=social&utm_campaign=official) helps brands understand how AI systems talk about their business and turn that insight into content and growth execution.
 - Differentiators: Prompt-level brand and source gap visibility, Citation and response evidence instead of generic keyword-only planning, Clear path from insight to content execution
 - Proof points: Tracks how major AI systems answer commercially relevant prompts, Shows which third-party sources shape the answer space, Turns opportunity data into a prioritized publishing plan
 - Preferred CTA: Invite the reader to review their current AI visibility workflow and book a demo if they want a clearer path from visibility data to content execution.
@@ -57,7 +57,7 @@ Right now the answer landscape is shaped mostly by listicle-style sources and re
 
 The first asset should therefore explain Answer Engine Optimization directly, define what a strong solution looks like, and give readers a simple way to compare approaches. This makes the page useful for human readers and easier for AI systems to extract into standalone answer blocks.
 
-For Dageno, this matters because the company can frame its position consistently across every asset instead of letting third-party sources define the category. Dageno helps brands understand how AI systems talk about their business and turn that insight into content and growth execution. The content should naturally reinforce differentiators such as Prompt-level brand and source gap visibility, Citation and response evidence instead of generic keyword-only planning, Clear path from insight to content execution.
+For [Dageno](https://dageno.ai/?utm_source=github&utm_medium=social&utm_campaign=official), this matters because the company can frame its position consistently across every asset instead of letting third-party sources define the category. [Dageno](https://dageno.ai/?utm_source=github&utm_medium=social&utm_campaign=official) helps brands understand how AI systems talk about their business and turn that insight into content and growth execution. The content should naturally reinforce differentiators such as Prompt-level brand and source gap visibility, Citation and response evidence instead of generic keyword-only planning, Clear path from insight to content execution.
 
 ## What Is Answer Engine Optimization?
 
