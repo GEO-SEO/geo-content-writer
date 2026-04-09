@@ -631,6 +631,60 @@ def build_parser() -> argparse.ArgumentParser:
         help="Optional state file to resume from; will be updated after run.",
     )
 
+    keyword_batch_parser = subparsers.add_parser(
+        "batch-run-keywords",
+        parents=[common],
+        help="Run the single-article pipeline over a keyword list with retries and summary JSON",
+    )
+    keyword_batch_parser.add_argument(
+        "--keywords-file",
+        required=True,
+        help="Text file with one keyword per line",
+    )
+    keyword_batch_parser.add_argument(
+        "--max-retries",
+        type=int,
+        default=1,
+        help="Per-keyword retries (default 1)",
+    )
+    keyword_batch_parser.add_argument(
+        "--output",
+        default=None,
+        help="Where to write summary JSON; prints to stdout if omitted",
+    )
+    keyword_batch_parser.add_argument(
+        "--auto-revise",
+        action="store_true",
+        help="Auto-revise and re-check if quality fails",
+    )
+    keyword_batch_parser.add_argument(
+        "--revise-iterations",
+        type=int,
+        default=2,
+        help="Maximum auto-revise iterations when quality fails (default 2)",
+    )
+    keyword_batch_parser.add_argument(
+        "--brand-kb-file",
+        default=str(default_brand_kb_path()),
+        help="Brand knowledge base JSON file. Default project path: knowledge/brand/brand-knowledge-base.json",
+    )
+    keyword_batch_parser.add_argument(
+        "--brand-mode",
+        default="warn",
+        choices=["strict", "warn", "ignore"],
+        help="Brand alignment mode (default warn).",
+    )
+    keyword_batch_parser.add_argument(
+        "--allow-brand-mismatch",
+        action="store_true",
+        help="Proceed even if brand KB differs from remote snapshot (maps to brand-mode warn).",
+    )
+    keyword_batch_parser.add_argument(
+        "--resume",
+        default=None,
+        help="Resume from a previous results JSON (skips keywords already successful)",
+    )
+
     citation_parser = subparsers.add_parser(
         "analyze-citation-patterns",
         parents=[common],
@@ -1132,6 +1186,85 @@ def main() -> None:
         }
         if args.resume_state:
             Path(args.resume_state).write_text(json.dumps(output, ensure_ascii=False, indent=2), encoding="utf-8")
+        print(json.dumps(output, ensure_ascii=False, indent=2))
+        return
+
+    if args.command == "batch-run-keywords":
+        keywords_path = Path(args.keywords_file).expanduser()
+        if not keywords_path.exists():
+            raise FileNotFoundError(f"keywords file not found: {keywords_path}")
+        keywords = [line.strip() for line in keywords_path.read_text(encoding="utf-8").splitlines() if line.strip()]
+        if not keywords:
+            print(json.dumps({"total": 0, "success": 0, "failed": 0, "results": []}, ensure_ascii=False, indent=2))
+            return
+
+        resume_ok = set()
+        if args.resume and Path(args.resume).exists():
+            try:
+                prev = json.loads(Path(args.resume).read_text(encoding="utf-8"))
+                for item in prev.get("results", []):
+                    if item.get("success"):
+                        resume_ok.add(item.get("keyword"))
+            except Exception:
+                resume_ok = set()
+
+        brand_mode = args.brand_mode
+        if args.allow_brand_mismatch and brand_mode == "strict":
+            brand_mode = "warn"
+        per_item_attempts = max(1, args.max_retries)
+        min_words_floor = 1200
+        results = []
+        total = len(keywords)
+        success = 0
+        for kw in keywords:
+            if kw in resume_ok:
+                results.append({"keyword": kw, "success": True, "attempts": 0, "status": "skipped_resume"})
+                success += 1
+                continue
+            attempts = 0
+            success_flag = False
+            last_exc = None
+            quality = {}
+            for attempt in range(1, per_item_attempts + 1):
+                attempts = attempt
+                try:
+                    # Use existing pipeline: discover prompt -> build payload from keyword seed
+                    payload = article_generation_payload(
+                        client=DagenoClient(api_key=args.api_key, base_url=args.base_url),
+                        days=args.days,
+                        prompt_text=kw,
+                        brand_kb_file=args.brand_kb_file,
+                        brand_mode=brand_mode,
+                        allow_brand_mismatch=args.allow_brand_mismatch,
+                    )
+                    min_word_count = max(min_words_floor, int(payload.get("min_word_count", 0) or 0))
+                    article_markdown, quality = _generate_and_check(
+                        payload,
+                        min_words=min_word_count,
+                        auto_revise=args.auto_revise,
+                        max_iterations=args.revise_iterations,
+                    )
+                    success_flag = quality.get("passed", False)
+                    if success_flag:
+                        break
+                except Exception as exc:  # noqa: BLE001
+                    last_exc = exc
+            results.append(
+                {
+                    "keyword": kw,
+                    "success": success_flag,
+                    "attempts": attempts,
+                    "status": "pass" if success_flag else ("error" if last_exc else "quality_fail"),
+                    "quality": quality,
+                    "error": str(last_exc) if last_exc else None,
+                }
+            )
+            if success_flag:
+                success += 1
+        failed = total - success
+        output = {"total": total, "success": success, "failed": failed, "results": results}
+        if args.output:
+            Path(args.output).expanduser().write_text(json.dumps(output, ensure_ascii=False, indent=2), encoding="utf-8")
         print(json.dumps(output, ensure_ascii=False, indent=2))
         return
 
