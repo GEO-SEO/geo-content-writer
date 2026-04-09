@@ -1070,6 +1070,7 @@ def main() -> None:
             last_exc = None
             quality = {}
             article_markdown = ""
+            publish_state = False
             for attempt in range(1, per_item_attempts + 1):
                 try:
                     payload = article_generation_payload_from_backlog_row(
@@ -1105,8 +1106,10 @@ def main() -> None:
                 {
                     "backlog_id": row_id,
                     "title": row.get("normalized_title"),
+                    "keyword": row.get("fanout_text") or row.get("prompt_text"),
                     "status": status,
                     "quality": quality,
+                    "published": publish_state,
                     "error": str(last_exc) if last_exc else None,
                 }
             )
@@ -1120,7 +1123,13 @@ def main() -> None:
         success = len([r for r in results if r["status"] == "pass"])
         failed = total - success
         failed_ids = [r["backlog_id"] for r in results if r["status"] != "pass"]
-        output = {"total": total, "success": success, "failed": failed, "failed_ids": failed_ids, "items": results}
+        output = {
+            "total": total,
+            "success": success,
+            "failed": failed,
+            "failed_ids": failed_ids,
+            "results": results,
+        }
         if args.resume_state:
             Path(args.resume_state).write_text(json.dumps(output, ensure_ascii=False, indent=2), encoding="utf-8")
         print(json.dumps(output, ensure_ascii=False, indent=2))
