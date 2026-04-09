@@ -591,7 +591,6 @@ def build_parser() -> argparse.ArgumentParser:
         help="Backlog JSON file to read; defaults to knowledge/backlog/fanout-backlog.json",
     )
     batch_run_parser.add_argument("--status", default="write_now", help="Backlog status bucket to select from")
-    batch_run_parser.add_argument("--limit", type=int, default=20, help="How many items to process")
     batch_run_parser.add_argument(
         "--brand-kb-file",
         default=str(default_brand_kb_path()),
