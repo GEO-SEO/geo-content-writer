@@ -16,7 +16,7 @@ metadata:
       bins:
         - python3
   author: GEO-SEO
-  version: "0.7.1"
+  version: "0.7.2"
   homepage: https://github.com/GEO-SEO/geo-content-writer
   primaryEnv: DAGENO_API_KEY
   tags:
