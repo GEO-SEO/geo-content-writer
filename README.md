@@ -318,7 +318,7 @@ Commands still present for compatibility but no longer recommended as the main e
 - do not publish from prompt alone
 - one selected fanout should map to one article
 - if brand knowledge base and [Dageno](https://dageno.ai/?utm_source=github&utm_medium=social&utm_campaign=official) brand snapshot do not match, block publish-ready generation
-  - 可以显式传 `--allow-brand-mismatch` 覆盖，但会带警告，不建议常态化使用
+  - You can explicitly pass `--allow-brand-mismatch` to override, but it will emit a warning and is not recommended as the default path.
 
 ## Quick Start
 
