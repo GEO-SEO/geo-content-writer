@@ -1102,24 +1102,30 @@ def _brand_alignment_status(local_kb: Dict[str, Any], remote_brand: Dict[str, An
     return status
 
 
-def _assert_brand_alignment(context: Dict[str, Any], allow_mismatch: bool = False) -> None:
+def _assert_brand_alignment(context: Dict[str, Any], allow_mismatch: bool = False, brand_mode: str = "strict") -> None:
     brand_kb = context.get("brand_kb", {})
     if brand_kb.get("loaded") and brand_kb.get("matches_remote_brand") is False:
         warnings = context.setdefault("collection_warnings", [])
         remote_brand = context.get("remote_brand") or {}
+        # Backward compatibility: old flag acts like warn
+        if allow_mismatch and brand_mode == "strict":
+            brand_mode = "warn"
         if remote_brand:
             # Auto-fallback to remote snapshot but keep the warning.
             context["brand_context"] = remote_brand
             brand_kb["auto_fallback"] = "remote_brand"
             warn_msg = brand_kb.get("message", "Brand KB mismatch; auto-switched to remote brand snapshot.")
             warnings.append(warn_msg + " (using remote snapshot)")
-            if not allow_mismatch:
+            if brand_mode == "strict":
                 warnings.append("Set --allow-brand-mismatch to silence this warning explicitly.")
-        else:
-            if allow_mismatch:
-                warnings.append(brand_kb.get("message", "Brand KB mismatch; proceeding by override."))
-            else:
-                raise ValueError(brand_kb.get("message"))
+            return
+        if brand_mode == "ignore":
+            return
+        if brand_mode == "warn":
+            warnings.append(brand_kb.get("message", "Brand KB mismatch; proceeding by override."))
+            return
+        # strict
+        raise ValueError(brand_kb.get("message"))
 
 
 def _priority_rank(priority: str) -> int:
@@ -1829,6 +1835,7 @@ def legacy_publish_ready_article(
     asset_id: str | None = None,
     brand_kb_file: str | None = None,
     allow_brand_mismatch: bool = False,
+    brand_mode: str = "strict",
 ) -> str:
     context = _build_content_pack_context(
         client,
@@ -1838,7 +1845,7 @@ def legacy_publish_ready_article(
         brand_kb_file=brand_kb_file,
         detail_limit=1,
     )
-    _assert_brand_alignment(context, allow_mismatch=allow_brand_mismatch)
+    _assert_brand_alignment(context, allow_mismatch=allow_brand_mismatch, brand_mode=brand_mode)
     if context["empty"]:
         return "# Publish-Ready Article\n\nNo content opportunities were returned for the selected window."
 
@@ -2450,6 +2457,7 @@ def article_generation_payload(
     brand_kb_file: str | None = None,
     citation_limit: int = 5,
     allow_brand_mismatch: bool = False,
+    brand_mode: str = "strict",
 ) -> Dict[str, Any]:
     backlog_path = Path(backlog_file).expanduser() if backlog_file else None
     if backlog_path and backlog_path.exists():
@@ -2485,6 +2493,7 @@ def article_generation_payload(
         citation_limit=citation_limit,
         backlog_rows=backlog.get("fanout_backlog", []),
         allow_brand_mismatch=allow_brand_mismatch,
+        brand_mode=brand_mode,
     )
 
 
@@ -2497,6 +2506,7 @@ def article_generation_payload_from_backlog_row(
     citation_limit: int = 5,
     backlog_rows: List[Dict[str, Any]] | None = None,
     allow_brand_mismatch: bool = False,
+    brand_mode: str = "strict",
 ) -> Dict[str, Any]:
     source_prompt = (row.get("source_prompts") or [""])[0]
     context = _build_content_pack_context(
@@ -2506,7 +2516,7 @@ def article_generation_payload_from_backlog_row(
         brand_kb_file=brand_kb_file,
         detail_limit=1,
     )
-    _assert_brand_alignment(context, allow_mismatch=allow_brand_mismatch)
+    _assert_brand_alignment(context, allow_mismatch=allow_brand_mismatch, brand_mode=brand_mode)
     if context["empty"]:
         return {
             "generated_at": datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
@@ -3548,6 +3558,7 @@ def daily_publish_ready_package(
     count: int = 3,
     brand_kb_file: str | None = None,
     allow_brand_mismatch: bool = False,
+    brand_mode: str = "strict",
 ) -> List[Dict[str, str]]:
     context = _build_content_pack_context(
         client,
@@ -3555,7 +3566,7 @@ def daily_publish_ready_package(
         brand_kb_file=brand_kb_file,
         detail_limit=1,
     )
-    _assert_brand_alignment(context, allow_mismatch=allow_brand_mismatch)
+    _assert_brand_alignment(context, allow_mismatch=allow_brand_mismatch, brand_mode=brand_mode)
     if context["empty"]:
         return []
 

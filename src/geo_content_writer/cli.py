@@ -61,6 +61,25 @@ def _retry(label: str, attempts: int, func, *, delay: float = 1.0):
     if last_exc:
         raise last_exc
     raise RuntimeError(f"{label} failed without raising an exception")  # pragma: no cover
+
+
+def _generate_and_check(
+    payload: dict,
+    *,
+    min_words: int = 1200,
+    auto_revise: bool = False,
+    max_iterations: int = 2,
+) -> tuple[str, dict]:
+    """Generate an article, optionally auto-revise until quality passes."""
+    iterations = 0
+    while True:
+        article_markdown = draft_article_from_payload(payload)
+        quality = _article_quality_report(article_markdown, min_words=min_words)
+        iterations += 1
+        if quality["passed"]:
+            return article_markdown, quality
+        if not auto_revise or iterations >= max_iterations:
+            return article_markdown, quality
 def _default_output_schema_path() -> Path:
     return Path(__file__).resolve().parents[2] / "schemas" / "output_schema.json"
 
@@ -407,12 +426,29 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Proceed even if brand KB differs from remote snapshot",
     )
+    payload_parser.add_argument(
+        "--brand-mode",
+        default="strict",
+        choices=["strict", "warn", "ignore"],
+        help="Brand alignment mode (default strict).",
+    )
     draft_payload_parser = subparsers.add_parser(
         "draft-article-from-payload",
         help="Generate one article draft from a saved payload JSON file",
     )
     draft_payload_parser.add_argument("input_file", help="Payload JSON file")
     draft_payload_parser.add_argument("--output-file", default=None, help="Optional file path to write the drafted article")
+    draft_payload_parser.add_argument(
+        "--auto-revise",
+        action="store_true",
+        help="Auto-revise and re-check if the article fails the quality gate.",
+    )
+    draft_payload_parser.add_argument(
+        "--revise-iterations",
+        type=int,
+        default=2,
+        help="Maximum auto-revise iterations when quality fails (default 2).",
+    )
     quality_parser = subparsers.add_parser(
         "check-article-quality",
         help="One-click quality gate for a generated markdown article",
@@ -470,6 +506,24 @@ def build_parser() -> argparse.ArgumentParser:
     wp_parser.add_argument("--excerpt", default=None, help="Optional excerpt")
     wp_parser.add_argument("--categories", default=None, help="Optional comma-separated WordPress category IDs")
     wp_parser.add_argument("--tags", default=None, help="Optional comma-separated WordPress tag IDs")
+    wp_parser.add_argument(
+        "--brand-mode",
+        default="strict",
+        choices=["strict", "warn", "ignore"],
+        help="Brand alignment mode. strict blocks on mismatch; warn continues with warning; ignore skips the check.",
+    )
+    wp_parser.add_argument(
+        "--auto-revise",
+        action="store_true",
+        help="Auto-revise and re-check if the article fails the quality gate.",
+    )
+    wp_parser.add_argument(
+        "--revise-iterations",
+        type=int,
+        default=2,
+        help="Maximum auto-revise iterations when quality fails (default 2).",
+    )
+
     batch_parser = subparsers.add_parser(
         "daily-wordpress-batch",
         parents=[common],
@@ -497,6 +551,86 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Proceed even if brand KB differs from remote snapshot",
     )
+    batch_parser.add_argument(
+        "--brand-mode",
+        default="warn",
+        choices=["strict", "warn", "ignore"],
+        help="Brand alignment mode for batch runs (default warn).",
+    )
+    batch_parser.add_argument(
+        "--auto-revise",
+        action="store_true",
+        help="Auto-revise and re-check if an article fails quality.",
+    )
+    batch_parser.add_argument(
+        "--revise-iterations",
+        type=int,
+        default=2,
+        help="Maximum auto-revise iterations when quality fails (default 2).",
+    )
+    batch_parser.add_argument(
+        "--max-retries",
+        type=int,
+        default=2,
+        help="Maximum per-article retries for batch generation (default 2).",
+    )
+    batch_parser.add_argument(
+        "--output-state",
+        default=None,
+        help="Optional path to write batch state/checkpoint JSON.",
+    )
+
+    batch_run_parser = subparsers.add_parser(
+        "batch-run",
+        parents=[common],
+        help="Pure batch generation with retries, quality loop, and structured JSON output (no WordPress publish).",
+    )
+    batch_run_parser.add_argument(
+        "--input-file",
+        default=str(default_fanout_backlog_path()),
+        help="Backlog JSON file to read; defaults to knowledge/backlog/fanout-backlog.json",
+    )
+    batch_run_parser.add_argument("--status", default="write_now", help="Backlog status bucket to select from")
+    batch_run_parser.add_argument("--limit", type=int, default=20, help="How many items to process")
+    batch_run_parser.add_argument(
+        "--brand-kb-file",
+        default=str(default_brand_kb_path()),
+        help="Brand knowledge base JSON file. Default project path: knowledge/brand/brand-knowledge-base.json",
+    )
+    batch_run_parser.add_argument(
+        "--brand-mode",
+        default="warn",
+        choices=["strict", "warn", "ignore"],
+        help="Brand alignment mode for batch runs (default warn).",
+    )
+    batch_run_parser.add_argument(
+        "--allow-brand-mismatch",
+        action="store_true",
+        help="Proceed even if brand KB differs from remote snapshot (maps to brand-mode warn).",
+    )
+    batch_run_parser.add_argument(
+        "--auto-revise",
+        action="store_true",
+        help="Auto-revise and re-check if the article fails the quality gate.",
+    )
+    batch_run_parser.add_argument(
+        "--revise-iterations",
+        type=int,
+        default=2,
+        help="Maximum auto-revise iterations when quality fails (default 2).",
+    )
+    batch_run_parser.add_argument(
+        "--max-retries",
+        type=int,
+        default=2,
+        help="Maximum per-article retries (default 2).",
+    )
+    batch_run_parser.add_argument(
+        "--resume-state",
+        default=None,
+        help="Optional state file to resume from; will be updated after run.",
+    )
+
     citation_parser = subparsers.add_parser(
         "analyze-citation-patterns",
         parents=[common],
@@ -646,6 +780,9 @@ def main() -> None:
 
     if args.command == "article-generation-payload":
         client = DagenoClient(api_key=args.api_key, base_url=args.base_url)
+        brand_mode = args.brand_mode
+        if getattr(args, "allow_brand_mismatch", False) and brand_mode == "strict":
+            brand_mode = "warn"
         print(
             json.dumps(
                 article_generation_payload(
@@ -658,6 +795,7 @@ def main() -> None:
                     asset_id=args.asset_id,
                     brand_kb_file=args.brand_kb_file,
                     citation_limit=args.citation_limit,
+                    brand_mode=brand_mode,
                 ),
                 ensure_ascii=False,
                 indent=2,
@@ -668,7 +806,18 @@ def main() -> None:
     if args.command == "draft-article-from-payload":
         input_path = Path(args.input_file).expanduser()
         payload = json.loads(input_path.read_text(encoding="utf-8"))
-        emit_output(draft_article_from_payload(payload))
+        min_words = int(payload.get("min_word_count", 0) or 1200)
+        article_markdown, quality = _generate_and_check(
+            payload,
+            min_words=min_words,
+            auto_revise=args.auto_revise,
+            max_iterations=args.revise_iterations,
+        )
+        if args.output_file:
+            Path(args.output_file).expanduser().write_text(article_markdown, encoding="utf-8")
+        emit_output(article_markdown)
+        if args.auto_revise:
+            print(json.dumps({"quality": quality}, ensure_ascii=False, indent=2))
         return
 
     if args.command == "check-article-quality":
@@ -744,6 +893,9 @@ def main() -> None:
         return
 
     if args.command == "publish-ready-article":
+        brand_mode = args.brand_mode
+        if args.allow_brand_mismatch and brand_mode == "strict":
+            brand_mode = "warn"
         emit_output(
             json.dumps(
                 article_generation_payload(
@@ -756,6 +908,7 @@ def main() -> None:
                     asset_id=args.asset_id,
                     brand_kb_file=args.brand_kb_file,
                     allow_brand_mismatch=args.allow_brand_mismatch,
+                    brand_mode=brand_mode,
                 ),
                 ensure_ascii=False,
                 indent=2,
@@ -764,6 +917,9 @@ def main() -> None:
         return
 
     if args.command == "legacy-publish-ready-article":
+        brand_mode = args.brand_mode
+        if args.allow_brand_mismatch and brand_mode == "strict":
+            brand_mode = "warn"
         emit_output(
             legacy_publish_ready_article(
                 client=DagenoClient(api_key=args.api_key, base_url=args.base_url),
@@ -773,6 +929,7 @@ def main() -> None:
                 asset_id=args.asset_id,
                 brand_kb_file=args.brand_kb_file,
                 allow_brand_mismatch=args.allow_brand_mismatch,
+                brand_mode=brand_mode,
             )
         )
         return
@@ -788,6 +945,9 @@ def main() -> None:
         )
         output_dir = Path(args.output_dir).expanduser()
         output_dir.mkdir(parents=True, exist_ok=True)
+        brand_mode = args.brand_mode
+        if args.allow_brand_mismatch and brand_mode == "strict":
+            brand_mode = "warn"
         backlog = _retry(
             "build_fanout_backlog",
             attempts=2,
@@ -815,10 +975,15 @@ def main() -> None:
                         brand_kb_file=args.brand_kb_file,
                         backlog_rows=backlog.get("fanout_backlog", []),
                         allow_brand_mismatch=args.allow_brand_mismatch,
+                        brand_mode=brand_mode,
                     )
-                    article_markdown = draft_article_from_payload(payload)
                     min_word_count = max(min_words_floor, int(payload.get("min_word_count", 0) or 0))
-                    quality = _article_quality_report(article_markdown, min_words=min_word_count)
+                    article_markdown, quality = _generate_and_check(
+                        payload,
+                        min_words=min_word_count,
+                        auto_revise=args.auto_revise,
+                        max_iterations=args.revise_iterations,
+                    )
                     actual_word_count = quality["metrics"]["word_count"]
                     slug = row.get("backlog_id") or _derive_title_and_slug(article_markdown)[1]
                     title = (payload.get("title_options") or [row.get("normalized_title", "Untitled Article")])[0]
@@ -878,6 +1043,87 @@ def main() -> None:
                     )
                     break
         print(json.dumps({"count": len(results), "items": results}, ensure_ascii=False, indent=2))
+        return
+
+    if args.command == "batch-run":
+        dclient = DagenoClient(api_key=args.api_key, base_url=args.base_url)
+        backlog = load_fanout_backlog(args.input_file)
+        selected_rows = select_backlog_items(backlog, limit=args.limit, status=args.status)["items"]
+        processed_ids = set()
+        if args.resume_state and Path(args.resume_state).exists():
+            try:
+                state = json.loads(Path(args.resume_state).read_text(encoding="utf-8"))
+                processed_ids = set(state.get("processed_ids", []))
+            except Exception:
+                processed_ids = set()
+        brand_mode = args.brand_mode
+        if args.allow_brand_mismatch and brand_mode == "strict":
+            brand_mode = "warn"
+        per_item_attempts = max(1, args.max_retries)
+        min_words_floor = 1200
+        results = []
+        for row in selected_rows:
+            row_id = row.get("backlog_id") or row.get("id")
+            if row_id in processed_ids:
+                continue
+            status = "pass"
+            last_exc = None
+            quality = {}
+            article_markdown = ""
+            for attempt in range(1, per_item_attempts + 1):
+                try:
+                    payload = article_generation_payload_from_backlog_row(
+                        dclient,
+                        row,
+                        days=args.days,
+                        brand_kb_file=args.brand_kb_file,
+                        backlog_rows=backlog.get("fanout_backlog", []),
+                        allow_brand_mismatch=args.allow_brand_mismatch,
+                        brand_mode=brand_mode,
+                    )
+                    min_word_count = max(min_words_floor, int(payload.get("min_word_count", 0) or 0))
+                    article_markdown, quality = _generate_and_check(
+                        payload,
+                        min_words=min_word_count,
+                        auto_revise=args.auto_revise,
+                        max_iterations=args.revise_iterations,
+                    )
+                    if quality.get("passed"):
+                        status = "pass"
+                        break
+                    status = "quality_fail"
+                    if attempt < per_item_attempts:
+                        time.sleep(1.0 * attempt)
+                        continue
+                except Exception as exc:  # noqa: BLE001
+                    last_exc = exc
+                    status = "error"
+                    if attempt < per_item_attempts:
+                        time.sleep(1.0 * attempt)
+                        continue
+            results.append(
+                {
+                    "backlog_id": row_id,
+                    "title": row.get("normalized_title"),
+                    "status": status,
+                    "quality": quality,
+                    "error": str(last_exc) if last_exc else None,
+                }
+            )
+            processed_ids.add(row_id)
+            if args.resume_state:
+                Path(args.resume_state).write_text(
+                    json.dumps({"processed_ids": sorted(processed_ids), "items": results}, ensure_ascii=False, indent=2),
+                    encoding="utf-8",
+                )
+        total = len(selected_rows)
+        success = len([r for r in results if r["status"] == "pass"])
+        failed = total - success
+        failed_ids = [r["backlog_id"] for r in results if r["status"] != "pass"]
+        output = {"total": total, "success": success, "failed": failed, "failed_ids": failed_ids, "items": results}
+        if args.resume_state:
+            Path(args.resume_state).write_text(json.dumps(output, ensure_ascii=False, indent=2), encoding="utf-8")
+        print(json.dumps(output, ensure_ascii=False, indent=2))
         return
 
     client = DagenoClient(api_key=args.api_key, base_url=args.base_url)
