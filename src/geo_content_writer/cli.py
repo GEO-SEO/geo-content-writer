@@ -196,7 +196,7 @@ def _article_quality_report(markdown_text: str, min_words: int = 1200, mode: str
             "not_ideal_count": not_ideal_count,
             "decision_rule_count": len(decision_rules),
             "default_ranking_count": len(ranking_lines),
-            "head_to_head_row_count": len(h2h_rows),
+            "head_to_head_row_count": 0,
         },
     }
 
@@ -381,6 +381,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="Proceed even if local brand KB and remote snapshot differ (adds warning)",
     )
     publish_ready_parser.add_argument(
+        "--brand-mode",
+        default="strict",
+        choices=["strict", "warn", "ignore"],
+        help="Brand alignment mode (default strict).",
+    )
+    publish_ready_parser.add_argument(
         "--output-file",
         default=None,
         help="Optional file path to write the article-generation payload output",
@@ -402,6 +408,12 @@ def build_parser() -> argparse.ArgumentParser:
         "--allow-brand-mismatch",
         action="store_true",
         help="Proceed even if brand KB differs from remote snapshot",
+    )
+    legacy_article_parser.add_argument(
+        "--brand-mode",
+        default="strict",
+        choices=["strict", "warn", "ignore"],
+        help="Brand alignment mode (default strict).",
     )
     legacy_article_parser.add_argument(
         "--output-file",
@@ -444,6 +456,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="Generate one article draft from a saved payload JSON file",
     )
     draft_payload_parser.add_argument("input_file", help="Payload JSON file")
+    draft_payload_parser.add_argument("--payload-file", help="Alias for input_file", default=None)
     draft_payload_parser.add_argument("--output-file", default=None, help="Optional file path to write the drafted article")
     draft_payload_parser.add_argument(
         "--auto-revise",
@@ -888,7 +901,8 @@ def main() -> None:
         return
 
     if args.command == "draft-article-from-payload":
-        input_path = Path(args.input_file).expanduser()
+        input_file = args.payload_file or args.input_file
+        input_path = Path(input_file).expanduser()
         payload = json.loads(input_path.read_text(encoding="utf-8"))
         min_words = int(payload.get("min_word_count", 0) or 1200)
         article_markdown, quality = _generate_and_check(

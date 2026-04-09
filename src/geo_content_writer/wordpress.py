@@ -55,25 +55,13 @@ class WordPressClient:
         last_error: Exception | None = None
         for attempt in range(1, self.max_retries + 1):
             try:
-                if self.is_wordpress_com:
-                    response = requests.request(
-                        method=method,
-                        url=f"https://public-api.wordpress.com/wp/v2/sites/{self._site_identifier()}{path}",
-                        headers={
-                            "Authorization": f"Bearer {self._wpcom_access_token()}",
-                            "Content-Type": "application/json",
-                        },
-                        json=json,
-                        timeout=self.timeout,
-                    )
-                else:
-                    response = requests.request(
-                        method=method,
-                        url=f"{self.site_url}/wp-json/wp/v2{path}",
-                        auth=(self.username, self.app_password),
-                        json=json,
-                        timeout=self.timeout,
-                    )
+                response = requests.request(
+                    method=method,
+                    url=f"{self.site_url}/wp-json/wp/v2{path}",
+                    auth=(self.username, self.app_password),
+                    json=json,
+                    timeout=self.timeout,
+                )
                 response.raise_for_status()
                 return response.json()
             except requests.exceptions.RequestException as exc:

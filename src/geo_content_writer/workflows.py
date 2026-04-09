@@ -1115,9 +1115,10 @@ def _assert_brand_alignment(context: Dict[str, Any], allow_mismatch: bool = Fals
             context["brand_context"] = remote_brand
             brand_kb["auto_fallback"] = "remote_brand"
             warn_msg = brand_kb.get("message", "Brand KB mismatch; auto-switched to remote brand snapshot.")
-            warnings.append(warn_msg + " (using remote snapshot)")
-            if brand_mode == "strict":
-                warnings.append("Set --allow-brand-mismatch to silence this warning explicitly.")
+            if brand_mode != "ignore":
+                warnings.append(warn_msg + " (using remote snapshot)")
+                if brand_mode == "strict":
+                    warnings.append("Set --allow-brand-mismatch or --brand-mode warn/ignore to silence this warning.")
             return
         if brand_mode == "ignore":
             return
